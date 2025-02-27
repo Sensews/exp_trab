@@ -1,0 +1,138 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'JetBrains Mono', monospace;
+    color: #E0E0E0;
+}
+
+body {
+    background-color: rgba(18, 18, 18, 0.95);
+    text-align: center;
+}
+
+header {
+    background: rgba(0, 0, 0, 0.85);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 40px;
+    position: fixed;
+    width: 100%;
+    top: 0;
+}
+
+.logo {
+    font-size: 32px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.btn {
+    background: transparent;
+    border: 2px solid #00FFAA;
+    color: #00FFAA;
+    font-size: 16px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    margin-left: 10px;
+}
+
+.btn:hover {
+    background: #00FFAA;
+    color: #121212;
+    transform: scale(1.1);
+}
+
+main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.intro, .features {
+    margin: 40px auto;
+    max-width: 800px;
+}
+
+h2 {
+    font-size: 24px;
+    color: #00FFAA;
+    margin-bottom: 10px;
+}
+
+p {
+    font-size: 18px;
+    line-height: 1.6;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+li {
+    font-size: 18px;
+    margin: 10px 0;
+}
+
+footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    padding: 20px;
+    font-size: 14px;
+    text-align: center;
+}
+
+.content-box {
+    background: rgba(0, 0, 0, 0.85);
+    border-radius: 12px;
+    padding: 30px;
+    max-width: 800px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.6);
+    text-align: center;
+}
+
+h2 {
+    color: #00FFAA; /* Verde neon para títulos */
+}
+
+p, ul {
+    font-size: 18px;
+    line-height: 1.6;
+}
+
+@keyframes fall {
+    0% {
+        transform: translateY(-20px) scale(1);
+        opacity: 0,8;
+    }
+    100% {
+        transform: translateY(100vh) scale(0.6);
+        opacity: 0;
+    }
+}
+
+.stars {
+    position: fixed;
+    top: -10px;
+    left: 0;
+    color: white;
+    z-index: -1;
+    text-shadow: 0 0 5px #fff, 0 0 20px #fff, 0 0 50px #fff;
+    animation: fall linear forwards;
+}
+
+.stars::before {
+    content: '\f005';
+    font-family: FontAwesome;
+    text-shadow: 0 0 5px #fff, 0 0 20px #fff, 0 0 50px #fff;
+}
