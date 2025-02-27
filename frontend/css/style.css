@@ -102,7 +102,7 @@ footer {
 }
 
 h2 {
-    color: #00FFAA; /* Verde neon para títulos */
+    color: #00FFAA;
 }
 
 p, ul {
@@ -135,4 +135,140 @@ p, ul {
     content: '\f005';
     font-family: FontAwesome;
     text-shadow: 0 0 5px #fff, 0 0 20px #fff, 0 0 50px #fff;
+}
+
+.input-group {
+    margin-bottom: 20px; 
+    text-align: left; 
+}
+
+.input-group label {
+    display: block;
+    font-size: 16px;
+    font-weight: bold;
+    color: #E0E0E0;
+    font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 8px; 
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    font-family: 'JetBrains Mono', monospace;
+    border-radius: 5px;
+    border: 2px solid #FFFFFF;
+    outline: none;
+    background: transparent;
+    color: #FFFFFF;
+    transition: all 0.3s ease-in-out;
+}
+
+.input-group input:focus {
+    border-color: #00FFAA; 
+    box-shadow: 0 0 10px #00FFAA;
+}
+
+.input-group input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 14px;
+}
+
+.input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 10px;
+    background: none;
+    border: none;
+    color: #FFFFFF;
+    font-size: 18px;
+    cursor: pointer;
+    transition: 0.3s ease-in-out;
+}
+
+.error {
+    color: red;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 100;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.75);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: rgba(0, 0, 0, 0.85);
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.6);
+    max-width: 400px;
+    color: #E0E0E0;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.close {
+    position: absolute;
+    right: 20px;
+    top: 10px;
+    font-size: 28px;
+    cursor: pointer;
+    color: white;
+}
+
+.close:hover {
+    color: #00FFAA;
+}
+
+.modal-content input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 5px;
+    border: 2px solid #FFFFFF;
+    background: transparent;
+    color: white;
+    font-size: 16px;
+    text-align: center;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+}
+
+.modal-buttons .btn {
+    flex: 1;
+    margin: 5px;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+}
+
+#forgot-password {
+    display: block;
+    margin-top: 25px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+#forgot-password:hover {
+    text-decoration: underline;
 }

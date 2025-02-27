@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Oblivion</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script defer src="js/login.js"></script>
+    <script src="js/stars.js" defer></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <h1 class="logo">OBLIVION</h1>
+        <nav>
+            <button class="btn"><i class="icon-home"></i> <a href="index.html">Home</a></button>
+            <button class="btn"><i class="icon-register"></i> <a href="cadastro.html">Cadastro</a></button>
+        </nav>
+    </header>
+
+    <main>
+        <div class="content-box">
+            <h2>Login</h2>
+            <form id="login-form">
+                <div class="input-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+    
+                <div class="input-group">
+                    <label for="senha">Senha</label>
+                    <div class="input-container">
+                        <input type="password" id="senha" name="senha" required>
+                        <button type="button" class="toggle-password" onclick="togglePassword('senha', this)">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+    
+                <button type="submit" class="btn">Entrar</button>
+            </form>
+    
+            <p><a href="#" id="forgot-password">Esqueci minha senha</a></p>
+            <p id="error-message" class="error"></p>
+        </div>
+    </main>
+
+<div id="forgot-password-modal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('forgot-password-modal')">&times;</span>
+        <h3>Redefinir Senha</h3>
+        <p>Digite seu email para receber um link de redefinição.</p>
+        <input type="email" id="reset-email" placeholder="Digite seu email" required>
+        <div class="modal-buttons">
+            <button class="btn" onclick="sendPasswordReset()">Enviar</button>
+            <button class="btn cancel" onclick="closeModal('forgot-password-modal')">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<div id="auth-2fa-modal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('auth-2fa-modal')">&times;</span>
+        <h3>Autenticação 2FA</h3>
+        <p>Digite o código de verificação enviado via SMS.</p>
+        <input type="text" id="auth-code" placeholder="Código 2FA">
+        <div class="modal-buttons">
+            <button class="btn" onclick="verify2FA()">Confirmar</button>
+            <button class="btn cancel" onclick="closeModal('auth-2fa-modal')">Cancelar</button>
+            <button class="btn resend" onclick="resend2FA()">Reenviar Código</button>
+        </div>
+    </div>
+</div>
+
+    <footer>
+        <p>&copy; 2025 Oblivion RPG - Todos os direitos reservados.</p>
+    </footer>
+</body>
+</html>
