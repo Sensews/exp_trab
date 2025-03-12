@@ -41,7 +41,6 @@ document.getElementById("cadastro-form").addEventListener("submit", async functi
 // FORMATAR TELEFONE E CPF
 document.addEventListener("DOMContentLoaded", function () {
     const telefoneInput = document.getElementById("telefone");
-    const cpfInput = document.getElementById("cpf");
 
 // FORMATAR O TELEFONE: (XX) XXXXX-XXXX
     telefoneInput.addEventListener("input", function (e) {
@@ -57,23 +56,6 @@ document.addEventListener("DOMContentLoaded", function () {
             value = `(${value.slice(0, 2)}) ${value.slice(2)}`;
         } else if (value.length > 0) {
             value = `(${value}`;
-        }
-
-        e.target.value = value;
-    });
-
-// FORMATAR O CPF: XXX.XXX.XXX-XX
-    cpfInput.addEventListener("input", function (e) {
-        let value = e.target.value.replace(/\D/g, "");
-
-        if (value.length > 11) value = value.slice(0, 11);
-
-        if (value.length > 9) {
-            value = `${value.slice(0, 3)}.${value.slice(3, 6)}.${value.slice(6, 9)}-${value.slice(9, 11)}`;
-        } else if (value.length > 6) {
-            value = `${value.slice(0, 3)}.${value.slice(3, 6)}.${value.slice(6)}`;
-        } else if (value.length > 3) {
-            value = `${value.slice(0, 3)}.${value.slice(3)}`;
         }
 
         e.target.value = value;

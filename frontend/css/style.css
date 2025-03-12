@@ -1,5 +1,7 @@
+/* ===== Importação da Fonte ===== */
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&display=swap');
 
+/* ===== Configuração Global ===== */
 * {
     margin: 0;
     padding: 0;
@@ -11,8 +13,12 @@
 body {
     background-color: rgba(18, 18, 18, 0.95);
     text-align: center;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
+/* ===== Cabeçalho ===== */
 header {
     background: rgba(0, 0, 0, 0.85);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
@@ -20,13 +26,14 @@ header {
     justify-content: space-between;
     align-items: center;
     padding: 15px 40px;
-    position: fixed;
     width: 100%;
+    position: fixed;
     top: 0;
+    z-index: 10;
 }
 
 .logo {
-    font-size: 32px;
+    font-size: 28px;
     font-weight: bold;
     text-transform: uppercase;
 }
@@ -40,6 +47,7 @@ header {
     cursor: pointer;
     transition: all 0.3s ease-in-out;
     margin-left: 10px;
+    text-decoration: none;
 }
 
 .btn:hover {
@@ -48,114 +56,45 @@ header {
     transform: scale(1.1);
 }
 
+/* ===== Corpo Principal ===== */
 main {
+    flex: 1;
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-}
-
-.intro, .features {
-    margin: 40px auto;
-    max-width: 800px;
-}
-
-h2 {
-    font-size: 24px;
-    color: #00FFAA;
-    margin-bottom: 10px;
-}
-
-p {
-    font-size: 18px;
-    line-height: 1.6;
-}
-
-ul {
-    list-style: none;
-    padding: 0;
-}
-
-li {
-    font-size: 18px;
-    margin: 10px 0;
-}
-
-footer {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background: rgba(0, 0, 0, 0.85);
     padding: 20px;
-    font-size: 14px;
-    text-align: center;
+    margin-top: 80px;
 }
 
+/* ===== Box de Conteúdo (Login e Cadastro) ===== */
 .content-box {
     background: rgba(0, 0, 0, 0.85);
     border-radius: 12px;
-    padding: 30px;
-    max-width: 800px;
+    padding: 40px;
+    max-width: 550px;
+    width: 90%; 
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.6);
     text-align: center;
+    margin: 20px auto; 
 }
 
-h2 {
-    color: #00FFAA;
-}
-
-p, ul {
-    font-size: 18px;
-    line-height: 1.6;
-}
-
-@keyframes fall {
-    0% {
-        transform: translateY(-20px) scale(1);
-        opacity: 0,8;
-    }
-    100% {
-        transform: translateY(100vh) scale(0.6);
-        opacity: 0;
-    }
-}
-
-.stars {
-    position: fixed;
-    top: -10px;
-    left: 0;
-    color: white;
-    z-index: -1;
-    text-shadow: 0 0 5px #fff, 0 0 20px #fff, 0 0 50px #fff;
-    animation: fall linear forwards;
-}
-
-.stars::before {
-    content: '\f005';
-    font-family: FontAwesome;
-    text-shadow: 0 0 5px #fff, 0 0 20px #fff, 0 0 50px #fff;
-}
-
+/* ===== Formulários ===== */
 .input-group {
-    margin-bottom: 20px; 
-    text-align: left; 
+    margin-bottom: 20px;
+    text-align: left;
 }
 
 .input-group label {
     display: block;
     font-size: 16px;
     font-weight: bold;
-    color: #E0E0E0;
-    font-family: 'JetBrains Mono', monospace;
-    margin-bottom: 8px; 
+    margin-bottom: 8px;
 }
 
 .input-group input {
     width: 100%;
     padding: 12px;
     font-size: 16px;
-    font-family: 'JetBrains Mono', monospace;
     border-radius: 5px;
     border: 2px solid #FFFFFF;
     outline: none;
@@ -165,7 +104,7 @@ p, ul {
 }
 
 .input-group input:focus {
-    border-color: #00FFAA; 
+    border-color: #00FFAA;
     box-shadow: 0 0 10px #00FFAA;
 }
 
@@ -174,6 +113,7 @@ p, ul {
     font-size: 14px;
 }
 
+/* ===== Botão de Mostrar Senha ===== */
 .input-container {
     position: relative;
     display: flex;
@@ -191,12 +131,33 @@ p, ul {
     transition: 0.3s ease-in-out;
 }
 
-.error {
-    color: red;
-    font-size: 14px;
-    margin-top: 10px;
+.toggle-password:hover {
+    color: #00FFAA;
 }
 
+/* ===== Estilo do Link "Esqueci minha senha" ===== */
+#forgot-password {
+    display: block;
+    margin-top: 25px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+#forgot-password:hover {
+    text-decoration: underline;
+}
+
+/* ===== Rodapé ===== */
+footer {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    padding: 20px;
+    font-size: 14px;
+    text-align: center;
+    position: relative;
+}
+
+/* ===== Modais (Pop-ups de 2FA e Esqueci Senha) ===== */
 .modal {
     display: none;
     position: fixed;
@@ -217,8 +178,7 @@ p, ul {
     text-align: center;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.6);
     max-width: 400px;
-    color: #E0E0E0;
-    font-family: 'JetBrains Mono', monospace;
+    width: 90%;
 }
 
 .close {
@@ -246,29 +206,54 @@ p, ul {
     text-align: center;
 }
 
-.modal-buttons {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 15px;
+/* ===== Estilização para Telas Menores ===== */
+@media (max-width: 600px) {
+    header {
+        padding: 10px 20px;
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .btn {
+        font-size: 14px;
+        padding: 8px 15px;
+        margin: 5px;
+    }
+
+    .content-box {
+        max-width: 95%; 
+        padding: 30px; 
+    }
+
+    .modal-content {
+        max-width: 95%;
+    }
 }
 
-.modal-buttons .btn {
-    flex: 1;
-    margin: 5px;
-    padding: 10px;
-    font-size: 16px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: all 0.3s ease-in-out;
+/* ===== Fundo de Estrelas ===== */
+@keyframes fall {
+    0% {
+        transform: translateY(-20px) scale(1);
+        opacity: 0,8;
+    }
+    100% {
+        transform: translateY(100vh) scale(0.6);
+        opacity: 0;
+    }
 }
 
-#forgot-password {
-    display: block;
-    margin-top: 25px;
-    font-size: 14px;
-    cursor: pointer;
+.stars {
+    position: fixed;
+    top: -10px;
+    left: 0;
+    color: white;
+    z-index: -1;
+    text-shadow: 0 0 5px #fff, 0 0 20px #fff, 0 0 50px #fff;
+    animation: fall linear forwards;
 }
 
-#forgot-password:hover {
-    text-decoration: underline;
+.stars::before {
+    content: '\f005';
+    font-family: FontAwesome;
+    text-shadow: 0 0 5px #fff, 0 0 20px #fff, 0 0 50px #fff;
 }
