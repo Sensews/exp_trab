@@ -1,7 +1,5 @@
-/* ===== Importação da Fonte ===== */
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&display=swap');
 
-/* ===== Configuração Global ===== */
 * {
     margin: 0;
     padding: 0;
@@ -16,26 +14,6 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-}
-
-/* ===== Cabeçalho ===== */
-header {
-    background: rgba(0, 0, 0, 0.85);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 40px;
-    width: 100%;
-    position: fixed;
-    top: 0;
-    z-index: 10;
-}
-
-.logo {
-    font-size: 28px;
-    font-weight: bold;
-    text-transform: uppercase;
 }
 
 .btn {
@@ -56,98 +34,6 @@ header {
     transform: scale(1.1);
 }
 
-/* ===== Corpo Principal ===== */
-main {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-    margin-top: 80px;
-}
-
-/* ===== Box de Conteúdo (Login e Cadastro) ===== */
-.content-box {
-    background: rgba(0, 0, 0, 0.85);
-    border-radius: 12px;
-    padding: 40px;
-    max-width: 550px;
-    width: 90%; 
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.6);
-    text-align: center;
-    margin: 20px auto; 
-}
-
-/* ===== Formulários ===== */
-.input-group {
-    margin-bottom: 20px;
-    text-align: left;
-}
-
-.input-group label {
-    display: block;
-    font-size: 16px;
-    font-weight: bold;
-    margin-bottom: 8px;
-}
-
-.input-group input {
-    width: 100%;
-    padding: 12px;
-    font-size: 16px;
-    border-radius: 5px;
-    border: 2px solid #FFFFFF;
-    outline: none;
-    background: transparent;
-    color: #FFFFFF;
-    transition: all 0.3s ease-in-out;
-}
-
-.input-group input:focus {
-    border-color: #00FFAA;
-    box-shadow: 0 0 10px #00FFAA;
-}
-
-.input-group input::placeholder {
-    color: rgba(255, 255, 255, 0.5);
-    font-size: 14px;
-}
-
-/* ===== Botão de Mostrar Senha ===== */
-.input-container {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
-
-.toggle-password {
-    position: absolute;
-    right: 10px;
-    background: none;
-    border: none;
-    color: #FFFFFF;
-    font-size: 18px;
-    cursor: pointer;
-    transition: 0.3s ease-in-out;
-}
-
-.toggle-password:hover {
-    color: #00FFAA;
-}
-
-/* ===== Estilo do Link "Esqueci minha senha" ===== */
-#forgot-password {
-    display: block;
-    margin-top: 25px;
-    font-size: 14px;
-    cursor: pointer;
-}
-
-#forgot-password:hover {
-    text-decoration: underline;
-}
-
-/* ===== Rodapé ===== */
 footer {
     width: 100%;
     background: rgba(0, 0, 0, 0.85);
@@ -155,79 +41,6 @@ footer {
     font-size: 14px;
     text-align: center;
     position: relative;
-}
-
-/* ===== Modais (Pop-ups de 2FA e Esqueci Senha) ===== */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 100;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.75);
-    justify-content: center;
-    align-items: center;
-}
-
-.modal-content {
-    background: rgba(0, 0, 0, 0.85);
-    padding: 20px;
-    border-radius: 10px;
-    text-align: center;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.6);
-    max-width: 400px;
-    width: 90%;
-}
-
-.close {
-    position: absolute;
-    right: 20px;
-    top: 10px;
-    font-size: 28px;
-    cursor: pointer;
-    color: white;
-}
-
-.close:hover {
-    color: #00FFAA;
-}
-
-.modal-content input {
-    width: 100%;
-    padding: 12px;
-    margin: 10px 0;
-    border-radius: 5px;
-    border: 2px solid #FFFFFF;
-    background: transparent;
-    color: white;
-    font-size: 16px;
-    text-align: center;
-}
-
-/* ===== Estilização para Telas Menores ===== */
-@media (max-width: 600px) {
-    header {
-        padding: 10px 20px;
-        flex-direction: column;
-        text-align: center;
-    }
-
-    .btn {
-        font-size: 14px;
-        padding: 8px 15px;
-        margin: 5px;
-    }
-
-    .content-box {
-        max-width: 95%; 
-        padding: 30px; 
-    }
-
-    .modal-content {
-        max-width: 95%;
-    }
 }
 
 /* ===== Fundo de Estrelas ===== */
