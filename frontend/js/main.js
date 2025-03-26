@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const loader = new THREE.GLTFLoader();
     let diceModel;
 
-    loader.load("imagens/dado.glb", (gltf) => {
+    loader.load("images/dado.glb", (gltf) => {
         diceModel = gltf.scene;
         diceModel.scale.set(0.033, 0.033, 0.033); // Reduzi o modelo um pouco mais
         diceModel.position.set(0, 2, 0);
