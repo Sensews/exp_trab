@@ -7,7 +7,6 @@ document.addEventListener("DOMContentLoaded", () => {
     renderer.setPixelRatio(window.devicePixelRatio);
     document.querySelector(".canvas-container").appendChild(renderer.domElement);
 
-    // Iluminação
     const ambientLight = new THREE.AmbientLight(0xffffff, 1);
     scene.add(ambientLight);
 
@@ -17,13 +16,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     camera.position.set(0, 2, 8);
 
-    // Carregar modelo 3D
     const loader = new THREE.GLTFLoader();
     let diceModel;
 
     loader.load("images/dado.glb", (gltf) => {
         diceModel = gltf.scene;
-        diceModel.scale.set(0.033, 0.033, 0.033); // Reduzi o modelo um pouco mais
+        diceModel.scale.set(0.033, 0.033, 0.033);
         diceModel.position.set(0, 2, 0);
         scene.add(diceModel);
     });
@@ -46,7 +44,6 @@ document.addEventListener("DOMContentLoaded", () => {
         camera.updateProjectionMatrix();
     });
 
-    // 🔹 Adicionando suporte para toque no celular
     let isDragging = false, previousMouseX, previousMouseY;
 
     function startDrag(event) {
