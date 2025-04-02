@@ -18,5 +18,35 @@
             <button class="btn"><a href="login.html">Login</a></button>
         </nav>
     </header>
+    <main>
+        <div class="container">
+            <div class="content-box">
+                <h2>Crie sua conta</h2>
+                <form action="cadastro.php" method="POST">
+                    <div class="input-box">
+                        <label for="nome">Nome</label>
+                        <input type="text" name="nome" id="nome" required>
+                    </div>
+                    <div class="input-box">
+                        <label for="email">E-mail</label>
+                        <input type="email" name="email" id="email" required>
+                    </div>
+                    <div class="input-box">
+                        <label for="telefone">Telefone</label>
+                        <input type="telefone" name="telefone" id="telefone" required>
+                    </div>
+                    <div class="input-box">
+                        <label for="senha">Senha</label>
+                        <input type="password" name="senha" id="senha" required>
+                    </div>
+                    <div class="input-box">
+                        <label for="confirmar-senha">Confirmar senha</label>
+                        <input type="password" name="confirmar-senha" id="confirmar-senha" required>
+                    </div>
+                    <button class="btn" type="submit">Cadastrar</button>
+                </form>
+            </div>
+        </div>
+    </main>
 </body>
 </html>
