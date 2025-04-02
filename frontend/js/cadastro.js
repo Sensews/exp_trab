@@ -1,8 +1,8 @@
-// Formatar telefone
+
 window.addEventListener('load', () => {
     const telefoneInput = document.querySelector('#telefone');
     telefoneInput.addEventListener('keydown', bloquearEntradaNaoNumerica);
-    telefoneInput.addEventListener('keyup', formatarParaTelefoneBrasileiro);
+    telefoneInput.addEventListener('keyup', formatarParaTelefone);
 });
 
 const bloquearEntradaNaoNumerica = (evento) => {
@@ -12,8 +12,8 @@ const bloquearEntradaNaoNumerica = (evento) => {
     evento.preventDefault();
 };
 
-const formatarParaTelefoneBrasileiro = (evento) => {
-    const digitos = evento.target.value.replace(/\D/g, '').substring(0, 11); // Máximo de 11 dígitos
+const formatarParaTelefone = (evento) => {
+    const digitos = evento.target.value.replace(/\D/g, '').substring(0, 11);
     const codigoArea = digitos.substring(0, 2);
     const primeiraParte = digitos.length > 10 ? digitos.substring(2, 7) : digitos.substring(2, 6);
     const segundaParte = digitos.length > 10 ? digitos.substring(7, 11) : digitos.substring(6, 10);
@@ -57,7 +57,6 @@ window.addEventListener('load', () => {
         const forca = verificarForcaSenha(senhaInput.value);
         senhaForcaOutput.textContent = `Força da senha: ${forca}`;
 
-        // Alterar a cor com base na força da senha
         switch (forca) {
             case 'Muito forte':
                 senhaForcaOutput.style.color = 'green';
