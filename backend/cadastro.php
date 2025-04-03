@@ -21,6 +21,18 @@ if ($senha !== $confirma) {
     die("As senhas não coincidem.");
 }
 
+$stmt = $conn->prepare("SELECT id FROM usuarios WHERE email = ?");
+$stmt->bind_param("s", $email);
+$stmt->execute();
+$stmt->store_result();
+
+if ($stmt->num_rows > 0) {
+    http_response_code(400);
+    echo "E-mail já cadastrado.";
+    exit;
+}
+$stmt->close();
+
 $senha_hash = password_hash($senha, PASSWORD_DEFAULT);
 $token = bin2hex(random_bytes(32));
 

@@ -103,3 +103,42 @@ const verificarForcaSenha = (senha) => {
         default: return 'Muito fraca';
     }
 };
+
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.querySelector('form');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(form);
+
+        try {
+            const resposta = await fetch(form.action, {
+                method: 'POST',
+                body: formData
+            });
+
+            const texto = await resposta.text();
+
+            if (resposta.ok) {
+                mostrarPopup(`Um e-mail foi enviado para ${formData.get('email')} para confirmar sua conta.`);
+                form.reset();
+            } else {
+                mostrarPopup("Houve um erro no cadastro: " + texto);
+            }
+        } catch (erro) {
+            mostrarPopup("Erro na conexão com o servidor.");
+        }
+    });
+});
+
+function mostrarPopup(mensagem) {
+    const popup = document.getElementById('popup-modal');
+    const msg = document.getElementById('popup-message');
+    msg.textContent = mensagem;
+    popup.style.display = 'flex';
+}
+
+function fecharPopup() {
+    document.getElementById('popup-modal').style.display = 'none';
+}
