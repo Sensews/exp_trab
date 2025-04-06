@@ -1,11 +1,11 @@
 <?php
-require_once __DIR__ . '/vendor/autoload.php'; // Carrega o autoloader do Composer
+require_once __DIR__ . '/vendor/autoload.php';
 include_once __DIR__ . '/limpar_pendentes.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-$dotenv->load(); // Carrega as variáveis do .env
+$dotenv->load();
 
 require 'PHPMailer/src/Exception.php';
 require 'PHPMailer/src/PHPMailer.php';
@@ -64,7 +64,7 @@ if ($stmt->execute()) {
         $mail->setFrom('Oblivion@gmail.com', 'Oblivion RPG');
         $mail->addAddress($email, $nome);
     
-        // UTF-8 aqui!
+        
         $mail->CharSet = 'UTF-8';
         $mail->Encoding = 'base64';
     
