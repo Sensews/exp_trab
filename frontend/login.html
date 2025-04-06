@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oblivion - Login</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/login.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/loaders/GLTFLoader.js"></script>
+    <script defer src="js/stars.js"></script>
+    <script defer src="js/login.js"></script>
+    <script defer src="js/dado-cadastro.js"></script>
+
+</head>
+<body>
+    <header>
+        <h1 class="logo" onclick="window.location.href='main.html'">OBLIVION</h1>
+        <nav>
+            <button class="btn"><a href="cadastro.html">Cadastro</a></button>
+        </nav>
+    </header>
+    <main>
+        <div class="container">
+          <div class="canvas-container">
+            <canvas id="modelo3D"></canvas>
+          </div>
+      
+          <div class="content-box">
+            <h2>Entre na sua conta</h2>
+            <form id="form-login" action="../backend/login.php" method="POST">
+              <div class="input-box">
+                <label for="login">E-mail ou Telefone</label>
+                <input type="text" name="usuario" id="usuario" placeholder="Email ou Telefone" required>
+              </div>
+              <div class="input-box">
+                <label for="senha">Senha</label>
+                <input type="password" name="senha" placeholder="Senha" required>
+              </div>
+              <button class="btn" id="btn-entrar" type="submit">Entrar</button>
+              <p id="login-link">Esqueceu sua senha? <a href="recuperar-senha.html">Recuperar Conta</a></p>
+            </form>
+          </div>
+        </div>
+      </main>
+<div id="modal-verificacao" class="modal">
+    <div class="modal-content">
+        <span id="fechar-modal" class="close">&times;</span>
+        <h3>Verificação por SMS</h3>
+        <p>Enviamos um código para o seu telefone.<br>Por favor, insira-o abaixo:</p>
+        <input type="text" id="campo-codigo" class="modal-input" placeholder="Insira o código" maxlength="6">
+        <div class="modal-buttons">
+        <button id="reenviar-codigo" class="btn">Reenviar SMS</button>
+        <button id="confirmar-codigo" class="btn">Confirmar</button>
+        </div>
+    </div>
+</div>
+    <footer>
+        <p>&copy; 2025 Oblivion RPG - Todos os direitos reservados.</p>
+    </footer>
+</body>
+</html>
