@@ -7,12 +7,8 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/recuperar-senha.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-
-    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/loaders/GLTFLoader.js"></script>
     <script defer src="js/stars.js"></script>
     <script defer src="js/recuperar-senha.js"></script>
-    <script defer src="js/dado-cadastro.js"></script>
 
 </head>
 <body>
@@ -28,13 +24,13 @@
         <div class="container">
             <div class="content-box">
                 <h2>Recuperar sua conta</h2>
-                <form id="form-recover" action="../backend/recuperar-senha.php" method="POST">
+                <form id="form-recover" method="POST" action="../backend/recuperar-senha.php">
                     <div class="input-box">
                         <label for="recover">E-mail ou Telefone</label>
                         <input type="text" name="usuario" id="usuario" placeholder="Email ou Telefone" required>
                     </div>
                     <button class="btn" id="btn-recover" type="submit">Recuperar</button>
-                </form>
+                </form>                
             </div>
         </div>
     </main>
