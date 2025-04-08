@@ -7,13 +7,11 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/cadastro.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/loaders/GLTFLoader.js"></script>
     <script defer src="js/stars.js"></script>
     <script defer src="js/cadastro.js"></script>
     <script defer src="js/dado-cadastro.js"></script>
-
 </head>
 <body>
     <header>
@@ -26,45 +24,47 @@
     <main>
         <div class="container">
             <div class="canvas-container">
-            <canvas id="modelo3D"></canvas>
-        </div>
-    
-        <div class="container">
-            <div class="content-box">
-                <h2>Crie sua conta</h2>
-                <form action="../backend/cadastro.php" method="POST">
-                    <div class="input-box">
-                        <label for="nome">Nome</label>
-                        <input type="text" name="nome" id="nome" required placeholder="Seu Nome">
-                    </div>
-                    <div class="input-box">
-                        <label for="email">E-mail</label>
-                        <input type="email" name="email" id="email" required placeholder="seuemail@email.com">
-                    </div>
-                    <div class="input-box">
-                        <label for="telefone">Telefone</label>
-                        <input type="telefone" name="telefone" id="telefone" required placeholder="(99) 99999-9999" maxlength="16">
-                    </div>
-                    <div class="input-box">
-                        <label for="senha">Senha</label>
-                        <input type="password" name="senha" id="senha" required placeholder="Uma senha forte, com letras, números e símbolos">
-                    </div>
-                    <div class="input-box">
-                        <label for="confirmar-senha">Confirmar senha</label>
-                        <input type="password" name="confirmar-senha" id="confirmar-senha" required placeholder="Repita sua senha">
-                    </div>
-                    <button class="btn" id="btn-cadastrar" type="submit">Cadastrar</button>
-                    <p id="login-link">Já tem uma conta? <a href="login.html">Faça login</a></p>
-                </form>
+                <canvas id="modelo3D"></canvas>
+            </div>
+
+            <div class="container">
+                <div class="content-box">
+                    <h2>Crie sua conta</h2>
+                    <form id="form-cadastro" action="../backend/cadastro.php" method="POST">
+                        <div class="input-box">
+                            <label for="nome">Nome</label>
+                            <input type="text" name="nome" id="nome" required placeholder="Seu Nome">
+                        </div>
+                        <div class="input-box">
+                            <label for="email">E-mail</label>
+                            <input type="email" name="email" id="email" required placeholder="seuemail@email.com">
+                        </div>
+                        <div class="input-box">
+                            <label for="telefone">Telefone</label>
+                            <input type="telefone" name="telefone" id="telefone" required placeholder="(99) 99999-9999" maxlength="16">
+                        </div>
+                        <div class="input-box">
+                            <label for="senha">Senha</label>
+                            <input type="password" name="senha" id="senha" required placeholder="Uma senha forte, com letras, números e símbolos">
+                        </div>
+                        <div class="input-box">
+                            <label for="confirmar-senha">Confirmar senha</label>
+                            <input type="password" name="confirmar-senha" id="confirmar-senha" required placeholder="Repita sua senha">
+                        </div>
+                        <button class="btn" id="btn-cadastrar" type="submit">Cadastrar</button>
+                        <p id="login-link">Já tem uma conta? <a href="login.html">Faça login</a></p>
+                    </form>
+                </div>
             </div>
         </div>
     </main>
-<div id="popup-modal" style="display: none;" class="popup-modal">
-  <div class="popup-content">
-    <p id="popup-message">Um e-mail foi enviado para confirmação!</p>
-    <button onclick="fecharPopup()">Fechar</button>
-  </div>
-</div>
+
+    <div id="popup-modal" style="display: none;" class="popup-modal">
+        <div class="popup-content">
+            <p id="popup-message">Um e-mail foi enviado para confirmação!</p>
+            <button onclick="fecharPopup()">Fechar</button>
+        </div>
+    </div>
 
     <footer>
         <p>&copy; 2025 Oblivion RPG - Todos os direitos reservados.</p>
