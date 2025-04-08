@@ -113,12 +113,63 @@ body {
 }
 
 @media (max-width: 968px) {
-    .container {
-        flex-direction: column;
-        text-align: center;
-    }
+  body {
+    font-size: 15px;
+    padding: 0;
+    margin: 0;
+  }
 
-    .canvas-container {
-        display: none;
+  .container {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 10px;
+    min-height: calc(100vh - 100px);
+    text-align: center;
+  }
+
+  .canvas-container {
+    display: none;
+  }
+
+  .content-box {
+    width: 100%;
+    max-width: 95%;
+    padding: 30px 15px;
+    margin-top: 60px;
+    box-sizing: border-box;
+  }
+  
+  .content-box h2 {
+    font-size: 24px;
+  }
+
+  .input-box label {
+    font-size: 13px;
+  }
+
+  .input-box input {
+    font-size: 15px;
+    padding: 10px;
+  }
+
+  #btn-cadastrar {
+    font-size: 16px;
+    padding: 12px;
+  }
+
+  #login-link {
+    font-size: 13px;
+    margin-top: 15px;
+  }
+
+  .popup-content {
+    width: 90%;
+    padding: 20px;
+  }
+
+    .popup-content button {
+      width: 100%;
+      font-size: 16px;
     }
-}
+  }
