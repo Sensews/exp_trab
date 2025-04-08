@@ -62,7 +62,6 @@ window.addEventListener('load', () => {
         }
     });
 
-    // Exibe modal só se sucesso for indicado na URL
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('sucesso') === '1') {
         document.getElementById('popup-modal').style.display = 'block';

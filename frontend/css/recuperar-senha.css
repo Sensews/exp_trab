@@ -61,3 +61,48 @@ body {
     transform: scale(1.05);
     transition: transform 0.2s ease, background-color 0.2s ease;
 }
+
+@media (max-width: 968px) {
+    .container {
+        flex-direction: column;
+    }
+
+    .canvas-container {
+        display: none;
+    }
+
+    .content-box {
+        width: 100%;
+    }
+    .logo {
+        font-size: 24px;
+    }
+
+    nav {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-left: 0;
+        margin-top: 10px;
+    }
+
+    nav .btn {
+        font-size: 14px;
+        padding: 6px 12px;
+    }
+}
+
+@media (max-width: 400px) {
+    nav {
+        gap: 5px;
+    }
+
+    nav .btn {
+        font-size: 12px;
+        padding: 4px 8px;
+        border-width: 1.5px;
+        margin-bottom: 10px;
+    }
+}

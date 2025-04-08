@@ -17,14 +17,12 @@ if ($conn->connect_error) {
     die("Erro na conexão com o banco de dados.");
 }
 
-// Captura e sanitiza os dados
 $nome = trim($_POST['nome'] ?? '');
 $email = trim($_POST['email'] ?? '');
 $telefone = trim($_POST['telefone'] ?? '');
 $senha = $_POST['senha'] ?? '';
 $confirma = $_POST['confirmar-senha'] ?? '';
 
-// Verifica senhas
 if ($senha !== $confirma) {
     http_response_code(400);
     die("As senhas não coincidem.");
@@ -52,8 +50,6 @@ if ($forca_senha !== 'Muito forte') {
   die("A senha não é forte o suficiente.");
 }
 
-
-// Verifica se o e-mail já está cadastrado
 $stmt = $conn->prepare("SELECT id FROM usuarios WHERE email = ?");
 $stmt->bind_param("s", $email);
 $stmt->execute();
@@ -64,7 +60,6 @@ if ($stmt->num_rows > 0) {
 }
 $stmt->close();
 
-// Verifica se o telefone já está cadastrado
 $stmt = $conn->prepare("SELECT id FROM usuarios WHERE telefone = ?");
 $stmt->bind_param("s", $telefone);
 $stmt->execute();
@@ -75,11 +70,9 @@ if ($stmt->num_rows > 0) {
 }
 $stmt->close();
 
-// Cria hash da senha e token
 $senha_hash = password_hash($senha, PASSWORD_DEFAULT);
 $token = bin2hex(random_bytes(32));
 
-// Insere usuário no banco
 $stmt = $conn->prepare("INSERT INTO usuarios (nome, email, telefone, senha, confirmado, token_verificacao) VALUES (?, ?, ?, ?, 0, ?)");
 if (!$stmt) {
     http_response_code(500);
@@ -88,7 +81,6 @@ if (!$stmt) {
 $stmt->bind_param("sssss", $nome, $email, $telefone, $senha_hash, $token);
 
 if ($stmt->execute()) {
-    // Prepara envio de e-mail
     $link = "http://localhost/exp_trab/backend/verificar.php?token=$token";
     $mail = new PHPMailer(true);
 
@@ -132,7 +124,6 @@ if ($stmt->execute()) {
 
         $mail->send();
 
-        // Redireciona com sucesso
         header("Location: ../frontend/cadastro.html?sucesso=1");
         exit();
 

@@ -20,11 +20,9 @@ if (empty($telefone)) {
     exit;
 }
 
-// Gera código e salva
 $codigo = rand(100000, 999999);
 $_SESSION['codigo_sms'] = $codigo;
 
-// Envia SMS
 try {
     $sid = $_ENV['ACCOUNT_SID'];
     $token = $_ENV['AUTH_TOKEN'];

@@ -10,7 +10,6 @@ if ($conn->connect_error) {
     if (!$token) {
         $mensagem = "Token de redefinição inválido.";
     } else {
-        // Verifica se o token é válido e ainda está dentro do prazo de 1 hora
         $stmt = $conn->prepare("SELECT id FROM usuarios WHERE token_recuperacao = ? AND recuperacao_expira_em > NOW()");
         $stmt->bind_param("s", $token);
         $stmt->execute();

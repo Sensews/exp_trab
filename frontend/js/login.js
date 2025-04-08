@@ -34,11 +34,9 @@ document.addEventListener("DOMContentLoaded", function () {
         if (data.status === "ok") {
           localStorage.setItem("nome", data.nome);
           localStorage.setItem("email", data.email);
-          telefoneFormatado = data.telefone; // Telefone do usuário
+          telefoneFormatado = data.telefone;
 
-          // Envia SMS com o código real
           enviarSMS(telefoneFormatado);
-          // Exibe o modal de verificação
           modal.style.display = "flex";
         } else {
           alert(data.mensagem);

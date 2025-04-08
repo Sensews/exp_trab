@@ -22,29 +22,33 @@
             <button class="btn"><a href="cadastro.html">Cadastro</a></button>
         </nav>
     </header>
+
     <main>
         <div class="container">
-          <div class="canvas-container">
-            <canvas id="modelo3D"></canvas>
-          </div>
-      
-          <div class="content-box">
-            <h2>Entre na sua conta</h2>
-            <form id="form-login" action="../backend/login.php" method="POST">
-              <div class="input-box">
-                <label for="login">E-mail ou Telefone</label>
-                <input type="text" name="usuario" id="usuario" placeholder="Email ou Telefone" required>
-              </div>
-              <div class="input-box">
-                <label for="senha">Senha</label>
-                <input type="password" name="senha" placeholder="Senha" required>
-              </div>
-              <button class="btn" id="btn-entrar" type="submit">Entrar</button>
-              <p id="login-link">Esqueceu sua senha? <a href="recuperar-senha.html">Recuperar Conta</a></p>
-            </form>
-          </div>
+            <div class="canvas-container">
+                <canvas id="modelo3D"></canvas>
+            </div>
+
+            <div class="container">
+                <div class="content-box">
+                    <h2>Entre na sua conta</h2>
+                    <form id="form-login" action="../backend/login.php" method="POST">
+                      <div class="input-box">
+                        <label for="login">E-mail ou Telefone</label>
+                        <input type="text" name="usuario" id="usuario" placeholder="Email ou Telefone" required>
+                      </div>
+                      <div class="input-box">
+                        <label for="senha">Senha</label>
+                        <input type="password" name="senha" placeholder="Senha" required>
+                      </div>
+                      <button class="btn" id="btn-entrar" type="submit">Entrar</button>
+                      <p id="login-link">Esqueceu sua senha? <a href="recuperar-senha.html">Recuperar Conta</a></p>
+                    </form>
+                </div>
+            </div>
         </div>
-      </main>
+    </main>
+
 <div id="modal-verificacao" class="modal">
     <div class="modal-content">
         <span id="fechar-modal" class="close">&times;</span>

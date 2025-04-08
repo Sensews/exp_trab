@@ -14,7 +14,6 @@ if ($conn->connect_error) {
     } elseif ($novaSenha !== $confirmarSenha) {
         $mensagem = "❌ As senhas não coincidem.";
     } else {
-        // Verifica se o token ainda é válido
         $stmt = $conn->prepare("SELECT id FROM usuarios WHERE token_recuperacao = ? AND recuperacao_expira_em > NOW()");
         $stmt->bind_param("s", $token);
         $stmt->execute();

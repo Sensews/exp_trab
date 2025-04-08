@@ -20,16 +20,13 @@ if (empty($usuario_input)) {
     die("E-mail ou telefone é obrigatório.");
 }
 
-// Remove caracteres não numéricos do telefone
 $possivel_telefone = preg_replace('/\D+/', '', $usuario_input);
 
-// Verifica se é um e-mail
 if (filter_var($usuario_input, FILTER_VALIDATE_EMAIL)) {
     $query = "SELECT id, nome, email FROM usuarios WHERE email = ?";
     $stmt = $conn->prepare($query);
     $stmt->bind_param("s", $usuario_input);
 } else {
-    // Remove parênteses e hífens do telefone salvo no banco
     $query = "SELECT id, nome, email FROM usuarios WHERE REPLACE(REPLACE(REPLACE(telefone, '(', ''), ')', ''), '-', '') = ?";
     $stmt = $conn->prepare($query);
     $stmt->bind_param("s", $possivel_telefone);
@@ -43,19 +40,15 @@ if (!$usuario) {
     die("Usuário não encontrado com esse e-mail ou telefone.");
 }
 
-// Gera token e data de expiração
 $token = bin2hex(random_bytes(32));
 $expira_em = date('Y-m-d H:i:s', strtotime('+1 hour'));
 
-// Corrigido: nome correto da coluna
 $update = $conn->prepare("UPDATE usuarios SET token_recuperacao = ?, recuperacao_expira_em = ? WHERE id = ?");
 $update->bind_param("ssi", $token, $expira_em, $usuario['id']);
 $update->execute();
 
-// Prepara o link
 $reset_link = "http://localhost/exp_trab/backend/redefinir-senha.php?token=$token";
 
-// Envio do e-mail
 $mail = new PHPMailer(true);
 try {
     $mail->isSMTP();
