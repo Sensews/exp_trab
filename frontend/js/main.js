@@ -77,26 +77,46 @@ document.addEventListener("DOMContentLoaded", () => {
 
 document.addEventListener("DOMContentLoaded", () => {
     const logado = localStorage.getItem("logado") === "true";
-  
+
     const loginBtn = document.querySelector('a[href="login.html"]')?.parentElement;
     const cadastroBtn = document.querySelector('a[href="cadastro.html"]')?.parentElement;
-  
+
     const nav = document.querySelector("nav");
-  
+
     if (logado) {
-      if (loginBtn) loginBtn.style.display = "none";
-      if (cadastroBtn) cadastroBtn.style.display = "none";
-  
-      // USADO PARA TESTES APENAS DEPOIS RETIRAR PARA INSERIR OS BOTÕES DE JOGO
-      const btnSair = document.createElement("button");
-      btnSair.classList.add("btn");
-      btnSair.innerText = "Sair";
-      btnSair.onclick = () => {
-        localStorage.removeItem("logado");
-        location.reload();
-      };
-  
-      nav.appendChild(btnSair);
+        // Esconde os botões de login e cadastro
+        if (loginBtn) loginBtn.style.display = "none";
+        if (cadastroBtn) cadastroBtn.style.display = "none";
+
+        // Cria botão "Anotações"
+        const btnAnotacoes = document.createElement("a");
+        btnAnotacoes.classList.add("btn");
+        btnAnotacoes.href = "anotacoes.html";
+        btnAnotacoes.innerText = "Anotações";
+        nav.appendChild(btnAnotacoes);
+
+        // Cria botão "Sair"
+        const btnSair = document.createElement("button");
+        btnSair.classList.add("btn");
+        btnSair.innerText = "Sair";
+        btnSair.onclick = () => {
+            localStorage.removeItem("logado");
+            location.reload();
+        };
+        nav.appendChild(btnSair);
+
+        // Cria botão "Perfil"
+        const btnPerfil = document.createElement("a");
+        btnPerfil.href = "perfil.html";
+        btnPerfil.title = "Perfil";
+        btnPerfil.innerHTML = `
+          <div class="profile-icon">
+            <img id="iconHeader" src="https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png" alt="Perfil">
+          </div>
+        `;
+        nav.appendChild(btnPerfil);    
     }
-  });
+
+
+});
   

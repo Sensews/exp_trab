@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="css/anotacoes.css" />
   <link rel="stylesheet" href="css/burg.css">
+  <link rel="stylesheet" href="css/fotoperfil.css" />
 
   <!-- Ícones  -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
@@ -22,6 +23,7 @@
   <!-- Scripts -->
   <script src="js/stars.js"></script>
   <script src="js/anotacoes.js" defer></script>
+  <script src="js/burg_perfil.js" defer></script>
 </head>
 <body>
   <div class="page-wrapper">
@@ -29,24 +31,20 @@
       <h1 class="logo" onclick="location.href='main.html'">OBLIVION</h1>
       <div class="nav-wrapper">
         <nav>
-          <button class="btn"><a href="main.html">Início</a></button>
-
-          <!-- Menu dropdown do botão jogo -->
-          <div class="dropdown">
+          <!-- Dropdown do menu Jogo -  ainda não necessarios -->
+          <!--<div class="dropdown">
             <button class="btn">Jogo</button>
             <div class="dropdown-content">
               <a href="fichas.html">Fichas</a>
               <a href="mapas.html">Mapas</a>
-              <a href="anotacoes.html">Anotações</a>
             </div>
           </div>
           <button class="btn"><a href="comunidade.html">Comunidade</a></button>
-        </nav>
+        </nav> -->
 
-        <!-- Botão de perfil -->
         <a href="perfil.html" title="Perfil">
           <div class="profile-icon">
-            <i class="fa-solid fa-user"></i>
+            <img id="iconHeader" src="https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png" alt="Perfil">
           </div>
         </a>
 

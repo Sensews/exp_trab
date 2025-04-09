@@ -109,3 +109,7 @@ p {
         margin-bottom: 10px;
     }
 }
+
+html, body {
+    overflow-x: hidden;
+}
