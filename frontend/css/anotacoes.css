@@ -1,426 +1,201 @@
 /* todo conteúdo da página */
 .page-wrapper {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-  }
+  flex: 1;
+}
+
+/* HEADER */
+header {
+  height: 80px;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+}
+
+/* Logo OBLIVION */
+.logo {
+  font-size: 28px;
+  font-weight: bold;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+/* Alinhar elementos de navegação */
+.nav-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Menu navegação */
+nav {
+  display: flex;
+  gap: 14px;
+}
+
+/* Botões */
+.btn a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* SIDEBAR PROJETOS */
+#sidebarProjetos {
+  position: fixed;
+  top: 80px;
+  bottom: 0;
+  width: 260px;
+  max-width: 100%;
+  background: #121212;
+  border-right: 2px solid #00FFAA;
+  padding: 20px 10px;
+  transition: transform 0.3s ease-in-out;
+}
+
+#sidebarProjetos h3 {
+  color: #00FFAA;
+  margin-bottom: 10px;
+  margin-top: 30px;
+  text-align: center;
+}
+
+.sidebar-projeto {
+  margin-bottom: 20px;
+  padding: 10px;
+}
+
+.sidebar-projeto .titulo-projeto {
+  color: #00FFAA;
+  font-weight: bold;
+  cursor: pointer;
+  margin-bottom: 5px;
+}
+
+.sidebar-projeto ul {
+  list-style: none;
+  padding-left: 10px;
+}
+
+.sidebar-projeto ul li {
+  margin-bottom: 8px;
+}
+
+.sidebar-projeto ul li .btn {
+  font-size: 13px;
+  padding: 6px 10px;
+  width: 100%;
+}
+
+.sidebar-projeto .btn-nova-nota {
+  font-size: 12px;
+  margin-top: 5px;
+  margin-left: 25px;
+}
+
+/* Botão novo projeto */
+.btn-novo-projeto {  
+  font-size: 16px;
+
+}
+
+/* MENU HAMBURGER SIDEBAR */
+#hamburgerProjetos {
+  position: fixed;
+  top: 85px;
+  left: 8px;
+  z-index: 1001;
+  font-size: 18px;
+  padding: 4px 8px;
+  background: #121212;
+  border: 2px solid #00FFAA;
+  border-radius: 8px;
+  color: #00FFAA;
+  cursor: pointer;
+}
+
+/* botão com ícone */
+.btn-projetos {
+  font-size: 15px;
+  color: #00FFAA;
+  background: transparent;
+  border: 2px solid #00FFAA;
+  padding: 8px 16px;
+  transition: 0.3s;
+}
+
+.btn-projetos:hover {
+  background: #00FFAA;
+  color: #121212;
+}
+
+.btn-projetos i {
+  font-size: 20px;
+}
+
+/* main */
+main {
+  margin-top: 100px;
+  padding: 0 16px 20px;
+  justify-content: center;
+}
+
+
+h2 {
+  text-shadow: 2px 2px 10px #00ffaa7e;
+}
+
+p {
+  margin: 0 0 20px 0;
+  text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.7);
+}
+
+input, textarea {
+  background-color: #1e1e1e;
+  border: 2px solid #00FFAA;
+  border-radius: 6px;
+  color: #E0E0E0;
+}
+
+
+/* QUILL */
+.editor-box {
+  border: 2px solid #00FFAA;
+  border-radius: 6px;
+  max-width: 1300px;
+  margin: 0 auto;
   
-  /* HEADER */
-  header {
-    height: 80px;
-    background: rgba(0, 0, 0, 0.85);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 20px;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: 1000;
-    box-sizing: border-box;
-  }
-  
-  /* Logo OBLIVION */
-  .logo {
-    font-size: 28px;
-    font-weight: bold;
-    text-transform: uppercase;
-    cursor: pointer;
-    white-space: nowrap;
-  }
-  
-  /* Alinhar elementos de navegação */
-  .nav-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-  
-  /* Menu navegação */
+}
+
+#editor-container {
+  min-height: 300px;
+}
+
+/* BOTÕES */
+.btn-container {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+/* Rolagem menu projetos*/
+#sidebarProjetos {
+  overflow-y: auto;
+  max-height: 100vh;
+}
+
+
+
+@media (max-width: 768px) {
   nav {
-    display: flex;
-    gap: 14px;
-    align-items: center;
-  }
-  
-  /* Botões */
-  .btn a {
-    color: inherit;
-    text-decoration: none;
-  }
-  
-  /* DROPDOWN JOGO */
-  .dropdown {
-    position: relative;
-  }
-  
-  .dropdown-content {
     display: none;
-    position: absolute;
-    top: 110%;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: #1e1e1e;
-    border: 2px solid #00FFAA;
-    min-width: 180px;
-    border-radius: 10px;
-    box-shadow: 0 0 15px rgba(0, 255, 170, 0.4);
-    padding: 10px 0;
-    z-index: 1001;
-    text-align: center;
   }
-  
-  .dropdown:hover .dropdown-content {
-    display: block;
-  }
-  
-  .dropdown-content a {
-    display: block;
-    padding: 10px 20px;
-    color: #00FFAA;
-    text-decoration: none;
-    font-size: 16px;
-    transition: 0.3s;
-  }
-  
-  .dropdown-content a:hover {
-    background-color: #00FFAA;
-    color: #121212;
-  }
-  
-  /* SIDEBAR PROJETOS */
-  #sidebarProjetos {
-    position: fixed;
-    top: 80px;
-    left: 0;
-    bottom: 0;
-    width: 260px;
-    max-width: 100%;
-    background: #121212;
-    border-right: 2px solid #00FFAA;
-    padding: 20px 10px;
-    overflow-y: auto;
-    transform: translateX(-100%);
-    transition: transform 0.3s ease-in-out;
-    z-index: 999;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  #sidebarProjetos h3 {
-    color: #00FFAA;
-    margin-bottom: 10px;
-    margin-top: 30px;
-    text-align: center;
-  }
-  
-  .sidebar-projeto {
-    margin-bottom: 20px;
-    padding: 10px;
-    border-bottom: 1px solid #00FFAA33;
-  }
-  
-  .sidebar-projeto .titulo-projeto {
-    color: #00FFAA;
-    font-weight: bold;
-    cursor: pointer;
-    margin-bottom: 5px;
-  }
-  
-  .sidebar-projeto ul {
-    list-style: none;
-    padding-left: 10px;
-  }
-  
-  .sidebar-projeto ul li {
-    margin-bottom: 8px;
-  }
-  
-  .sidebar-projeto ul li .btn {
-    font-size: 13px;
-    padding: 6px 10px;
-    width: 100%;
-    text-align: left;
-  }
-  
-  .sidebar-projeto .btn-nova-nota {
-    font-size: 12px;
-    margin-top: 5px;
-    margin-left: 25px;
-  }
-  
-  /* Botão novo projeto */
-  .btn-novo-projeto {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    font-size: 16px;
-    width: auto;
-    white-space: nowrap;
-    padding: 10px 18px;
-  }
-  
-  /* MENU HAMBURGER SIDEBAR */
-  #hamburgerProjetos {
-    position: fixed;
-    top: 85px;
-    left: 8px;
-    z-index: 1001;
-    font-size: 18px;
-    padding: 4px 8px;
-    background: #121212;
-    border: 2px solid #00FFAA;
-    border-radius: 8px;
-    color: #00FFAA;
-    cursor: pointer;
-  }
-  
-  /* botão com ícone */
-  .btn-projetos {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 15px;
-    color: #00FFAA;
-    background: transparent;
-    border: 2px solid #00FFAA;
-    padding: 8px 16px;
-    border-radius: 8px;
-    transition: 0.3s;
-  }
-  
-  .btn-projetos:hover {
-    background: #00FFAA;
-    color: #121212;
-  }
-  
-  .btn-projetos i {
-    font-size: 20px;
-  }
-  
-  /* MAIN */
-  main {
-    flex: 1;
-    margin-top: 100px;
-    padding: 0 16px 20px;
-    display: flex;
-    justify-content: center;
-  }
-  
-  /* CAIXA DE TEXTO */
-  .content-box {
-    width: 100%;
-    max-width: 1300px;
-    padding: 0;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-  }
-  
-  /* ESCRITOS */
-  h2, p, label, input {
-    max-width: 1300px;
-    margin-left: auto;
-    margin-right: auto;
-    padding: 0 16px;
-    box-sizing: border-box;
-  }
-  
-  h2 {
-    font-size: 24px;
-    margin-bottom: 10px;
-    text-align: center;
-    text-shadow: 2px 2px 10px #00ffaa7e;
-  }
-  
-  p {
-    font-size: 16px;
-    margin: 0 0 20px 0;
-    text-align: center;
-    text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.7);
-  }
-  
-  label {
-    margin-top: 5px;
-    font-size: 16px;
-    font-weight: bold;
-  }
-  
-  input, textarea {
-    background-color: #1e1e1e;
-    border: 2px solid #00FFAA;
-    border-radius: 6px;
-    padding: 10px;
-    font-size: 16px;
-    width: 100%;
-    color: #E0E0E0;
-    box-sizing: border-box;
-    margin: 0 auto;
-    display: block;
-  }
-  
-  textarea {
-    height: 280px;
-  }
-  
-  /* QUILL */
-  .editor-box {
-    margin-bottom: 60px;
-    border: 2px solid #00FFAA;
-    border-radius: 6px;
-    overflow: hidden;
-    width: 100%;
-    max-width: 1300px;
-    margin: 0 auto;
-    box-sizing: border-box;
-  }
-  
-  #editor-container {
-    height: 300px !important;
-    overflow-y: auto;
-    background-color: #1e1e1e;
-    color: #E0E0E0;
-    min-height: 260px;
-  }
-  
-  .ql-editor {
-    overflow-y: auto;
-    height: 100%;
-  }
-  
-  .ql-toolbar.ql-snow {
-    border-radius: 0;
-    border: none;
-    border-bottom: 2px solid #00FFAA;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  
-  .ql-container.ql-snow {
-    border: none;
-    border-radius: 0;
-  }
-  
-  /* BOTÕES */
+
   .btn-container {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 20px;
-    margin-top: 20px;
+    gap: 10px;
   }
-  
-  /* FOOTER */
-  footer {
-    margin-top: auto;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
+  .ql-toolbar.ql-snow > *:nth-child(n+5) {
+    display: none !important;
   }
-  
-  /* MEDIA QUERIES */
-  @media (min-width: 728px) and (max-width: 1368px) {
-    #editor-container {
-      min-height: 460px;
-    }
-  }
-  
-  @media (max-width: 768px) {
-    .canvas-container {
-      display: none !important;
-    }
-  
-    nav {
-      display: none;
-    }
-  
-    main {
-      margin-top: 0 !important;
-      padding-top: 100px !important;
-    }
-  
-    .content-box {
-      padding-top: 0 !important;
-    }
-  
-    .btn-container {
-      gap: 10px;
-    }
-  
-    .btn-container .btn {
-      min-width: 90px;
-      max-width: 110px;
-      font-size: 12px;
-      padding: 10px;
-    }
-  
-    .ql-toolbar.ql-snow > *:nth-child(n+5) {
-      display: none !important;
-    }
-  }
-  
-  @media (max-width: 480px) {
-    header {
-      padding: 0 10px;
-    }
-  
-    .logo {
-      font-size: 20px;
-    }
-  
-    .profile-icon {
-      width: 36px;
-      height: 36px;
-      font-size: 18px;
-    }
-  
-    h2 {
-      font-size: 24px;
-    }
-  
-    .btn {
-      font-size: 15px;
-      padding: 5px 10px;
-    }
-  
-    .content-box {
-      gap: 24px;
-    }
-  }
-  
-  @media (min-width: 768px) and (max-width: 1024px) {
-    textarea {
-      height: 500px;
-    }
-  
-    #editor-container {
-      height: 500px !important;
-      overflow-y: auto;
-    }
-  
-    .ql-editor {
-      height: 100%;
-      overflow-y: auto;
-    }
-  
-    body, p, h2, label, input, .btn {
-      font-size: 18px !important;
-    }
-  
-    .btn {
-      padding: 14px 20px;
-    }
-  
-    h2 {
-      font-size: 28px !important;
-    }
-  }
-  
-  
-  
+}

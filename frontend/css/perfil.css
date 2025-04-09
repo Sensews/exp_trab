@@ -1,6 +1,6 @@
 @charset "UTF-8";
 
-/* === CONFIGURAÇÕES GERAIS === */
+/* === CONFIGURAÇÕES GERAIS DA PÁGINA === */
 .page-wrapper {
   display: flex;
   flex-direction: column;

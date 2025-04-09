@@ -95,6 +95,13 @@ document.addEventListener("DOMContentLoaded", () => {
         btnAnotacoes.innerText = "Anotações";
         nav.appendChild(btnAnotacoes);
 
+        // Cria botão "Comunidade"
+        const btnComunidade = document.createElement("a");
+        btnComunidade.classList.add("btn");
+        btnComunidade.href = "comunidade.html";
+        btnComunidade.innerText = "Comunidade";
+        nav.appendChild(btnComunidade);
+
         // Cria botão "Sair"
         const btnSair = document.createElement("button");
         btnSair.classList.add("btn");
@@ -114,7 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <img id="iconHeader" src="https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png" alt="Perfil">
           </div>
         `;
-        nav.appendChild(btnPerfil);    
+        nav.appendChild(btnPerfil);
     }
 
 
