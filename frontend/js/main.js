@@ -77,26 +77,38 @@ document.addEventListener("DOMContentLoaded", () => {
 
 document.addEventListener("DOMContentLoaded", () => {
     const logado = localStorage.getItem("logado") === "true";
-  
+
     const loginBtn = document.querySelector('a[href="login.html"]')?.parentElement;
     const cadastroBtn = document.querySelector('a[href="cadastro.html"]')?.parentElement;
-  
+
     const nav = document.querySelector("nav");
-  
+
     if (logado) {
-      if (loginBtn) loginBtn.style.display = "none";
-      if (cadastroBtn) cadastroBtn.style.display = "none";
-  
-      // USADO PARA TESTES APENAS DEPOIS RETIRAR PARA INSERIR OS BOTÕES DE JOGO
-      const btnSair = document.createElement("button");
-      btnSair.classList.add("btn");
-      btnSair.innerText = "Sair";
-      btnSair.onclick = () => {
-        localStorage.removeItem("logado");
-        location.reload();
-      };
-  
-      nav.appendChild(btnSair);
+        // Esconde os botões de login e cadastro
+        if (loginBtn) loginBtn.style.display = "none";
+        if (cadastroBtn) cadastroBtn.style.display = "none";
+
+        // Cria botão "Anotações"
+        const btnAnotacoes = document.createElement("button");
+        btnAnotacoes.classList.add("btn");
+        btnAnotacoes.innerHTML = '<a href="anotacoes.html">Anotações</a>';
+        nav.appendChild(btnAnotacoes);
+
+        // Cria botão "Perfil"
+        const btnPerfil = document.createElement("button");
+        btnPerfil.classList.add("btn");
+        btnPerfil.innerHTML = '<a href="perfil.html">Perfil</a>';
+        nav.appendChild(btnPerfil);
+
+        // Cria botão "Sair"
+        const btnSair = document.createElement("button");
+        btnSair.classList.add("btn");
+        btnSair.innerText = "Sair";
+        btnSair.onclick = () => {
+            localStorage.removeItem("logado");
+            location.reload();
+        };
+        nav.appendChild(btnSair);
     }
-  });
+});
   
