@@ -168,3 +168,12 @@ document.addEventListener("DOMContentLoaded", function () {
         mobileNav.classList.toggle("show");
       });
     });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const logado = localStorage.getItem("logado") === "true";
+  
+      if (!logado) {
+          // Redireciona para a página de erro se não estiver logado
+          window.location.href = "erro.html";
+      }
+  });

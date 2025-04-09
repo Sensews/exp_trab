@@ -89,16 +89,11 @@ document.addEventListener("DOMContentLoaded", () => {
         if (cadastroBtn) cadastroBtn.style.display = "none";
 
         // Cria botão "Anotações"
-        const btnAnotacoes = document.createElement("button");
+        const btnAnotacoes = document.createElement("a");
         btnAnotacoes.classList.add("btn");
-        btnAnotacoes.innerHTML = '<a href="anotacoes.html">Anotações</a>';
+        btnAnotacoes.href = "anotacoes.html";
+        btnAnotacoes.innerText = "Anotações";
         nav.appendChild(btnAnotacoes);
-
-        // Cria botão "Perfil"
-        const btnPerfil = document.createElement("button");
-        btnPerfil.classList.add("btn");
-        btnPerfil.innerHTML = '<a href="perfil.html">Perfil</a>';
-        nav.appendChild(btnPerfil);
 
         // Cria botão "Sair"
         const btnSair = document.createElement("button");
@@ -109,6 +104,19 @@ document.addEventListener("DOMContentLoaded", () => {
             location.reload();
         };
         nav.appendChild(btnSair);
+
+        // Cria botão "Perfil"
+        const btnPerfil = document.createElement("a");
+        btnPerfil.href = "perfil.html";
+        btnPerfil.title = "Perfil";
+        btnPerfil.innerHTML = `
+          <div class="profile-icon">
+            <img id="iconHeader" src="https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png" alt="Perfil">
+          </div>
+        `;
+        nav.appendChild(btnPerfil);    
     }
+
+
 });
   
