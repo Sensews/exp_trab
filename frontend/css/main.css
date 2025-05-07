@@ -4,9 +4,6 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-}
-
-body {
     padding-top: 80px;
 }
 
@@ -54,6 +51,7 @@ p {
     margin-bottom: 15px;
 }
 
+
 @media (max-width: 968px) {
     .container {
         flex-direction: column;
@@ -83,9 +81,10 @@ p {
 
     nav {
         display: flex;
+        flex-direction: row;
         justify-content: center;
         align-items: center;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
         gap: 10px;
         margin-left: 0;
         margin-top: 10px;
@@ -97,6 +96,7 @@ p {
     }
 }
 
+
 @media (max-width: 400px) {
     nav {
         gap: 5px;
@@ -107,6 +107,21 @@ p {
         padding: 4px 8px;
         border-width: 1.5px;
         margin-bottom: 10px;
+    }
+}
+
+@media (min-width: 1024px) and (max-width: 1024px) {
+    .canvas-container {
+        display: none !important;
+    }
+
+    .container {
+        justify-content: center;
+    }
+
+    .content-box {
+        width: 100%;
+        text-align: center;
     }
 }
 
