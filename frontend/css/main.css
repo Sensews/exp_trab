@@ -51,7 +51,6 @@ p {
     margin-bottom: 15px;
 }
 
-
 @media (max-width: 968px) {
     .container {
         flex-direction: column;
@@ -72,7 +71,7 @@ p {
     }
 
     p {
-        font-size: 14px;
+        font-size: 16px;
     }
 
     .logo {
@@ -95,7 +94,6 @@ p {
         padding: 6px 12px;
     }
 }
-
 
 @media (max-width: 400px) {
     nav {
@@ -122,6 +120,17 @@ p {
     .content-box {
         width: 100%;
         text-align: center;
+    }
+}
+
+@media (min-width: 800px) and (max-width: 1024px) {
+    p {
+        font-size: 18px;
+        line-height: 1.6;
+    }
+
+    h2 {
+        font-size: 28px;
     }
 }
 
