@@ -51,6 +51,8 @@ nav {
   border-right: 2px solid #00FFAA;
   padding: 20px 10px;
   transition: transform 0.3s ease-in-out;
+  overflow-y: auto;
+  max-height: 100vh;
 }
 
 #sidebarProjetos h3 {
@@ -79,6 +81,9 @@ nav {
 
 .sidebar-projeto ul li {
   margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .sidebar-projeto ul li .btn {
@@ -94,9 +99,8 @@ nav {
 }
 
 /* Botão novo projeto */
-.btn-novo-projeto {  
+.btn-novo-projeto {
   font-size: 16px;
-
 }
 
 /* MENU HAMBURGER SIDEBAR */
@@ -140,7 +144,6 @@ main {
   justify-content: center;
 }
 
-
 h2 {
   text-shadow: 2px 2px 10px #00ffaa7e;
 }
@@ -157,14 +160,12 @@ input, textarea {
   color: #E0E0E0;
 }
 
-
 /* QUILL */
 .editor-box {
   border: 2px solid #00FFAA;
   border-radius: 6px;
   max-width: 1300px;
   margin: 0 auto;
-  
 }
 
 #editor-container {
@@ -177,16 +178,78 @@ input, textarea {
   justify-content: center;
   flex-wrap: wrap;
   margin-top: 20px;
+  gap: 10px;
 }
 
-/* Rolagem menu projetos*/
-#sidebarProjetos {
+/* NOVO: Botões de excluir e versões */
+.btn-excluir,
+.btn-excluir-nota,
+.btn-versoes {
+  background: none;
+  border: none;
+  color: #00FFAA;
+  cursor: pointer;
+  margin-left: 6px;
+  font-size: 13px;
+  padding: 4px;
+  transition: color 0.3s;
+}
+
+.btn-excluir:hover,
+.btn-excluir-nota:hover,
+.btn-versoes:hover {
+  color: red;
+}
+
+/* MODAL de backup de versões */
+.modal-backup {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.modal-content {
+  background: #1e1e1e;
+  color: #00FFAA;
+  padding: 20px;
+  border: 2px solid #00FFAA;
+  border-radius: 12px;
+  max-width: 90%;
+  max-height: 80vh;
   overflow-y: auto;
-  max-height: 100vh;
+  box-shadow: 0 0 20px #00ffaa44;
 }
 
+.modal-content h3 {
+  margin-top: 0;
+  text-align: center;
+  font-size: 20px;
+}
 
+.modal-content ul {
+  list-style: none;
+  padding: 0;
+}
 
+.modal-content li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.modal-content small {
+  color: #ccc;
+  font-size: 12px;
+}
+
+/* Responsividade */
 @media (max-width: 768px) {
   nav {
     display: none;
@@ -195,7 +258,13 @@ input, textarea {
   .btn-container {
     gap: 10px;
   }
+
   .ql-toolbar.ql-snow > *:nth-child(n+5) {
     display: none !important;
+  }
+
+  .modal-content {
+    max-width: 95%;
+    max-height: 80vh;
   }
 }
