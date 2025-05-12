@@ -95,7 +95,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function carregarProjetos() {
-    fetch("backend/anotacoes_backend.php?action=listar")
+    fetch("anotacoes.php?action=listar")
       .then(r => r.json())
       .then(data => {
         projetos = data;
@@ -106,7 +106,7 @@ document.addEventListener("DOMContentLoaded", function () {
   function criarProjeto() {
     const nome = prompt("Nome do novo projeto:");
     if (!nome) return alert("Você precisa digitar um nome.");
-    fetch("backend/anotacoes_backend.php?action=criar_projeto", {
+    fetch("anotacoes.php?action=criar_projeto", {
       method: "POST",
       body: new URLSearchParams({ nome })
     }).then(() => carregarProjetos());
@@ -115,8 +115,7 @@ document.addEventListener("DOMContentLoaded", function () {
   function criarAnotacao(projeto) {
     const nome = prompt("Nome da nova anotação:");
     if (!nome) return alert("Você precisa digitar um nome.");
-
-    fetch("backend/anotacoes_backend.php?action=criar_nota", {
+    fetch("anotacoes.php?action=criar_nota", {
       method: "POST",
       body: new URLSearchParams({ projeto, nota: nome })
     }).then(() => {
@@ -131,14 +130,14 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function salvarConteudo(projeto, nota, conteudo) {
-    fetch("backend/anotacoes_backend.php?action=salvar_nota", {
+    fetch("anotacoes.php?action=salvar_nota", {
       method: "POST",
       body: new URLSearchParams({ projeto, nota, conteudo })
     });
   }
 
   function abrirNota(projeto, nota) {
-    fetch(`backend/anotacoes_backend.php?action=carregar_nota&projeto=${encodeURIComponent(projeto)}&nota=${encodeURIComponent(nota)}`)
+    fetch(`anotacoes.php?action=carregar_nota&projeto=${encodeURIComponent(projeto)}&nota=${encodeURIComponent(nota)}`)
       .then(r => r.text())
       .then(conteudo => {
         quill.root.innerHTML = conteudo;
@@ -182,7 +181,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function excluirNota(projeto, nota) {
     if (!confirm(`Excluir anotação "${nota}" do projeto "${projeto}"?`)) return;
-    fetch("backend/anotacoes_backend.php?action=excluir_nota", {
+    fetch("anotacoes.php?action=excluir_nota", {
       method: "POST",
       body: new URLSearchParams({ projeto, nota })
     }).then(() => carregarProjetos());
@@ -190,7 +189,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function excluirProjeto(projeto) {
     if (!confirm(`Excluir projeto "${projeto}" e todas suas anotações?`)) return;
-    fetch("backend/anotacoes_backend.php?action=excluir_projeto", {
+    fetch("anotacoes.php?action=excluir_projeto", {
       method: "POST",
       body: new URLSearchParams({ projeto })
     }).then(() => {
@@ -203,12 +202,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function verVersoes(projeto, nota) {
     if (!projeto || !nota) return alert("Selecione uma anotação.");
-
-    fetch(`backend/anotacoes_backend.php?action=backup_versoes&projeto=${encodeURIComponent(projeto)}&nota=${encodeURIComponent(nota)}`)
+    fetch(`anotacoes.php?action=backup_versoes&projeto=${encodeURIComponent(projeto)}&nota=${encodeURIComponent(nota)}`)
       .then(r => r.json())
       .then(versoes => {
         if (versoes.length === 0) return alert("Nenhuma versão antiga encontrada.");
-
         const modal = document.createElement("div");
         modal.className = "modal-backup";
         modal.innerHTML = `
@@ -218,8 +215,7 @@ document.addEventListener("DOMContentLoaded", function () {
               <li>
                 <small>${new Date(v.salvo_em).toLocaleString()}</small>
                 <button class="btn" onclick='restaurarVersao(${JSON.stringify(JSON.stringify(v.conteudo))})'>Restaurar</button>
-              </li>`).join('')}
-            </ul>
+              </li>`).join('')}</ul>
             <button class="btn" onclick="this.parentElement.parentElement.remove()">Fechar</button>
           </div>`;
         document.body.appendChild(modal);
