@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let offsetX = viewWidth / 2 - gridWidth / 2;
     let offsetY = viewHeight / 2 - gridHeight / 2;
     let spacePressed = false;
-    let scale = 1; // Zoom inicial
+    let scale = 1;
   
     function clamp(value, min, max) {
       return Math.max(min, Math.min(value, max));
@@ -29,7 +29,6 @@ document.addEventListener("DOMContentLoaded", () => {
         container.classList.add("space-pressed");
       }
   
-      // Resetar ao pressionar Shift + G
       if (e.key.toLowerCase() === "g" && e.shiftKey) {
         offsetX = viewWidth / 2 - gridWidth / 2;
         offsetY = viewHeight / 2 - gridHeight / 2;
@@ -56,6 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.addEventListener("mouseup", () => {
       isDragging = false;
       container.classList.remove("dragging");
+      desenhando = false;
     });
   
     document.addEventListener("mousemove", (e) => {
@@ -72,25 +72,19 @@ document.addEventListener("DOMContentLoaded", () => {
       updateGridPosition();
     });
   
-    // 🎯 Zoom com roda do mouse
     container.addEventListener("wheel", (e) => {
       e.preventDefault();
-  
       const zoomIntensity = 0.1;
       const delta = e.deltaY < 0 ? 1 : -1;
-  
       const newScale = clamp(scale + delta * zoomIntensity, 0.7, 1.5);
-  
-      // Fixar ponto de zoom no centro da tela
       const zoomFactor = newScale / scale;
       offsetX = (offsetX - viewWidth / 2) * zoomFactor + viewWidth / 2;
       offsetY = (offsetY - viewHeight / 2) * zoomFactor + viewHeight / 2;
-  
       scale = newScale;
       updateGridPosition();
     }, { passive: false });
   
-    updateGridPosition(); // Centraliza ao iniciar
+    updateGridPosition();
   
     const fabToggle = document.getElementById("fabToggle");
     const fabButtons = document.getElementById("fabButtons");
@@ -98,5 +92,118 @@ document.addEventListener("DOMContentLoaded", () => {
     fabToggle.addEventListener("click", () => {
       fabButtons.classList.toggle("show");
     });
+  
+    // 🎨 Modo Pincel UI
+    const pincelBtn = document.querySelector('.fab-buttons button:nth-child(1)');
+    const pincelMenu = document.getElementById('pincelMenu');
+    const corButtons = document.querySelectorAll('.cor');
+    const espessuraInput = document.getElementById('espessura');
+    const borrachaBtn = document.getElementById('borrachaBtn');
+  
+    let pincelAtivo = false;
+    let corSelecionada = "#ffffff";
+    let espessura = 5;
+  
+    pincelBtn.addEventListener("click", () => {
+      pincelAtivo = !pincelAtivo;
+      pincelMenu.classList.toggle("hidden", !pincelAtivo);
+    });
+  
+    corButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        corSelecionada = btn.dataset.cor;
+      });
+    });
+  
+    espessuraInput.addEventListener("input", () => {
+      espessura = parseInt(espessuraInput.value);
+    });
+  
+    borrachaBtn.addEventListener("click", () => {
+      corSelecionada = "transparent";
+    });
+  
+    // 🖌️ Função de desenho
+    let desenhando = false;
+  
+    grid.addEventListener("mousedown", (e) => {
+      if (!pincelAtivo) return;
+      desenhando = true;
+      desenhar(e);
+    });
+  
+    grid.addEventListener("mousemove", (e) => {
+      if (desenhando && pincelAtivo) desenhar(e);
+    });
+    
+    let lastDrawX = null;
+    let lastDrawY = null;
+    
+    function desenhar(e) {
+      const rect = grid.getBoundingClientRect();
+      const scaleX = grid.offsetWidth / rect.width;
+      const scaleY = grid.offsetHeight / rect.height;
+    
+      const x = (e.clientX - rect.left) * scaleX;
+      const y = (e.clientY - rect.top) * scaleY;
+    
+      if (lastDrawX !== null && lastDrawY !== null) {
+        const dx = x - lastDrawX;
+        const dy = y - lastDrawY;
+        const dist = Math.hypot(dx, dy);
+        const steps = Math.ceil(dist / (espessura / 2));
+    
+        for (let i = 0; i < steps; i++) {
+          const ix = lastDrawX + (dx * i) / steps;
+          const iy = lastDrawY + (dy * i) / steps;
+          desenharPonto(ix, iy);
+        }
+      }
+    
+      desenharPonto(x, y);
+      lastDrawX = x;
+      lastDrawY = y;
+    }
+    
+    function desenharPonto(x, y) {
+        if (corSelecionada === "transparent") {
+          const pontos = document.querySelectorAll(".dot");
+      
+          pontos.forEach(dot => {
+            const dotX = parseFloat(dot.style.left) + parseFloat(dot.style.width) / 2;
+            const dotY = parseFloat(dot.style.top) + parseFloat(dot.style.height) / 2;
+      
+            const dist = Math.hypot(dotX - x, dotY - y);
+            if (dist < espessura) {
+              dot.remove();
+            }
+          });
+      
+          return;
+        }
+      
+        const dot = document.createElement("div");
+        dot.classList.add("dot");
+        dot.style.left = `${x - espessura / 2}px`;
+        dot.style.top = `${y - espessura / 2}px`;
+        dot.style.width = `${espessura}px`;
+        dot.style.height = `${espessura}px`;
+        dot.style.position = "absolute";
+        dot.style.borderRadius = "50%";
+        dot.style.pointerEvents = "none";
+        dot.style.backgroundColor = corSelecionada;
+      
+        grid.appendChild(dot);
+      }
+    
+    document.addEventListener("mouseup", () => {
+        isDragging = false;
+        container.classList.remove("dragging");
+        desenhando = false;
+        lastDrawX = null;
+        lastDrawY = null;
+      });
+      
+
   });
   

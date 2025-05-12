@@ -26,6 +26,20 @@
     <div id="map-container">
       <div id="grid"></div>
     </div>
+
+    <div id="pincelMenu" class="pincel-container hidden">
+        <div class="cores">
+          <button class="cor" data-cor="#ffffff" title="Branco" style="background-color: #ffffff;"></button>
+          <button class="cor" data-cor="#000000" title="Preto" style="background-color: #000000;"></button>
+          <button class="cor" data-cor="#00ffaa" title="Verde" style="background-color: #00ffaa;"></button>
+        </div>
+        <div class="largura">
+          <label for="espessura">Espessura:</label>
+          <input type="range" id="espessura" min="1" max="20" value="5">
+        </div>
+        <button id="borrachaBtn" class="btn-borracha" title="Borracha"><i class="fas fa-eraser"></i></button>
+      </div>
+      
   </main>
 
   <div class="fab-container">
