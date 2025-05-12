@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mapa - Oblivion</title>
+
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/map.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
+
+  <script defer src="js/stars.js"></script>
+  <script defer src="js/map.js"></script>
+</head>
+<body>
+  <header>
+    <h1 class="logo" onclick="window.location.href='main.html'">OBLIVION</h1>
+    <nav>
+      <button class="btn"><a href="main.html">Início</a></button>
+      <button class="btn"><a href="anotacoes.html">Anotações</a></button>
+      <button class="btn"><a href="perfil.html">Perfil</a></button>
+    </nav>
+  </header>
+
+  <main>
+    <div id="map-container">
+      <div id="grid"></div>
+    </div>
+  </main>
+
+  <div class="fab-container">
+    <button class="fab-toggle" id="fabToggle" title="Menu">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="fab-buttons" id="fabButtons">
+        <button title="Pincel"><i class="fas fa-pen"></i></button>
+        <button title="Parede"><i class="fas fa-th-large"></i></button>
+        <button title="Adicionar"><i class="fas fa-plus"></i></button>
+      </div>
+  </div>
+  
+  <footer>
+    <p>&copy; 2025 Oblivion RPG - Todos os direitos reservados.</p>
+  </footer>
+</body>
+</html>
