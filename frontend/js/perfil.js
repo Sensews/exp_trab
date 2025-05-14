@@ -149,7 +149,7 @@ window.onload = () => {
   atualizarPerfil();
 };
 
-document.addEventListener("DOMContentLoaded", () => {
+/*document.addEventListener("DOMContentLoaded", () => {
   const logado = localStorage.getItem("logado") === "true";
 
   if (!logado) {
