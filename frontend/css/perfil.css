@@ -379,6 +379,12 @@ edit-btn,
     gap: 6px;
   }
 
+    #acoesTipoUsuario {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
 }
 
 @media (max-width: 480px) {
@@ -399,8 +405,7 @@ edit-btn,
     font-size: 12px;
   }
 
-  .modal-form input,
-  .modal-form textarea {
+  .modal-form input, .modal-form textarea {
     font-size: 13px;
   }
 
@@ -408,5 +413,10 @@ edit-btn,
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
+  }
+
+  .edit-btn, #alternarTipoBtn, #acoesTipoUsuario button {
+    font-size: 12px;
+    padding: 4px 8px;
   }
 }
