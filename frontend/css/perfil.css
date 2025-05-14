@@ -4,7 +4,7 @@
 .page-wrapper {
   display: flex;
   flex-direction: column;
-  padding-top: 100px; 
+  padding-top: 80px; 
   min-height: 100vh;
 }
 
@@ -304,6 +304,15 @@ footer {
   font-size: 10px;
   color: #888;
   padding-right: 4px;
+}
+
+/*Tipo de usuario e party*/
+edit-btn,
+#alternarTipoBtn,
+#acoesTipoUsuario button {
+  padding: 6px 14px;
+  border: 2px solid #00FFAA;
+  color: #00FFAA;
 }
 
 /* === MEDIA QUERIES === */
