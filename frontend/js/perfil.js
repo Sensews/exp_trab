@@ -86,6 +86,18 @@ function atualizarPerfil() {
   }
 }
 
+//Atualiza tipo de usuario e botao de party
+function atualizarTipo() {
+  const tipo = localStorage.getItem('tipo') || 'jogador';
+  const tipoTexto = document.getElementById('tipoUsuarioTexto');
+  const btnTrocar = document.getElementById('alternarTipoBtn');
+  const acoes = document.getElementById('acoesTipoUsuario');
+
+  tipoTexto.textContent = `Tipo: ${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`;
+
+  btnTrocar.textContent = tipo === 'jogador' ? 'Tornar-se Mestre' : 'Voltar a ser Jogador';
+}
+
 // Redimensiona uma imagem 
 function resizeAndStoreImage(file, width, height, callback) {
   const reader = new FileReader();
