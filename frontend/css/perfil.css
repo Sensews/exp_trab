@@ -327,6 +327,20 @@ edit-btn,
   color: #121212;
 }
 
+.tipo-usuario {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.tipo-usuario p {
+  font-size: 16px;
+  color: #ccc;
+  margin: 0;
+}
+
 
 /* === MEDIA QUERIES === */
 @media (max-width: 768px) {
