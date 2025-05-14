@@ -85,7 +85,6 @@ function atualizarPerfil() {
     document.getElementById('aniversario').textContent = `Aniversário: ${dia}/${mes}/${ano}`;
   }
 }
-
 //Atualiza tipo de usuario e botao de party
 function atualizarTipo() {
   const tipo = localStorage.getItem('tipo') || 'jogador';
@@ -105,6 +104,21 @@ function atualizarTipo() {
   };
   acoes.appendChild(btn);
 }
+
+//Troca o tipo de usuario
+document.getElementById('alternarTipoBtn').addEventListener('click', () => {
+  const tipoAtual = localStorage.getItem('tipo') || 'jogador';
+
+  if (tipoAtual === 'mestre') {
+    const confirmar = confirm();
+    if (!confirmar) return;
+  }
+
+  const novoTipo = tipoAtual === 'jogador' ? 'mestre' : 'jogador';
+  localStorage.setItem('tipo', novoTipo);
+  atualizarTipo();
+});
+
 
 // Redimensiona uma imagem 
 function resizeAndStoreImage(file, width, height, callback) {
