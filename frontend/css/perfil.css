@@ -4,14 +4,16 @@
 .page-wrapper {
   display: flex;
   flex-direction: column;
-  padding-top: 80px; 
+  padding-top: 80px;
   min-height: 100vh;
 }
 
-.container { 
-  max-width: 720px;
-  margin: 0 auto 40px auto;
-  border: 1px solid #2a2a2a;
+.container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 40px;
 }
 
 header {
@@ -24,7 +26,7 @@ header {
   position: fixed;
   top: 0;
   width: 100%;
-  z-index: 2000; /*FAZ O HAMBURGUINHO DE JOGO SOBRESCREVER O BANNER DO PERFIL*/ 
+  z-index: 2000;
 }
 
 .logo {
@@ -54,12 +56,12 @@ nav {
 .banner {
   height: 200px;
   background: #444 center/cover no-repeat;
+  width: 100%;
 }
 
-/* Container da imagem de perfil */
 .avatar-wrapper {
   width: 130px;
-  margin: -65px 0 0 16px; /* A IMAGEM SOBREPÕE O BANNER*/
+  margin: -65px 0 0 16px;
 }
 
 .avatar {
@@ -71,9 +73,11 @@ nav {
 
 .profile {
   padding: 20px;
+  max-width: 600px;
+  width: 95%;
+  margin: 0 auto;
 }
 
-/* "editar perfil" */
 .header {
   display: flex;
   justify-content: space-between;
@@ -95,7 +99,7 @@ nav {
 .bio {
   margin: 10px 0;
   text-align: left;
-  word-break: break-word; /* QUEBRA TEXTOS GRANDES*/
+  word-break: break-word;
 }
 
 .info span {
@@ -112,31 +116,56 @@ nav {
 .info-location::before { content: '📍'; }
 .info-date::before { content: '📅'; }
 
-/* Post de exemplo */
-.post {
+/* Post dentro do perfil */
+.profile .post {
+  margin-top: 20px;
   padding: 16px;
   border-top: 1px solid #2a2a2a;
+  word-break: break-word;
+  color: #eee;
+  font-size: 15px;
   text-align: left;
+  width: 100%;
 }
 
 .post .arroba {
   font-weight: bold;
 }
 
-/* Botão "Editar perfil" */
-.edit-btn {
-  padding: 6px 16px;
+/* Botões padrão */
+.edit-btn,
+#alternarTipoBtn,
+#acoesTipoUsuario button {
+  padding: 6px 14px;
   border: 2px solid #00FFAA;
   color: #00FFAA;
   background: transparent;
   font-weight: bold;
   cursor: pointer;
   transition: 0.3s;
+  border-radius: 4px;
 }
 
-.edit-btn:hover {
-  background: #00FFAA;
+.edit-btn:hover,
+#alternarTipoBtn:hover,
+#acoesTipoUsuario button:hover {
+  background-color: #00FFAA;
   color: #121212;
+}
+
+/* === BLOCO DE TIPO DE USUÁRIO === */
+.tipo-usuario {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.tipo-usuario p {
+  font-size: 16px;
+  color: #ccc;
+  margin: 0;
 }
 
 /* === MODAL DE EDITAR PERFIL === */
@@ -151,12 +180,10 @@ nav {
   overflow-y: auto;
 }
 
-/* Modal visível */
 .modal.open {
   display: flex;
 }
 
-/* Conteúdo do modal */
 .modal-content {
   background: #1a1a1a;
   width: 100%;
@@ -166,7 +193,6 @@ nav {
   margin: 0 auto;
 }
 
-/* Cabeçalho do modal */
 .modal-header {
   display: flex;
   justify-content: space-between;
@@ -187,14 +213,12 @@ nav {
   cursor: pointer;
 }
 
-/* Banner dentro do modal */
 .modal-banner {
   position: relative;
   height: 200px;
   background: #333 center/cover no-repeat;
 }
 
-/* Botão de alterar o banner */
 .banner-btn {
   position: absolute;
   top: 50%;
@@ -208,7 +232,6 @@ nav {
   color: #00FFAA;
 }
 
-/* Avatar dentro do modal */
 .modal-avatar-wrapper {
   position: relative;
   width: 80px;
@@ -226,7 +249,6 @@ nav {
   background-color: #444;
 }
 
-/* Botão pequeno com ícone da câmera no avatar */
 .avatar-btn {
   position: absolute;
   bottom: 0;
@@ -239,12 +261,10 @@ nav {
   color: #00FFAA;
 }
 
-/* Esconde o input de arquivo */
 input[type='file'] {
   display: none;
 }
 
-/* Formulário do modal */
 .modal-form {
   padding: 16px;
   display: flex;
@@ -252,7 +272,6 @@ input[type='file'] {
   gap: 12px;
 }
 
-/* campos do formulário */
 .modal-form label {
   font-size: 14px;
   display: flex;
@@ -261,7 +280,8 @@ input[type='file'] {
   text-align: left;
 }
 
-.modal-form input, .modal-form textarea {
+.modal-form input,
+.modal-form textarea {
   background: #0d0d0d;
   color: white;
   border: 2px solid #00FFAA;
@@ -291,7 +311,6 @@ footer {
   font-size: 14px;
 }
 
-/* Contador da bio*/
 .contador-wrapper {
   display: flex;
   justify-content: flex-end;
@@ -304,45 +323,6 @@ footer {
   color: #888;
   padding-right: 4px;
 }
-
-/*Tipo de usuario e party*/
-edit-btn,
-#alternarTipoBtn, #acoesTipoUsuario button {
-  padding: 6px 14px;
-  border: 2px solid #00FFAA;
-  color: #00FFAA;
-  background: transparent;
-  font-weight: bold;
-  cursor: pointer;
-  transition: 0.3s;
-  border-radius: 4px;
-}
-
-.edit-btn:hover, #alternarTipoBtn:hover, #acoesTipoUsuario button:hover {
-  background-color: #00FFAA;
-  color: #121212;
-}
-
-.tipo-usuario {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 16px;
-  flex-wrap: wrap;
-}
-
-.tipo-usuario p {
-  font-size: 16px;
-  color: #ccc;
-  margin: 0;
-}
-
-#acoesTipoUsuario {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
 
 /* === MEDIA QUERIES === */
 @media (max-width: 768px) {

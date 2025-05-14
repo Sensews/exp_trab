@@ -84,8 +84,11 @@ function atualizarPerfil() {
     const [ano, mes, dia] = aniversario.split('-');
     document.getElementById('aniversario').textContent = `Aniversário: ${dia}/${mes}/${ano}`;
   }
+
+  atualizarTipo();
 }
-//Atualiza tipo de usuario e botao de party
+
+// Atualiza tipo de usuário e botões
 function atualizarTipo() {
   const tipo = localStorage.getItem('tipo') || 'jogador';
   const tipoTexto = document.getElementById('tipoUsuarioTexto');
@@ -96,7 +99,7 @@ function atualizarTipo() {
 
   btnTrocar.textContent = tipo === 'jogador' ? 'Tornar-se Mestre' : 'Voltar a ser Jogador';
 
-   acoes.innerHTML = '';
+  acoes.innerHTML = '';
   const btn = document.createElement('button');
   btn.textContent = tipo === 'jogador' ? 'Entrar em Party' : 'Criar Party';
   btn.onclick = () => {
@@ -105,12 +108,12 @@ function atualizarTipo() {
   acoes.appendChild(btn);
 }
 
-//Troca o tipo de usuario
+// Troca o tipo de usuário
 document.getElementById('alternarTipoBtn').addEventListener('click', () => {
   const tipoAtual = localStorage.getItem('tipo') || 'jogador';
 
   if (tipoAtual === 'mestre') {
-    const confirmar = confirm();
+    const confirmar = confirm('Tem certeza que deseja voltar a ser Jogador?\n⚠️ Sua party será excluída e os jogadores serão removidos. Fichas e mapas serão mantidos.');
     if (!confirmar) return;
   }
 
@@ -119,8 +122,7 @@ document.getElementById('alternarTipoBtn').addEventListener('click', () => {
   atualizarTipo();
 });
 
-
-// Redimensiona uma imagem 
+// Redimensiona imagem
 function resizeAndStoreImage(file, width, height, callback) {
   const reader = new FileReader();
   reader.onload = (event) => {
@@ -147,7 +149,6 @@ document.getElementById('inputAvatar').addEventListener('change', function () {
       localStorage.setItem('avatar', resizedUrl);
       atualizarPerfil();
 
-      // Atualiza o avatar do header
       const iconHeader = document.getElementById("iconHeader");
       if (iconHeader) {
         iconHeader.src = resizedUrl;
@@ -178,16 +179,10 @@ document.getElementById('inputBio').addEventListener('input', function () {
   document.getElementById('contadorBio').textContent = `${this.value.length} / 160`;
 });
 
-// Inicializa o perfil ao carregar a página
+// Inicializa
 window.onload = () => {
+  if (!localStorage.getItem('tipo')) {
+    localStorage.setItem('tipo', 'jogador');
+  }
   atualizarPerfil();
 };
-
-/*document.addEventListener("DOMContentLoaded", () => {
-  const logado = localStorage.getItem("logado") === "true";
-
-  if (!logado) {
-      // Redireciona para a página de erro se não estiver logado
-      window.location.href = "erro.html";
-  }
-});
