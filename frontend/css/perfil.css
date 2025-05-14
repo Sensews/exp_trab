@@ -313,7 +313,20 @@ edit-btn,
   padding: 6px 14px;
   border: 2px solid #00FFAA;
   color: #00FFAA;
+  background: transparent;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+  border-radius: 4px;
 }
+
+.edit-btn:hover,
+#alternarTipoBtn:hover,
+#acoesTipoUsuario button:hover {
+  background-color: #00FFAA;
+  color: #121212;
+}
+
 
 /* === MEDIA QUERIES === */
 @media (max-width: 768px) {
