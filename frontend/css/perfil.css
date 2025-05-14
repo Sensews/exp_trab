@@ -261,8 +261,7 @@ input[type='file'] {
   text-align: left;
 }
 
-.modal-form input,
-.modal-form textarea {
+.modal-form input, .modal-form textarea {
   background: #0d0d0d;
   color: white;
   border: 2px solid #00FFAA;
@@ -308,8 +307,7 @@ footer {
 
 /*Tipo de usuario e party*/
 edit-btn,
-#alternarTipoBtn,
-#acoesTipoUsuario button {
+#alternarTipoBtn, #acoesTipoUsuario button {
   padding: 6px 14px;
   border: 2px solid #00FFAA;
   color: #00FFAA;
@@ -320,9 +318,7 @@ edit-btn,
   border-radius: 4px;
 }
 
-.edit-btn:hover,
-#alternarTipoBtn:hover,
-#acoesTipoUsuario button:hover {
+.edit-btn:hover, #alternarTipoBtn:hover, #acoesTipoUsuario button:hover {
   background-color: #00FFAA;
   color: #121212;
 }
@@ -370,6 +366,19 @@ edit-btn,
   .modal {
     padding: 100px 8px 16px !important;
   }
+
+  .edit-btn, #alternarTipoBtn, #acoesTipoUsuario button {
+    font-size: 13px;
+    padding: 5px 10px;
+  }
+
+  .tipo-usuario {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
 }
 
 @media (max-width: 480px) {
