@@ -96,6 +96,14 @@ function atualizarTipo() {
   tipoTexto.textContent = `Tipo: ${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`;
 
   btnTrocar.textContent = tipo === 'jogador' ? 'Tornar-se Mestre' : 'Voltar a ser Jogador';
+
+   acoes.innerHTML = '';
+  const btn = document.createElement('button');
+  btn.textContent = tipo === 'jogador' ? 'Entrar em Party' : 'Criar Party';
+  btn.onclick = () => {
+    window.location.href = 'party.html';
+  };
+  acoes.appendChild(btn);
 }
 
 // Redimensiona uma imagem 
