@@ -745,6 +745,24 @@ document.addEventListener("DOMContentLoaded", () => {
     selectToken(token);
   }
 
+  // Adicione essa função para excluir o token selecionado
+  function deleteSelectedToken() {
+    if (!selectedToken) return;
+    
+    // Remover o token do array de tokens
+    const index = tokens.findIndex(token => token.id === selectedToken.id);
+    if (index !== -1) {
+      tokens.splice(index, 1);
+    }
+    
+    // Remover o elemento do DOM
+    selectedToken.element.remove();
+    
+    // Limpar a referência
+    selectedToken = null;
+  }
+
+  // Modifique a função selectToken para remover a adição do botão de exclusão
   function selectToken(token) {
     deselectImage();
     
@@ -756,49 +774,12 @@ document.addEventListener("DOMContentLoaded", () => {
     selectedToken.element.classList.add('selected');
   }
 
+  // Modifique a função deselectToken para simplificar (sem precisar remover o botão)
   function deselectToken() {
     if (selectedToken) {
       selectedToken.element.classList.remove('selected');
       selectedToken = null;
     }
-  }
-
-  function startDragToken(e) {
-    if (!selectedToken) return;
-    
-    isDraggingToken = true;
-    tokenDragStartX = e.clientX;
-    tokenDragStartY = e.clientY;
-    
-    document.addEventListener('mousemove', dragToken);
-    document.addEventListener('mouseup', stopDragToken);
-  }
-
-  function dragToken(e) {
-    if (!isDraggingToken || !selectedToken) return;
-    
-    e.preventDefault();
-    
-    const dx = (e.clientX - tokenDragStartX) / scale;
-    const dy = (e.clientY - tokenDragStartY) / scale;
-    
-    const cellSize = 50;
-    const newX = Math.round((selectedToken.x + dx) / cellSize) * cellSize;
-    const newY = Math.round((selectedToken.y + dy) / cellSize) * cellSize;
-    
-    selectedToken.x = newX;
-    selectedToken.y = newY;
-    selectedToken.element.style.left = `${newX}px`;
-    selectedToken.element.style.top = `${newY}px`;
-    
-    tokenDragStartX = e.clientX;
-    tokenDragStartY = e.clientY;
-  }
-
-  function stopDragToken() {
-    isDraggingToken = false;
-    document.removeEventListener('mousemove', dragToken);
-    document.removeEventListener('mouseup', stopDragToken);
   }
 
   function moveSelectedTokenWithArrows(direction) {
@@ -929,6 +910,12 @@ document.addEventListener("DOMContentLoaded", () => {
       e.preventDefault();
     }
 
+    // Verificar se a tecla Delete foi pressionada e há um token selecionado
+    if (e.key === "Delete" && selectedToken) {
+      e.preventDefault();
+      deleteSelectedToken();
+    }
+
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
       if (!spacePressed && selectedToken) {
         e.preventDefault();
@@ -1010,14 +997,16 @@ document.addEventListener("DOMContentLoaded", () => {
   // ====================================================
   updateGridPosition();
   
+  // Primeiro identifique corretamente cada botão
   const fabToggle = document.getElementById("fabToggle");
   const fabButtons = document.getElementById("fabButtons");
   
+  // Controle do menu principal (FAB)
   fabToggle.addEventListener("click", () => {
     fabButtons.classList.toggle("show");
   });
   
-  // Controles de pincel
+  // Controles de pincel - usando o primeiro botão do fabButtons
   const pincelBtn = document.querySelector('.fab-buttons button:nth-child(1)');
   const pincelMenu = document.getElementById('pincelMenu');
   const corButtons = document.querySelectorAll('.cor');
@@ -1027,6 +1016,10 @@ document.addEventListener("DOMContentLoaded", () => {
   pincelBtn.addEventListener("click", () => {
     pincelAtivo = !pincelAtivo;
     pincelMenu.classList.toggle("hidden", !pincelAtivo);
+    
+    // Esconder outros menus ao abrir este
+    imageMenu.classList.add("hidden");
+    tokenMenu.classList.add("hidden");
   });
   
   corButtons.forEach(btn => {
@@ -1043,15 +1036,20 @@ document.addEventListener("DOMContentLoaded", () => {
     corSelecionada = "transparent";
   });
   
-  // Menu de imagens
-  const addImageBtn = document.querySelector('.fab-buttons button:nth-child(3)');
+  // Menu de imagens - usando o SEGUNDO botão (e não o terceiro como estava antes)
+  const addImageBtn = document.getElementById('addImageBtn'); // Use ID em vez de seletor de posição
   const imageMenu = document.getElementById('imageMenu');
   const imageInput = document.getElementById('imageInput');
   const confirmImageBtn = document.getElementById('confirmImageBtn');
   const cancelImageBtn = document.getElementById('cancelImageBtn');
   
   addImageBtn.addEventListener('click', () => {
+    console.log("Botão de adicionar imagem clicado");
     imageMenu.classList.remove('hidden');
+    
+    // Esconder outros menus ao abrir este
+    pincelMenu.classList.add("hidden");
+    tokenMenu.classList.add("hidden");
   });
   
   cancelImageBtn.addEventListener('click', () => {
