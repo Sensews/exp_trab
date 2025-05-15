@@ -40,6 +40,25 @@
         <button id="borrachaBtn" class="btn-borracha" title="Borracha"><i class="fas fa-eraser"></i></button>
       </div>
       
+      <div id="tokenMenu" class="token-container hidden">
+        <h3>Tokens</h3>
+        <div class="token-options">
+          <div class="token-size-selector">
+            <span>Tamanho:</span>
+            <select id="tokenSizeSelector">
+              <option value="1">1x1</option>
+              <option value="2">2x2</option>
+              <option value="3">3x3</option>
+              <option value="4">4x4</option>
+            </select>
+          </div>
+          <input type="file" id="tokenInput" accept="image/*">
+          <button id="confirmTokenBtn" class="btn-confirm">Adicionar</button>
+        </div>
+        <div class="token-divider"></div>
+        <h4>Seus tokens</h4>
+        <div class="token-library" id="tokenLibrary"></div>
+      </div>
   </main>
 
   <div class="fab-container">
@@ -49,10 +68,20 @@
     <div class="fab-buttons" id="fabButtons">
         <button title="Pincel"><i class="fas fa-pen"></i></button>
         <button title="Parede"><i class="fas fa-th-large"></i></button>
-        <button title="Adicionar"><i class="fas fa-plus"></i></button>
-      </div>
+        <button title="Adicionar Imagem" id="addImageBtn"><i class="fas fa-image"></i></button>
+        <button title="Tokens" id="addTokenBtn"><i class="fas fa-plus"></i></button>
+    </div>
   </div>
   
+  <div id="imageMenu" class="image-container hidden">
+    <h3>Adicionar imagem de fundo</h3>
+    <input type="file" id="imageInput" accept="image/*">
+    <div class="image-controls">
+        <button id="confirmImageBtn" class="btn-confirm">Confirmar</button>
+        <button id="cancelImageBtn" class="btn-cancel">Cancelar</button>
+    </div>
+  </div>
+
   <footer>
     <p>&copy; 2025 Oblivion RPG - Todos os direitos reservados.</p>
   </footer>

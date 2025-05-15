@@ -15,10 +15,12 @@ body {
     height: 100%;
     position: relative;
     overflow: hidden;
+    pointer-events: auto;
   }
   
   #map-container.space-pressed {
     cursor: grab;
+    z-index: 1000;
   }
   
   #map-container.space-pressed.dragging {
@@ -37,6 +39,7 @@ body {
     left: 0;
     top: 0;
     transform: translate(0, 0);
+    pointer-events: auto;
   }
   
   .fab-container {
@@ -72,7 +75,6 @@ body {
     position: relative;
     display: flex;
     flex-direction: column;
-    align-items: center;
     gap: 12px; /* Aqui define o espaçamento vertical entre os botões */
   }
   
@@ -196,4 +198,389 @@ body {
     border-radius: 50%;
     box-shadow: 0 0 2px #00ffaa33;
   }
+
+  /* Estilos para gerenciamento de imagem de fundo */
+  .image-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: rgba(0, 0, 0, 0.8);
+      border: 2px solid #00ffaa;
+      border-radius: 10px;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      z-index: 1001;
+      backdrop-filter: blur(4px);
+      color: white;
+      width: 300px;
+  }
   
+  .image-container.hidden {
+      display: none;
+  }
+  
+  .image-container h3 {
+      margin: 0;
+      font-size: 18px;
+      color: #00ffaa;
+  }
+  
+  .image-controls {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+  }
+  
+  .btn-confirm, .btn-cancel {
+      padding: 8px 15px;
+      border-radius: 5px;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.2s ease;
+  }
+  
+  .btn-confirm {
+      background-color: #00ffaa;
+      color: black;
+  }
+  
+  .btn-cancel {
+      background-color: #ff3366;
+      color: white;
+  }
+  
+  .btn-confirm:hover, .btn-cancel:hover {
+      transform: scale(1.05);
+  }
+  
+  /* Estilos para as imagens de fundo */
+  .background-image {
+      position: absolute;
+      pointer-events: auto !important; /* Garantir que eventos de clique funcionem */
+      transform-origin: center;
+      z-index: -1; /* Por trás do grid */
+      background-position: center;
+  }
+  
+  .background-image * {
+      pointer-events: auto;
+  }
+  
+  .background-image.selected {
+      outline: 2px dashed #00ffaa;
+      outline-offset: 2px;
+  }
+  
+  /* Controles de redimensionamento */
+  .resize-handle {
+      position: absolute;
+      width: 15px;
+      height: 15px;
+      background-color: #00ffaa;
+      border-radius: 50%;
+      z-index: 1000; /* Garantir que fique acima de tudo */
+      cursor: nwse-resize;
+      pointer-events: auto;
+  }
+  
+  .resize-handle.top-left {
+      top: -8px;
+      left: -8px;
+  }
+  
+  .resize-handle.top-right {
+      top: -8px;
+      right: -8px;
+      cursor: nesw-resize;
+  }
+  
+  .resize-handle.bottom-left {
+      bottom: -8px;
+      left: -8px;
+      cursor: nesw-resize;
+  }
+  
+  .resize-handle.bottom-right {
+      bottom: -8px;
+      right: -8px;
+  }
+  
+  .rotate-handle {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background-color: #ff3366;
+      border-radius: 50%;
+      z-index: 1000; /* Garantir que fique acima de tudo */
+      cursor: url('data:image/svg+xml;utf8,<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 2C14.4183 2 18 5.58172 18 10C18 14.4183 14.4183 18 10 18C5.58172 18 2 14.4183 2 10C2 5.58172 5.58172 2 10 2Z" stroke="white" stroke-width="2"/><path d="M10 5L13 8H7L10 5Z" fill="white"/><path d="M10 15L7 12H13L10 15Z" fill="white"/></svg>'), auto;
+      top: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+      pointer-events: auto;
+  }
+  
+  /* Estilos para a barra de ferramentas reformulada */
+.image-toolbar {
+  position: absolute;
+  top: -45px;          /* Alinhado acima da imagem */
+  left: 0;             /* Alinhado à esquerda da imagem */
+  display: flex;
+  flex-direction: column;  /* Organizado verticalmente */
+  gap: 10px;
+  background-color: rgba(0, 0, 0, 0.7);
+  border-radius: 5px;
+  padding: 8px;
+  z-index: 1000;
+  pointer-events: auto;
+}
+
+.toolbar-group {
+  display: flex;
+  gap: 5px;             /* Espaço entre botões do mesmo grupo */
+  justify-content: center;
+}
+
+/* Estilo base para os botões da barra de ferramentas */
+.image-toolbar button {
+  width: 30px;
+  height: 30px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+/* Estilo para o botão de excluir (vermelho) */
+.btn-delete-image {
+  border: 1px solid #ff3366;
+  color: #ff3366;
+}
+
+.btn-delete-image:hover {
+  background-color: rgba(255, 51, 102, 0.3);
+  transform: scale(1.1);
+}
+
+/* Estilo para o botão de ancorar */
+.btn-anchor-image {
+  border: 1px solid #00ffaa;
+  color: #00ffaa;
+}
+
+.btn-anchor-image:hover {
+  background-color: rgba(0, 255, 170, 0.3);
+  transform: scale(1.1);
+}
+
+/* Estilo quando a imagem está ancorada */
+.btn-anchor-image.anchored {
+  border: 1px solid #ff9900;
+  color: #ff9900;
+}
+
+.btn-anchor-image.anchored:hover {
+  background-color: rgba(255, 153, 0, 0.3);
+}
+
+/* Estilo para os botões de camada */
+.btn-layer-up, .btn-layer-down {
+  border: 1px solid #ffffff;
+  color: #ffffff;
+}
+
+.btn-layer-up:hover, .btn-layer-down:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+/* Adicione espaço entre os grupos de botões */
+.image-toolbar .toolbar-group + .toolbar-group {
+  margin-top: 5px;
+  border-top: 1px solid #333;
+  padding-top: 5px;
+}
+
+/* Garanta que os ícones apareçam corretamente */
+.image-toolbar button i {
+  font-size: 14px;
+}
+
+/* Imagem ancorada */
+.background-image.anchored {
+  outline: 2px solid #ff9900;
+  outline-offset: 2px;
+}
+
+/* Mostra a "confirmação" visual de que está ancorada */
+.background-image.anchored::before {
+  content: "🔒";
+  position: absolute;
+  top: -25px;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: #ff9900;
+  font-size: 14px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* Adicione esta regra CSS para desativar eventos de mouse nas imagens quando o espaço estiver pressionado */
+.background-image.ignore-mouse {
+  pointer-events: none !important;
+}
+
+/* Ao pressionar espaço, garantimos que o container tenha prioridade nos eventos */
+#map-container.space-pressed {
+  cursor: grab;
+  z-index: 1000;
+}
+
+#map-container.space-pressed.dragging {
+  cursor: grabbing;
+}
+
+/* Garantir que os eventos do grid funcionem corretamente durante a navegação */
+#map-container.space-pressed #grid {
+  pointer-events: auto !important;
+}
+
+/* Adicione este código ao seu arquivo map.css */
+
+/* Estilo do menu de tokens */
+.token-container {
+  position: fixed;
+  right: 20px;
+  top: 80px;
+  background-color: rgba(0, 0, 0, 0.8);
+  border: 2px solid #00ffaa;
+  border-radius: 10px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 1001;
+  backdrop-filter: blur(4px);
+  color: white;
+  width: 300px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.token-container.hidden {
+  display: none;
+}
+
+.token-container h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #00ffaa;
+}
+
+.token-container h4 {
+  margin: 5px 0;
+  font-size: 16px;
+  color: #00ffaa;
+}
+
+.token-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.token-size-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.token-size-selector select {
+  background-color: #121212;
+  color: white;
+  border: 1px solid #00ffaa;
+  border-radius: 4px;
+  padding: 5px;
+}
+
+.token-divider {
+  height: 1px;
+  background-color: #00ffaa;
+  margin: 5px 0;
+}
+
+.token-library {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 5px;
+  min-height: 50px;
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #333;
+  border-radius: 5px;
+}
+
+/* Estilo dos tokens na biblioteca */
+.token-item {
+  width: 50px;
+  height: 50px;
+  border-radius: 5px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  cursor: grab;
+  border: 2px solid #333;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.token-item:hover {
+  transform: scale(1.05);
+  border-color: #00ffaa;
+}
+
+/* Estilo dos tokens no grid */
+.grid-token {
+  position: absolute;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border: 2px solid transparent;
+  border-radius: 5px;
+  transition: border-color 0.2s;
+  pointer-events: auto;
+}
+
+.grid-token.selected {
+  border-color: #00ffaa;
+  box-shadow: 0 0 10px #00ffaa;
+  z-index: 10;
+}
+
+/* Indicador de tamanho do token no canto */
+.grid-token::after {
+  content: attr(data-size) 'x' attr(data-size);
+  position: absolute;
+  bottom: -5px;
+  right: -5px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: #00ffaa;
+  font-size: 10px;
+  padding: 2px 4px;
+  border-radius: 3px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.grid-token:hover::after,
+.grid-token.selected::after {
+  opacity: 1;
+}
