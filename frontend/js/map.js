@@ -8,6 +8,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const viewWidth = container.offsetWidth;
   const viewHeight = container.offsetHeight;
   
+  // Adicione esta constante de margem
+  const gridMargin = 500; // Margem de segurança em pixels
+  
   // Variáveis de controle de navegação
   let isDragging = false;
   let lastX = 0, lastY = 0;
@@ -51,21 +54,16 @@ document.addEventListener("DOMContentLoaded", () => {
     return Math.max(min, Math.min(value, max));
   }
   
-  // Torna o grid mais estável ao prevenir movimentações acidentais
   function updateGridPosition() {
-    // Arredondar os valores para evitar subpixel rendering que pode causar oscilações
-    const roundedOffsetX = Math.round(offsetX * 100) / 100;
-    const roundedOffsetY = Math.round(offsetY * 100) / 100;
-    const roundedScale = Math.round(scale * 1000) / 1000;
+    grid.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
     
-    // Aplicar transform com valores arredondados
-    grid.style.transform = `translate(${roundedOffsetX}px, ${roundedOffsetY}px) scale(${roundedScale})`;
-    
-    // Atualizar informação de debug se necessário
-    if (document.getElementById('debug-info')) {
-      document.getElementById('debug-info').textContent = 
-        `Offset: ${roundedOffsetX}x${roundedOffsetY}, Scale: ${roundedScale}`;
-    }
+    // Também atualize os tokens para mantê-los alinhados ao grid
+    tokens.forEach(token => {
+      const element = token.element;
+      if (element) {
+        element.style.transformOrigin = 'top left';
+      }
+    });
   }
   
   // GERENCIAMENTO DE IMAGENS DE FUNDO
@@ -531,6 +529,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (e.key.toLowerCase() === "g" && e.shiftKey) {
+      // Centralizar o grid com margens de segurança
       offsetX = viewWidth / 2 - gridWidth / 2;
       offsetY = viewHeight / 2 - gridHeight / 2;
       scale = 1;
@@ -588,62 +587,47 @@ document.addEventListener("DOMContentLoaded", () => {
   
   document.addEventListener("mousemove", (e) => {
     if (!isDragging || !spacePressed) return;
-
+  
     const dx = e.clientX - lastX;
     const dy = e.clientY - lastY;
     lastX = e.clientX;
     lastY = e.clientY;
-
-    // Calcular novos offsets
-    const newOffsetX = offsetX + dx;
-    const newOffsetY = offsetY + dy;
+  
+    // Aplicar limites com margens de segurança
+    const minX = viewWidth - (gridWidth + gridMargin) * scale;
+    const maxX = gridMargin * scale;
+    const minY = viewHeight - (gridHeight + gridMargin) * scale;
+    const maxY = gridMargin * scale;
     
-    // Calcular os limites baseados no zoom atual
-    const leftLimit = viewWidth - gridWidth * scale * 0.2; // Permite ver 20% do grid além da borda
-    const rightLimit = gridWidth * scale * 0.2 - viewWidth; // Similar para a direita
-    const topLimit = viewHeight - gridHeight * scale * 0.2; // Similar para cima
-    const bottomLimit = gridHeight * scale * 0.2 - viewHeight; // Similar para baixo
-    
-    // Aplicar limites mais flexíveis, adaptando-se ao nível de zoom
-    offsetX = Math.max(Math.min(newOffsetX, leftLimit), -rightLimit);
-    offsetY = Math.max(Math.min(newOffsetY, topLimit), -bottomLimit);
-
+    offsetX = clamp(offsetX + dx, minX, maxX);
+    offsetY = clamp(offsetY + dy, minY, maxY);
+  
     updateGridPosition();
   });
   
   // ZOOM COM RODA DO MOUSE
   container.addEventListener("wheel", (e) => {
-    if (spacePressed) return; 
+    if (spacePressed) return;
     e.preventDefault();
 
-    // Escala de zoom mais suave
-    const zoomFactor = 1.1;
-    const direction = e.deltaY > 0 ? -1 : 1;
+    const zoomIntensity = 0.1;
+    const delta = e.deltaY < 0 ? 1 : -1;
     
-    // Calcula o novo valor de escala com limites
-    const oldScale = scale;
-    const newScale = direction > 0 
-      ? Math.min(scale * zoomFactor, 3.0) 
-      : Math.max(scale / zoomFactor, 0.3);
+    const newScale = clamp(scale * (1 + delta * zoomIntensity), 0.5, 3);
     
-    if (newScale === oldScale) return; // Não fazer nada se estiver nos limites
-    
-    // Posição do mouse relativa à janela
     const mouseX = e.clientX;
     const mouseY = e.clientY;
     
-    // Posição do mouse relativa ao grid (em coordenadas do grid)
-    const gridMouseX = (mouseX - offsetX) / oldScale;
-    const gridMouseY = (mouseY - offsetY) / oldScale;
+    const mouseXInGrid = (mouseX - offsetX) / scale;
+    const mouseYInGrid = (mouseY - offsetY) / scale;
     
-    // Calcular novo offset para manter o ponto sob o cursor fixo
-    offsetX = mouseX - gridMouseX * newScale;
-    offsetY = mouseY - gridMouseY * newScale;
+    offsetX = mouseX - mouseXInGrid * newScale;
+    offsetY = mouseY - mouseYInGrid * newScale;
     
-    // Aplicar nova escala
     scale = newScale;
     
     updateGridPosition();
+    ensureGridVisibility(); // Verificar a visibilidade após o zoom
   }, { passive: false });
   
   // DESELECIONAR QUANDO CLICAR FORA
@@ -723,7 +707,7 @@ document.addEventListener("DOMContentLoaded", () => {
       
       pathPoints = [`M ${x} ${y}`];
       currentPath.setAttribute("d", pathPoints.join(" "));
-      
+
       svg.appendChild(currentPath);
       grid.appendChild(svg);
     } else {
@@ -821,131 +805,138 @@ document.addEventListener("DOMContentLoaded", () => {
       
       reader.readAsDataURL(imageInput.files[0]);
     }
-  });
+  }); 
   
-  // Adicione esta função à seção GERENCIAMENTO DE TOKENS
-  function initializeTokenSystem() {
-    // Botão de adicionar token (o botão com "+")
-    const addTokenBtn = document.querySelector('.fab-buttons button:nth-child(4)');
+  // GERENCIAMENTO DE TOKENS
+  function updateTokenMenu() {
+    // Adicionar botão de fechar ao tokenMenu
     const tokenMenu = document.getElementById('tokenMenu');
-    const tokenInput = document.getElementById('tokenInput');
-    const confirmTokenBtn = document.getElementById('confirmTokenBtn');
-    const tokenLibraryElement = document.getElementById('tokenLibrary');
-    const tokenSizeSelector = document.getElementById('tokenSizeSelector');
     
-    // Mostrar menu de tokens ao clicar no botão +
-    addTokenBtn.addEventListener('click', () => {
-      tokenMenu.classList.remove('hidden');
-    });
-    
-    // Adicionar token à biblioteca
-    confirmTokenBtn.addEventListener('click', () => {
-      if (tokenInput.files && tokenInput.files[0]) {
-        const reader = new FileReader();
+    // Verificar se já existe um botão de fechar
+    if (!tokenMenu.querySelector('.token-close-btn')) {
+      // Criar div de cabeçalho com título e botão de fechar
+      const headerDiv = document.createElement('div');
+      headerDiv.className = 'token-header';
+      
+      // Mover o título existente para esta div
+      const title = tokenMenu.querySelector('h3');
+      if (title) {
+        const titleClone = title.cloneNode(true);
+        headerDiv.appendChild(titleClone);
         
-        reader.onload = function(e) {
-          const tokenSize = parseInt(tokenSizeSelector.value);
-          const newToken = {
-            id: `token-${Date.now()}`,
-            url: e.target.result,
-            size: tokenSize
-          };
-          
-          tokenLibrary.push(newToken);
-          addTokenToLibrary(newToken);
-          
-          // Limpar input
-          tokenInput.value = '';
-        };
+        // Criar botão de fechar
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'token-close-btn';
+        closeBtn.innerHTML = '<i class="fas fa-times"></i>';
+        closeBtn.title = 'Fechar';
+        headerDiv.appendChild(closeBtn);
         
-        reader.readAsDataURL(tokenInput.files[0]);
+        // Substituir o título original pelo novo header
+        tokenMenu.replaceChild(headerDiv, title);
+        
+        // Adicionar evento de clique ao botão fechar
+        closeBtn.addEventListener('click', () => {
+          tokenMenu.classList.add('hidden');
+        });
       }
-    });
-    
-    // Função para adicionar token visualmente à biblioteca
-    function addTokenToLibrary(token) {
-      const tokenElement = document.createElement('div');
-      tokenElement.className = 'token-item';
-      tokenElement.style.backgroundImage = `url(${token.url})`;
-      tokenElement.dataset.id = token.id;
-      tokenElement.dataset.size = token.size;
-      tokenElement.title = `Token ${token.size}x${token.size}`;
-      
-      // Fazer o token ser arrastável da biblioteca para o grid
-      tokenElement.addEventListener('mousedown', (e) => {
-        e.preventDefault();
-        
-        // Criar elemento temporário para arrastar
-        const dragToken = document.createElement('div');
-        dragToken.className = 'grid-token dragging';
-        dragToken.style.backgroundImage = `url(${token.url})`;
-        dragToken.style.width = `${token.size * 50}px`;
-        dragToken.style.height = `${token.size * 50}px`;
-        dragToken.style.position = 'fixed';
-        dragToken.style.pointerEvents = 'none';
-        dragToken.style.zIndex = '9999';
-        dragToken.style.opacity = '0.8';
-        dragToken.dataset.id = token.id;
-        dragToken.dataset.size = token.size;
-        document.body.appendChild(dragToken);
-        
-        // Posicionar no mouse
-        const halfWidth = dragToken.offsetWidth / 2;
-        const halfHeight = dragToken.offsetHeight / 2;
-        dragToken.style.left = `${e.clientX - halfWidth}px`;
-        dragToken.style.top = `${e.clientY - halfHeight}px`;
-        
-        // Mover com o mouse
-        const moveHandler = (moveEvent) => {
-          dragToken.style.left = `${moveEvent.clientX - halfWidth}px`;
-          dragToken.style.top = `${moveEvent.clientY - halfHeight}px`;
-        };
-        
-        // Soltar o token - CORRIGIDO
-        const upHandler = (upEvent) => {
-          document.removeEventListener('mousemove', moveHandler);
-          document.removeEventListener('mouseup', upHandler);
-          
-          // Calcular a posição no grid com correção de escala e offset
-          const rect = grid.getBoundingClientRect();
-          
-          // Verificar se o mouse está dentro da área do grid
-          if (upEvent.clientX >= rect.left && upEvent.clientX <= rect.right &&
-              upEvent.clientY >= rect.top && upEvent.clientY <= rect.bottom) {
-              
-            // Converter coordenadas da janela para coordenadas do grid
-            // 1. Primeiro, obter posição relativa ao container do grid
-            const containerX = upEvent.clientX - rect.left;
-            const containerY = upEvent.clientY - rect.top;
-            
-            // 2. Depois, converter para posição no grid considerando escala e offset
-            // (subtraindo offset e dividindo pela escala)
-            const gridX = (containerX / scale) - (offsetX / scale);
-            const gridY = (containerY / scale) - (offsetY / scale);
-            
-            // 3. Ajustar à grade para snap
-            const cellSize = 50;
-            const snappedX = Math.round(gridX / cellSize) * cellSize;
-            const snappedY = Math.round(gridY / cellSize) * cellSize;
-            
-            // Finalmente adicionar o token na posição correta
-            addTokenToGrid(token, snappedX, snappedY);
-          }
-          
-          // Remover o elemento temporário
-          dragToken.remove();
-        };
-        
-        document.addEventListener('mousemove', moveHandler);
-        document.addEventListener('mouseup', upHandler);
-      });
-      
-      // Adicionar à biblioteca
-      tokenLibraryElement.appendChild(tokenElement);
     }
   }
-  
-  // Função para adicionar um token ao grid
+
+  function addTokenToLibrary(token) {
+    const tokenLibraryElement = document.getElementById('tokenLibrary');
+    
+    if (!tokenLibraryElement) {
+      console.error("Elemento da biblioteca de tokens não encontrado!");
+      return;
+    }
+    
+    const tokenElement = document.createElement('div');
+    tokenElement.className = 'token-item';
+    tokenElement.style.backgroundImage = `url(${token.url})`;
+    tokenElement.dataset.id = token.id;
+    tokenElement.dataset.size = token.size;
+    tokenElement.title = `Token ${token.size}x${token.size}`;
+    
+    // Fazer o token ser arrastável da biblioteca para o grid
+    tokenElement.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      
+      // Criar elemento temporário para arrastar
+      const dragToken = document.createElement('div');
+      dragToken.className = 'grid-token dragging';
+      dragToken.style.backgroundImage = `url(${token.url})`;
+      dragToken.style.width = `${token.size * 50}px`;
+      dragToken.style.height = `${token.size * 50}px`;
+      dragToken.style.position = 'fixed';
+      dragToken.style.pointerEvents = 'none';
+      dragToken.style.zIndex = '9999';
+      dragToken.style.opacity = '0.8';
+      dragToken.dataset.id = token.id;
+      dragToken.dataset.size = token.size;
+      document.body.appendChild(dragToken);
+      
+      // Posicionar no mouse
+      dragToken.style.left = `${e.clientX - dragToken.offsetWidth / 2}px`;
+      dragToken.style.top = `${e.clientY - dragToken.offsetHeight / 2}px`;
+      
+      // Mover com o mouse
+      const moveHandler = (moveEvent) => {
+        dragToken.style.left = `${moveEvent.clientX - dragToken.offsetWidth / 2}px`;
+        dragToken.style.top = `${moveEvent.clientY - dragToken.offsetHeight / 2}px`;
+      };
+      
+      // Soltar o token
+      const upHandler = (upEvent) => {
+        document.removeEventListener('mousemove', moveHandler);
+        document.removeEventListener('mouseup', upHandler);
+        
+        // Calcular a posição no grid
+        const rect = grid.getBoundingClientRect();
+        
+        // Verificar se o token está sobre o grid
+        if (upEvent.clientX >= rect.left && upEvent.clientX <= rect.right &&
+            upEvent.clientY >= rect.top && upEvent.clientY <= rect.bottom) {
+              
+          // 1. Calcular posição do mouse em relação à viewport
+          const mouseX = upEvent.clientX;
+          const mouseY = upEvent.clientY;
+          
+          // 2. Obter deslocamento atual do grid
+          const gridRect = grid.getBoundingClientRect();
+          
+          // 3. Converter para coordenadas do grid considerando escala e transformação
+          const gridX = (mouseX - gridRect.left) / scale;
+          const gridY = (mouseY - gridRect.top) / scale;
+          
+          // 4. Ajustar à grade
+          const cellSize = 50;
+          const snappedX = Math.round(gridX / cellSize) * cellSize;
+          const snappedY = Math.round(gridY / cellSize) * cellSize;
+          
+          // Log para debug
+          console.log('Mouse:', mouseX, mouseY);
+          console.log('Grid rect:', gridRect.left, gridRect.top);
+          console.log('Grid coords:', gridX, gridY);
+          console.log('Snapped:', snappedX, snappedY);
+          
+          addTokenToGrid(token, snappedX, snappedY);
+        }
+        
+        // Remover o elemento temporário
+        dragToken.remove();
+      };
+      
+      document.addEventListener('mousemove', moveHandler);
+      document.addEventListener('mouseup', upHandler);
+    });
+    
+    // Adicionar o token à biblioteca
+    tokenLibraryElement.appendChild(tokenElement);
+    
+    // Log para depuração
+    console.log(`Token adicionado à biblioteca: ${token.id}, tamanho: ${token.size}x${token.size}`);
+  }
+
   function addTokenToGrid(tokenData, x, y) {
     const tokenElement = document.createElement('div');
     tokenElement.className = 'grid-token';
@@ -954,6 +945,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const cellSize = 50;
     tokenElement.style.width = `${tokenData.size * cellSize}px`;
     tokenElement.style.height = `${tokenData.size * cellSize}px`;
+    
+    // CORREÇÃO: Posicionar o token exatamente nas coordenadas do grid
+    tokenElement.style.position = 'absolute';
     tokenElement.style.left = `${x}px`;
     tokenElement.style.top = `${y}px`;
     tokenElement.dataset.size = tokenData.size;
@@ -984,14 +978,17 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
     
+    // IMPORTANTE: Adicionar o token diretamente ao grid com z-index adequado
+    tokenElement.style.zIndex = "5"; // Acima do grid, abaixo dos controles
     grid.appendChild(tokenElement);
     tokens.push(token);
     selectToken(token);
   }
-  
-  // Função para selecionar um token
+
   function selectToken(token) {
-    // Deselecionar token atual
+    // Deselecionar token atual e imagem atual
+    deselectImage();
+    
     if (selectedToken) {
       selectedToken.element.classList.remove('selected');
     }
@@ -1000,16 +997,14 @@ document.addEventListener("DOMContentLoaded", () => {
     selectedToken = token;
     selectedToken.element.classList.add('selected');
   }
-  
-  // Função para deselecionar token
+
   function deselectToken() {
     if (selectedToken) {
       selectedToken.element.classList.remove('selected');
       selectedToken = null;
     }
   }
-  
-  // Função para começar a arrastar um token
+
   function startDragToken(e) {
     if (!selectedToken) return;
     
@@ -1020,8 +1015,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.addEventListener('mousemove', dragToken);
     document.addEventListener('mouseup', stopDragToken);
   }
-  
-  // Função para arrastar um token
+
   function dragToken(e) {
     if (!isDraggingToken || !selectedToken) return;
     
@@ -1042,15 +1036,13 @@ document.addEventListener("DOMContentLoaded", () => {
     tokenDragStartX = e.clientX;
     tokenDragStartY = e.clientY;
   }
-  
-  // Função para parar de arrastar um token
+
   function stopDragToken() {
     isDraggingToken = false;
     document.removeEventListener('mousemove', dragToken);
     document.removeEventListener('mouseup', stopDragToken);
   }
-  
-  // Função para mover token com as setas do teclado
+
   function moveSelectedTokenWithArrows(direction) {
     if (!selectedToken) return;
     
@@ -1074,50 +1066,74 @@ document.addEventListener("DOMContentLoaded", () => {
     selectedToken.element.style.left = `${selectedToken.x}px`;
     selectedToken.element.style.top = `${selectedToken.y}px`;
   }
-  
-  // Modificar o evento keydown para incluir as setas
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Shift") {
-      shiftPressed = true;
+
+  function initializeTokenSystem() {
+    console.log("Inicializando sistema de tokens");
+    
+    const addTokenBtn = document.getElementById('addTokenBtn');
+    const tokenMenu = document.getElementById('tokenMenu');
+    const tokenInput = document.getElementById('tokenInput');
+    const confirmTokenBtn = document.getElementById('confirmTokenBtn');
+    const tokenLibraryElement = document.getElementById('tokenLibrary');
+    const tokenSizeSelector = document.getElementById('tokenSizeSelector');
+    
+    if (!addTokenBtn || !tokenMenu || !tokenInput || !confirmTokenBtn || !tokenLibraryElement || !tokenSizeSelector) {
+      console.error("Elementos necessários para o sistema de tokens não encontrados!");
+      console.log({
+        addTokenBtn, 
+        tokenMenu, 
+        tokenInput, 
+        confirmTokenBtn, 
+        tokenLibraryElement, 
+        tokenSizeSelector
+      });
+      return;
     }
     
-    if (e.code === "Space") {
-      if (isResizing || isRotating || isDraggingToken) return;
-      
-      spacePressed = true;
-      container.classList.add("space-pressed");
-      document.body.style.cursor = 'grab';
-      
-      document.querySelectorAll('.background-image').forEach(img => {
-        img.classList.add('ignore-mouse');
-      });
-      
-      if (desenhando) {
-        currentPath = null;
-        pathPoints = [];
-        desenhando = false;
+    // Atualizar o menu para adicionar o botão de fechar
+    updateTokenMenu();
+    
+    // Mostrar menu de tokens ao clicar no botão
+    addTokenBtn.addEventListener('click', () => {
+      console.log("Botão de token clicado");
+      tokenMenu.classList.remove('hidden');
+    });
+    
+    // Adicionar token à biblioteca
+    confirmTokenBtn.addEventListener('click', () => {
+      console.log("Botão confirmar token clicado");
+      if (tokenInput.files && tokenInput.files[0]) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+          const tokenSize = parseInt(tokenSizeSelector.value);
+          const newToken = {
+            id: `token-${Date.now()}`,
+            url: e.target.result,
+            size: tokenSize
+          };
+          
+          console.log(`Adicionando novo token: tamanho ${tokenSize}x${tokenSize}`);
+          tokenLibrary.push(newToken);
+          addTokenToLibrary(newToken);
+          
+          // Limpar input
+          tokenInput.value = '';
+        };
+        
+        reader.readAsDataURL(tokenInput.files[0]);
+      } else {
+        console.log("Nenhum arquivo selecionado");
       }
-      
-      e.preventDefault();
-    }
-
-    // Mover token selecionado com as setas
-    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-      if (!spacePressed && selectedToken) {
-        e.preventDefault();
-        moveSelectedTokenWithArrows(e.key);
-      }
-    }
-
-    if (e.key.toLowerCase() === "g" && e.shiftKey) {
-      offsetX = viewWidth / 2 - gridWidth / 2;
-      offsetY = viewHeight / 2 - gridHeight / 2;
-      scale = 1;
-      updateGridPosition();
-    }
-  });
+    });
+  }
   
-  // Adicionar evento de clique no grid para deselecionar token
+  // Remova a chamada duplicada de DOMContentLoaded e chame o initializeTokenSystem no mesmo contexto principal
+
+  // No final do seu DOMContentLoaded principal, adicione:
+  initializeTokenSystem();
+
+  // Adicione um ouvinte de evento para o mousedown para deselecionar tokens
   document.addEventListener("mousedown", (e) => {
     if (selectedToken && 
         !e.target.closest('.grid-token') && 
@@ -1125,7 +1141,115 @@ document.addEventListener("DOMContentLoaded", () => {
       deselectToken();
     }
   });
-  
-  // Adicione esta linha no final do arquivo para inicializar o sistema de tokens
-  initializeTokenSystem();
 });
+
+// Adicione estas constantes no início do seu código
+const gridMargin = 500; // Margem de segurança em pixels
+const maxPan = 1000;    // Limite máximo de panorâmica além das bordas
+
+// Modifique a inicialização do grid para centralizar com margem
+function initializeGrid() {
+  // Centralizar inicialmente o grid com margens
+  offsetX = viewWidth / 2 - gridWidth / 2;
+  offsetY = viewHeight / 2 - gridHeight / 2;
+  
+  // Definir limites de navegação com margens
+  updateGridPosition();
+}
+
+// Modifique a função updateGridPosition para aplicar transformação
+function updateGridPosition() {
+  grid.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
+  
+  // Também atualize os tokens para mantê-los alinhados ao grid
+  tokens.forEach(token => {
+    const element = token.element;
+    if (element) {
+      element.style.transformOrigin = 'top left';
+    }
+  });
+}
+
+// Modifique o evento mousemove para incluir os limites com margem
+document.addEventListener("mousemove", (e) => {
+  if (!isDragging || !spacePressed) return;
+
+  const dx = e.clientX - lastX;
+  const dy = e.clientY - lastY;
+  lastX = e.clientX;
+  lastY = e.clientY;
+
+  // Aplicar limites com margens de segurança
+  const minX = viewWidth - (gridWidth + gridMargin) * scale;
+  const maxX = gridMargin * scale;
+  const minY = viewHeight - (gridHeight + gridMargin) * scale;
+  const maxY = gridMargin * scale;
+  
+  offsetX = clamp(offsetX + dx, minX, maxX);
+  offsetY = clamp(offsetY + dy, minY, maxY);
+
+  updateGridPosition();
+});
+
+// Modifique o evento de reset (Shift+G) para incluir as margens
+document.addEventListener("keydown", (e) => {
+  // ... código existente ...
+  
+  if (e.key.toLowerCase() === "g" && e.shiftKey) {
+    // Centralizar o grid com margens de segurança
+    offsetX = viewWidth / 2 - gridWidth / 2;
+    offsetY = viewHeight / 2 - gridHeight / 2;
+    scale = 1;
+    updateGridPosition();
+  }
+  
+  // ... resto do código ...
+});
+
+// Adicione esta função para garantir que o grid permaneça visível
+function ensureGridVisibility() {
+  // Calcular as dimensões visíveis do grid
+  const visibleWidth = gridWidth * scale;
+  const visibleHeight = gridHeight * scale;
+  
+  // Verificar se o grid está muito fora da tela
+  if (offsetX < -visibleWidth + gridMargin) {
+    offsetX = -visibleWidth + gridMargin;
+  }
+  if (offsetX > viewWidth - gridMargin) {
+    offsetX = viewWidth - gridMargin;
+  }
+  if (offsetY < -visibleHeight + gridMargin) {
+    offsetY = -visibleHeight + gridMargin;
+  }
+  if (offsetY > viewHeight - gridMargin) {
+    offsetY = viewHeight - gridMargin;
+  }
+  
+  updateGridPosition();
+}
+
+// Modifique o evento de zoom para incluir essa verificação
+container.addEventListener("wheel", (e) => {
+  if (spacePressed) return;
+  e.preventDefault();
+
+  const zoomIntensity = 0.1;
+  const delta = e.deltaY < 0 ? 1 : -1;
+  
+  const newScale = clamp(scale * (1 + delta * zoomIntensity), 0.5, 3);
+  
+  const mouseX = e.clientX;
+  const mouseY = e.clientY;
+  
+  const mouseXInGrid = (mouseX - offsetX) / scale;
+  const mouseYInGrid = (mouseY - offsetY) / scale;
+  
+  offsetX = mouseX - mouseXInGrid * newScale;
+  offsetY = mouseY - mouseYInGrid * newScale;
+  
+  scale = newScale;
+  
+  updateGridPosition();
+  ensureGridVisibility(); // Verificar a visibilidade após o zoom
+}, { passive: false });
