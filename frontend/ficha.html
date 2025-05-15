@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oblivion - Ficha de Personagem D&D</title>
+    
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/ficha.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    
+    <script defer src="js/ficha.js"></script>
+    <script defer src="js/stars.js"></script>
+</head>
+<body>
+    <header>
+        <h1 class="logo" onclick="window.location.href='main.html'">OBLIVION</h1>
+        <nav>
+            <button class="btn"><a href="main.html">Início</a></button>
+            <button class="btn"><a href="login.html">Login</a></button>
+            <button class="btn"><a href="cadastro.html">Cadastro</a></button>
+        </nav>
+    </header>
+
+    <main class="ficha-container">
+        <div class="save-controls">
+            <button class="btn" id="salvarFicha">Salvar Ficha</button>
+            <button class="btn" id="carregarFicha">Carregar Ficha</button>
+            <button class="btn" id="novaFicha">Nova Ficha</button>
+            <button class="btn" id="imprimirFicha">Imprimir</button>
+        </div>
+
+        <div class="ficha">
+            <div class="ficha-header">
+                <div class="character-info">
+                    <div class="info-group">
+                        <label for="charName">Nome do Personagem</label>
+                        <input type="text" id="charName" name="charName" placeholder="Nome do Personagem">
+                    </div>
+
+                    <div class="info-row">
+                        <div class="info-group">
+                            <label for="charClass">Classe</label>
+                            <select id="charClass" name="charClass">
+                                <option value="">Selecione...</option>
+                                <option value="barbaro">Bárbaro</option>
+                                <option value="bardo">Bardo</option>
+                                <option value="bruxo">Bruxo</option>
+                                <option value="clerigo">Clérigo</option>
+                                <option value="druida">Druida</option>
+                                <option value="feiticeiro">Feiticeiro</option>
+                                <option value="guerreiro">Guerreiro</option>
+                                <option value="ladino">Ladino</option>
+                                <option value="mago">Mago</option>
+                                <option value="monge">Monge</option>
+                                <option value="paladino">Paladino</option>
+                                <option value="ranger">Ranger</option>
+                            </select>
+                        </div>
+                        <div class="info-group">
+                            <label for="charLevel">Nível</label>
+                            <input type="number" id="charLevel" name="charLevel" min="1" max="20" value="1">
+                        </div>
+                        <div class="info-group">
+                            <label for="charRace">Raça</label>
+                            <select id="charRace" name="charRace">
+                                <option value="">Selecione...</option>
+                                <option value="anao">Anão</option>
+                                <option value="elfo">Elfo</option>
+                                <option value="halfling">Halfling</option>
+                                <option value="humano">Humano</option>
+                                <option value="draconato">Draconato</option>
+                                <option value="gnomo">Gnomo</option>
+                                <option value="meio-elfo">Meio-Elfo</option>
+                                <option value="meio-orc">Meio-Orc</option>
+                                <option value="tiefling">Tiefling</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="info-row">
+                        <div class="info-group">
+                            <label for="charBackground">Antecedente</label>
+                            <input type="text" id="charBackground" name="charBackground" placeholder="Antecedente">
+                        </div>
+                        <div class="info-group">
+                            <label for="charAlignment">Alinhamento</label>
+                            <select id="charAlignment" name="charAlignment">
+                                <option value="">Selecione...</option>
+                                <option value="lb">Leal e Bom</option>
+                                <option value="ln">Leal e Neutro</option>
+                                <option value="lm">Leal e Mau</option>
+                                <option value="nb">Neutro e Bom</option>
+                                <option value="n">Neutro</option>
+                                <option value="nm">Neutro e Mau</option>
+                                <option value="cb">Caótico e Bom</option>
+                                <option value="cn">Caótico e Neutro</option>
+                                <option value="cm">Caótico e Mau</option>
+                            </select>
+                        </div>
+                        <div class="info-group">
+                            <label for="playerName">Nome do Jogador</label>
+                            <input type="text" id="playerName" name="playerName" placeholder="Nome do Jogador">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ficha-body">
+                <div class="stats-container">
+                    <div class="attributes-column">
+                        <h3>Atributos</h3>
+                        <div class="attribute-box">
+                            <div class="attribute">
+                                <span class="attribute-label">FORÇA</span>
+                                <input type="number" id="str" min="1" max="30" value="10" class="attribute-input">
+                                <span class="attribute-mod" id="strMod">+0</span>
+                            </div>
+                            <div class="attribute">
+                                <span class="attribute-label">DESTREZA</span>
+                                <input type="number" id="dex" min="1" max="30" value="10" class="attribute-input">
+                                <span class="attribute-mod" id="dexMod">+0</span>
+                            </div>
+                            <div class="attribute">
+                                <span class="attribute-label">CONSTITUIÇÃO</span>
+                                <input type="number" id="con" min="1" max="30" value="10" class="attribute-input">
+                                <span class="attribute-mod" id="conMod">+0</span>
+                            </div>
+                            <div class="attribute">
+                                <span class="attribute-label">INTELIGÊNCIA</span>
+                                <input type="number" id="int" min="1" max="30" value="10" class="attribute-input">
+                                <span class="attribute-mod" id="intMod">+0</span>
+                            </div>
+                            <div class="attribute">
+                                <span class="attribute-label">SABEDORIA</span>
+                                <input type="number" id="wis" min="1" max="30" value="10" class="attribute-input">
+                                <span class="attribute-mod" id="wisMod">+0</span>
+                            </div>
+                            <div class="attribute">
+                                <span class="attribute-label">CARISMA</span>
+                                <input type="number" id="cha" min="1" max="30" value="10" class="attribute-input">
+                                <span class="attribute-mod" id="chaMod">+0</span>
+                            </div>
+                        </div>
+
+                        <div class="inspiration-proficiency">
+                            <div class="inspiration">
+                                <input type="checkbox" id="inspiration">
+                                <label for="inspiration">Inspiração</label>
+                            </div>
+                            <div class="proficiency">
+                                <label for="profBonus">Bônus de Proficiência</label>
+                                <span id="profBonus">+2</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="skills-saves-column">
+                        <div class="saving-throws">
+                            <h3>Testes de Resistência</h3>
+                            <div class="save-item">
+                                <input type="checkbox" id="strSave" class="save-prof">
+                                <span class="save-mod" id="strSaveMod">+0</span>
+                                <label for="strSave">Força</label>
+                            </div>
+                            <div class="save-item">
+                                <input type="checkbox" id="dexSave" class="save-prof">
+                                <span class="save-mod" id="dexSaveMod">+0</span>
+                                <label for="dexSave">Destreza</label>
+                            </div>
+                            <div class="save-item">
+                                <input type="checkbox" id="conSave" class="save-prof">
+                                <span class="save-mod" id="conSaveMod">+0</span>
+                                <label for="conSave">Constituição</label>
+                            </div>
+                            <div class="save-item">
+                                <input type="checkbox" id="intSave" class="save-prof">
+                                <span class="save-mod" id="intSaveMod">+0</span>
+                                <label for="intSave">Inteligência</label>
+                            </div>
+                            <div class="save-item">
+                                <input type="checkbox" id="wisSave" class="save-prof">
+                                <span class="save-mod" id="wisSaveMod">+0</span>
+                                <label for="wisSave">Sabedoria</label>
+                            </div>
+                            <div class="save-item">
+                                <input type="checkbox" id="chaSave" class="save-prof">
+                                <span class="save-mod" id="chaSaveMod">+0</span>
+                                <label for="chaSave">Carisma</label>
+                            </div>
+                        </div>
+                        
+                        <div class="skills">
+                            <h3>Perícias</h3>
+                            <div class="skill-item">
+                                <input type="checkbox" id="acrobatics" class="skill-prof">
+                                <span class="skill-mod" id="acrobaticsMod">+0</span>
+                                <label for="acrobatics">Acrobacia (Des)</label>
+                            </div>
+                            <div class="skill-item">
+                                <input type="checkbox" id="animalHandling" class="skill-prof">
+                                <span class="skill-mod" id="animalHandlingMod">+0</span>
+                                <label for="animalHandling">Adestrar Animais (Sab)</label>
+                            </div>
+                            <div class="skill-item">
+                                <input type="checkbox" id="arcana" class="skill-prof">
+                                <span class="skill-mod" id="arcanaMod">+0</span>
+                                <label for="arcana">Arcanismo (Int)</label>
+                            </div>
+                            <div class="skill-item">
+                                <input type="checkbox" id="athletics" class="skill-prof">
+                                <span class="skill-mod" id="athleticsMod">+0</span>
+                                <label for="athletics">Atletismo (For)</label>
+                            </div>
+                            <div class="skill-item">
+                                <input type="checkbox" id="deception" class="skill-prof">
+                                <span class="skill-mod" id="deceptionMod">+0</span>
+                                <label for="deception">Enganação (Car)</label>
+                            </div>
+                            <div class="skill-item">
+                                <input type="checkbox" id="history" class="skill-prof">
+                                <span class="skill-mod" id="historyMod">+0</span>
+                                <label for="history">História (Int)</label>
+                            </div>
+                            <div class="skill-item">
+                                <input type="checkbox" id="insight" class="skill-prof">
+                                <span class="skill-mod" id="insightMod">+0</span>
+                                <label for="insight">Intuição (Sab)</label>
+                            </div>
+                            <div class="skill-item">
+                                <input type="checkbox" id="intimidation" class="skill-prof">
+                                <span class="skill-mod" id="intimidationMod">+0</span>
+                                <label for="intimidation">Intimidação (Car)</label>
+                            </div>
+                            <div class="skill-item">
+                                <input type="checkbox" id="investigation" class="skill-prof">
+                                <span class="skill-mod" id="investigationMod">+0</span>
+                                <label for="investigation">Investigação (Int)</label>
+                            </div>
+                            <div class="skill-item">
+                                <input type="checkbox" id="medicine" class="skill-prof">
+                                <span class="skill-mod" id="medicineMod">+0</span>
+                                <label for="medicine">Medicina (Sab)</label>
+                            </div>
+                            <div class="skill-item">
+                                <input type="checkbox" id="nature" class="skill-prof">
+                                <span class="skill-mod" id="natureMod">+0</span>
+                                <label for="nature">Natureza (Int)</label>
+                            </div>
+                            <div class="skill-item">
+                                <input type="checkbox" id="perception" class="skill-prof">
+                                <span class="skill-mod" id="perceptionMod">+0</span>
+                                <label for="perception">Percepção (Sab)</label>
+                            </div>
+                            <div class="skill-item">
+                                <input type="checkbox" id="performance" class="skill-prof">
+                                <span class="skill-mod" id="performanceMod">+0</span>
+                                <label for="performance">Atuação (Car)</label>
+                            </div>
+                            <div class="skill-item">
+                                <input type="checkbox" id="persuasion" class="skill-prof">
+                                <span class="skill-mod" id="persuasionMod">+0</span>
+                                <label for="persuasion">Persuasão (Car)</label>
+                            </div>
+                            <div class="skill-item">
+                                <input type="checkbox" id="religion" class="skill-prof">
+                                <span class="skill-mod" id="religionMod">+0</span>
+                                <label for="religion">Religião (Int)</label>
+                            </div>
+                            <div class="skill-item">
+                                <input type="checkbox" id="sleightOfHand" class="skill-prof">
+                                <span class="skill-mod" id="sleightOfHandMod">+0</span>
+                                <label for="sleightOfHand">Prestidigitação (Des)</label>
+                            </div>
+                            <div class="skill-item">
+                                <input type="checkbox" id="stealth" class="skill-prof">
+                                <span class="skill-mod" id="stealthMod">+0</span>
+                                <label for="stealth">Furtividade (Des)</label>
+                            </div>
+                            <div class="skill-item">
+                                <input type="checkbox" id="survival" class="skill-prof">
+                                <span class="skill-mod" id="survivalMod">+0</span>
+                                <label for="survival">Sobrevivência (Sab)</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="vitals-column">
+                        <div class="vital-stats">
+                            <div class="stat-box">
+                                <h3>Classe de Armadura</h3>
+                                <input type="number" id="armorClass" class="stat-value" value="10">
+                            </div>
+                            <div class="stat-box">
+                                <h3>Iniciativa</h3>
+                                <span id="initiative" class="stat-value">+0</span>
+                            </div>
+                            <div class="stat-box">
+                                <h3>Deslocamento</h3>
+                                <input type="number" id="speed" class="stat-value" value="9">
+                                <span class="unit">m</span>
+                            </div>
+                        </div>
+                        
+                        <div class="hit-points">
+                            <h3>Pontos de Vida</h3>
+                            <div class="hp-max">
+                                <label for="maxHp">Máximo</label>
+                                <input type="number" id="maxHp" value="10">
+                            </div>
+                            <div class="hp-current">
+                                <label for="currentHp">Atual</label>
+                                <input type="number" id="currentHp" value="10">
+                            </div>
+                            <div class="hp-temp">
+                                <label for="tempHp">Temporário</label>
+                                <input type="number" id="tempHp" value="0">
+                            </div>
+                        </div>
+                        
+                        <div class="hit-dice">
+                            <h3>Dados de Vida</h3>
+                            <div class="hd-container">
+                                <label for="hitDiceTotal">Total</label>
+                                <input type="text" id="hitDiceTotal" value="1d10">
+                                <label for="hitDiceRemaining">Restante</label>
+                                <input type="text" id="hitDiceRemaining" value="1d10">
+                            </div>
+                        </div>
+                        
+                        <div class="death-saves">
+                            <h3>Salvaguardas Contra a Morte</h3>
+                            <div class="saves-container">
+                                <div class="success-container">
+                                    <span>Sucessos</span>
+                                    <div class="saves-boxes">
+                                        <input type="checkbox" id="success1">
+                                        <input type="checkbox" id="success2">
+                                        <input type="checkbox" id="success3">
+                                    </div>
+                                </div>
+                                <div class="failure-container">
+                                    <span>Falhas</span>
+                                    <div class="saves-boxes">
+                                        <input type="checkbox" id="failure1">
+                                        <input type="checkbox" id="failure2">
+                                        <input type="checkbox" id="failure3">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="attacks">
+                            <h3>Ataques</h3>
+                            <div class="attack-table">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Nome</th>
+                                            <th>Bônus</th>
+                                            <th>Dano/Tipo</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="attacksTableBody">
+                                        <tr>
+                                            <td><input type="text" class="attack-name" placeholder="Arma"></td>
+                                            <td><input type="text" class="attack-bonus" placeholder="+5"></td>
+                                            <td><input type="text" class="attack-damage" placeholder="1d8+3 cortante"></td>
+                                        </tr>
+                                        <tr>
+                                            <td><input type="text" class="attack-name" placeholder="Arma"></td>
+                                            <td><input type="text" class="attack-bonus" placeholder="+5"></td>
+                                            <td><input type="text" class="attack-damage" placeholder="1d8+3 cortante"></td>
+                                        </tr>
+                                        <tr>
+                                            <td><input type="text" class="attack-name" placeholder="Arma"></td>
+                                            <td><input type="text" class="attack-bonus" placeholder="+5"></td>
+                                            <td><input type="text" class="attack-damage" placeholder="1d8+3 cortante"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <button class="btn small-btn" id="addAttack">+ Ataque</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="features-equipment">
+                    <div class="equipment-section">
+                        <h3>Equipamento</h3>
+                        <div class="currency">
+                            <div class="currency-item">
+                                <label for="cp">PC</label>
+                                <input type="number" id="cp" value="0" min="0">
+                            </div>
+                            <div class="currency-item">
+                                <label for="sp">PP</label>
+                                <input type="number" id="sp" value="0" min="0">
+                            </div>
+                            <div class="currency-item">
+                                <label for="ep">PE</label>
+                                <input type="number" id="ep" value="0" min="0">
+                            </div>
+                            <div class="currency-item">
+                                <label for="gp">PO</label>
+                                <input type="number" id="gp" value="0" min="0">
+                            </div>
+                            <div class="currency-item">
+                                <label for="pp">PL</label>
+                                <input type="number" id="pp" value="0" min="0">
+                            </div>
+                        </div>
+                        <textarea id="equipment" placeholder="Lista de equipamentos..."></textarea>
+                    </div>
+
+                    <div class="features-section">
+                        <h3>Características e Traços</h3>
+                        <textarea id="features" placeholder="Características de classe, traços raciais, etc..."></textarea>
+                    </div>
+
+                    <div class="personality-section">
+                        <h3>Personalidade</h3>
+                        <div class="personality-traits">
+                            <h4>Traços</h4>
+                            <textarea id="personalityTraits" placeholder="Traços de personalidade..."></textarea>
+                        </div>
+                        <div class="ideals">
+                            <h4>Ideais</h4>
+                            <textarea id="ideals" placeholder="Ideais..."></textarea>
+                        </div>
+                        <div class="bonds">
+                            <h4>Vínculos</h4>
+                            <textarea id="bonds" placeholder="Vínculos..."></textarea>
+                        </div>
+                        <div class="flaws">
+                            <h4>Fraquezas</h4>
+                            <textarea id="flaws" placeholder="Fraquezas..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="magic-section">
+                    <h3>Magias</h3>
+                    <div class="spellcasting-info">
+                        <div class="spell-ability">
+                            <label for="spellcastingAbility">Habilidade</label>
+                            <select id="spellcastingAbility">
+                                <option value="int">Inteligência</option>
+                                <option value="wis">Sabedoria</option>
+                                <option value="cha">Carisma</option>
+                            </select>
+                        </div>
+                        <div class="spell-save">
+                            <label>CD de Resistência</label>
+                            <span id="spellSaveDC">8</span>
+                        </div>
+                        <div class="spell-attack">
+                            <label>Bônus de Ataque</label>
+                            <span id="spellAttackBonus">+0</span>
+                        </div>
+                    </div>
+
+                    <div class="spell-slots">
+                        <h4>Espaços de Magia</h4>
+                        <div class="spell-level-slots">
+                            <div class="spell-level">
+                                <label>1º</label>
+                                <input type="number" id="level1Total" min="0" value="0">
+                                <span>/</span>
+                                <input type="number" id="level1Used" min="0" value="0">
+                            </div>
+                            <div class="spell-level">
+                                <label>2º</label>
+                                <input type="number" id="level2Total" min="0" value="0">
+                                <span>/</span>
+                                <input type="number" id="level2Used" min="0" value="0">
+                            </div>
+                            <div class="spell-level">
+                                <label>3º</label>
+                                <input type="number" id="level3Total" min="0" value="0">
+                                <span>/</span>
+                                <input type="number" id="level3Used" min="0" value="0">
+                            </div>
+                            <div class="spell-level">
+                                <label>4º</label>
+                                <input type="number" id="level4Total" min="0" value="0">
+                                <span>/</span>
+                                <input type="number" id="level4Used" min="0" value="0">
+                            </div>
+                            <div class="spell-level">
+                                <label>5º</label>
+                                <input type="number" id="level5Total" min="0" value="0">
+                                <span>/</span>
+                                <input type="number" id="level5Used" min="0" value="0">
+                            </div>
+                            <div class="spell-level">
+                                <label>6º</label>
+                                <input type="number" id="level6Total" min="0" value="0">
+                                <span>/</span>
+                                <input type="number" id="level6Used" min="0" value="0">
+                            </div>
+                            <div class="spell-level">
+                                <label>7º</label>
+                                <input type="number" id="level7Total" min="0" value="0">
+                                <span>/</span>
+                                <input type="number" id="level7Used" min="0" value="0">
+                            </div>
+                            <div class="spell-level">
+                                <label>8º</label>
+                                <input type="number" id="level8Total" min="0" value="0">
+                                <span>/</span>
+                                <input type="number" id="level8Used" min="0" value="0">
+                            </div>
+                            <div class="spell-level">
+                                <label>9º</label>
+                                <input type="number" id="level9Total" min="0" value="0">
+                                <span>/</span>
+                                <input type="number" id="level9Used" min="0" value="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="spells-list">
+                        <h4>Truques (0 nível)</h4>
+                        <div class="cantrips" id="cantrips">
+                            <input type="text" placeholder="Truque 1">
+                            <input type="text" placeholder="Truque 2">
+                            <input type="text" placeholder="Truque 3">
+                            <input type="text" placeholder="Truque 4">
+                        </div>
+                        
+                        <div class="spell-level-container">
+                            <h4>Magias de 1º nível</h4>
+                            <div class="level-spells" id="level1Spells">
+                                <div class="spell-entry">
+                                    <input type="checkbox" class="spell-prepared">
+                                    <input type="text" class="spell-name" placeholder="Nome da magia">
+                                </div>
+                                <div class="spell-entry">
+                                    <input type="checkbox" class="spell-prepared">
+                                    <input type="text" class="spell-name" placeholder="Nome da magia">
+                                </div>
+                                <div class="spell-entry">
+                                    <input type="checkbox" class="spell-prepared">
+                                    <input type="text" class="spell-name" placeholder="Nome da magia">
+                                </div>
+                            </div>
+                            <button class="btn small-btn add-spell" data-level="1">+ Magia</button>
+                        </div>
+                        
+                        <div class="spell-level-container">
+                            <h4>Magias de 2º nível</h4>
+                            <div class="level-spells" id="level2Spells">
+                                <div class="spell-entry">
+                                    <input type="checkbox" class="spell-prepared">
+                                    <input type="text" class="spell-name" placeholder="Nome da magia">
+                                </div>
+                                <div class="spell-entry">
+                                    <input type="checkbox" class="spell-prepared">
+                                    <input type="text" class="spell-name" placeholder="Nome da magia">
+                                </div>
+                            </div>
+                            <button class="btn small-btn add-spell" data-level="2">+ Magia</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dice-roller">
+                    <h3>Rolagem de Dados</h3>
+                    <div class="dice-controls">
+                        <div class="dice-input">
+                            <label for="diceExpression">Expressão:</label>
+                            <input type="text" id="diceExpression" placeholder="1d20+5">
+                            <button class="btn" id="rollDice">Rolar</button>
+                        </div>
+                        <div class="dice-result">
+                            <span>Resultado: </span>
+                            <span id="diceResult">-</span>
+                        </div>
+                    </div>
+                    <div class="quick-dice">
+                        <button class="dice-btn" data-dice="d20">d20</button>
+                        <button class="dice-btn" data-dice="d12">d12</button>
+                        <button class="dice-btn" data-dice="d10">d10</button>
+                        <button class="dice-btn" data-dice="d8">d8</button>
+                        <button class="dice-btn" data-dice="d6">d6</button>
+                        <button class="dice-btn" data-dice="d4">d4</button>
+                        <button class="dice-btn" data-dice="d100">d100</button>
+                    </div>
+                </div>
+
+                <div class="notes-section">
+                    <h3>Anotações</h3>
+                    <textarea id="characterNotes" placeholder="Anotações da campanha, detalhes da história, aliados, inimigos, etc..."></textarea>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Oblivion RPG - Todos os direitos reservados.</p>
+    </footer>
+</body>
+</html>
