@@ -1,8 +1,7 @@
-// CONFIGURAÇÃO INICIAL DO MAPA
+// Inicia tudo quando a página termina de carregar
 document.addEventListener("DOMContentLoaded", () => {
-  // ====================================================
-  // CONFIGURAÇÃO BÁSICA
-  // Define as variáveis principais e configura o ambiente do mapa
+  // Configurações básicas
+  // Define o tamanho do grid e das variáveis principais
   // ====================================================
   const container = document.getElementById("map-container");
   const grid = document.getElementById("grid");
@@ -11,6 +10,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const viewWidth = container.offsetWidth;
   const viewHeight = container.offsetHeight;
   
+  // Variáveis para movimentação do mapa
+  // Controla como o usuário navega pelo mapa
   let isDragging = false;
   let lastX = 0, lastY = 0;
   let offsetX = viewWidth / 2 - gridWidth / 2;
@@ -20,11 +21,13 @@ document.addEventListener("DOMContentLoaded", () => {
   let shiftPressed = false;
   
   // Variáveis para desenho
+  // Permite criar linhas e desenhos no mapa
   const svgNamespace = "http://www.w3.org/2000/svg";
   let currentPath = null;
   let pathPoints = [];
   
   // Variáveis para imagens
+  // Controla as imagens adicionadas como mapas ou fundos
   let nextZIndex = -1;
   let backgroundImages = [];
   let selectedImage = null;
@@ -33,7 +36,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let resizeHandle = '';
   let startX, startY, startWidth, startHeight, startAngle, startRotation;
   
-  // Variáveis para desenho à mão livre
+  // Variáveis para pincel
+  // Permite desenhar à mão livre no mapa
   let pincelAtivo = false;
   let corSelecionada = "#ffffff";
   let espessura = 5;
@@ -42,20 +46,22 @@ document.addEventListener("DOMContentLoaded", () => {
   let lastDrawY = null;
   
   // Variáveis para tokens
+  // Permite colocar e mover miniaturas de personagens no mapa
   let tokens = [];
   let tokenLibrary = [];
   let selectedToken = null;
   let isDraggingToken = false;
   let tokenDragStartX, tokenDragStartY;
 
-  // ====================================================
-  // FUNÇÕES UTILITÁRIAS
-  // Funções simples usadas em várias partes do código
+  // Funções úteis
+  // Pequenas funções usadas em vários lugares do código
   // ====================================================
   function clamp(value, min, max) {
     return Math.max(min, Math.min(value, max));
   }
   
+  // Atualiza a posição do grid
+  // Aplica o zoom e movimento quando o usuário navega
   function updateGridPosition() {
     // Usar transform translate com ponto de origem no centro
     // Importante: manter o -50%, -50% para centralizar via CSS
@@ -70,6 +76,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
   
+  // Mantém o grid visível
+  // Evita que o usuário perca o grid de vista
   function ensureGridVisibility() {
     const scaledGridWidth = gridWidth * scale;
     const scaledGridHeight = gridHeight * scale;
@@ -116,8 +124,11 @@ document.addEventListener("DOMContentLoaded", () => {
     img.style.height = '300px';
     img.style.position = 'absolute';
     
-    const centerX = -offsetX + viewWidth / 2;
-    const centerY = -offsetY + viewHeight / 2;
+    // Posicionar no centro do grid (em vez do centro da viewport)
+    // As coordenadas do centro do grid são sempre (gridWidth/2, gridHeight/2)
+    const centerX = gridWidth / 2;
+    const centerY = gridHeight / 2;
+    
     img.style.left = `${centerX}px`;
     img.style.top = `${centerY}px`;
     img.style.transform = 'translate(-50%, -50%)';
@@ -139,6 +150,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     
     selectImage(img);
+    
+    // Opcionalmente, centralizar a visualização no grid após adicionar a imagem
+    if (centerViewAfterAddingImage) {
+      // Rola a visualização para mostrar o centro do grid
+      resetGridPosition();
+    }
   }
   
   function addImageControls(imgElement) {
@@ -240,6 +257,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
   
+  // Organiza camadas de imagens
+  // Permite enviar imagens para trás ou trazê-las para frente
   function moveImageLayer(imgElement, direction) {
     const imgData = getImageData(imgElement);
     const currentZIndex = imgData.zIndex || parseInt(imgElement.style.zIndex);
@@ -281,6 +300,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
   
+  // Fixa ou libera imagens
+  // Impede ou permite que uma imagem seja movida
   function anchorImage(imgElement) {
     const isCurrentlyAnchored = imgElement.dataset.anchored === 'true';
     const newAnchorState = !isCurrentlyAnchored;
@@ -310,6 +331,8 @@ document.addEventListener("DOMContentLoaded", () => {
     updateImageData(imgElement, { anchored: newAnchorState });
   }
   
+  // Seleciona uma imagem
+  // Mostra controles para editar a imagem selecionada
   function selectImage(imgElement) {
     deselectImage();
     
@@ -322,6 +345,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
   
+  // Remove seleção de imagem
+  // Esconde os controles de edição
   function deselectImage() {
     if (selectedImage) {
       selectedImage.classList.remove('selected');
@@ -335,6 +360,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
   
+  // Exclui imagens
+  // Remove uma imagem do grid
   function deleteImage(imgElement) {
     const index = backgroundImages.findIndex(item => item.element === imgElement);
     if (index !== -1) {
@@ -347,6 +374,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
   
+  // Começa a arrastar imagem
+  // Permite mover imagens pelo mapa
   function startDragImage(e) {
     if (!selectedImage || isResizing || isRotating || spacePressed) return;
     
@@ -359,6 +388,8 @@ document.addEventListener("DOMContentLoaded", () => {
     document.addEventListener('mouseup', stopDragImage);
   }
   
+  // Arrasta a imagem
+  // Atualiza a posição durante o movimento
   function dragImage(e) {
     if (!selectedImage || isResizing || isRotating) return;
     
@@ -381,12 +412,16 @@ document.addEventListener("DOMContentLoaded", () => {
     startY = e.clientY;
   }
   
+  // Finaliza arrasto de imagem
+  // Encerra o movimento da imagem
   function stopDragImage() {
     grid.classList.remove('editing-image');
     document.removeEventListener('mousemove', dragImage);
     document.removeEventListener('mouseup', stopDragImage);
   }
   
+  // Obtém dados da imagem
+  // Recupera informações sobre tamanho e posição
   function getImageData(imgElement) {
     const index = backgroundImages.findIndex(item => item.element === imgElement);
     if (index !== -1) {
@@ -402,6 +437,8 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
   
+  // Atualiza dados da imagem
+  // Salva as alterações feitas na imagem
   function updateImageData(imgElement, newData) {
     const index = backgroundImages.findIndex(item => item.element === imgElement);
     if (index !== -1) {
@@ -412,10 +449,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ====================================================
-  // REDIMENSIONAMENTO E ROTAÇÃO
-  // Controla o ajuste de tamanho e rotação das imagens
-  // ====================================================
+  // Inicia redimensionamento
+  // Começa a alterar o tamanho da imagem
   function startResize(e) {
     if (spacePressed || !selectedImage) return;
     
@@ -435,6 +470,8 @@ document.addEventListener("DOMContentLoaded", () => {
     document.addEventListener('mouseup', stopResize);
   }
   
+  // Redimensiona a imagem
+  // Altera o tamanho conforme o mouse se move
   function resizeImage(e) {
     if (!isResizing || !selectedImage) return;
     
@@ -481,12 +518,16 @@ document.addEventListener("DOMContentLoaded", () => {
     startHeight = newHeight;
   }
   
+  // Finaliza redimensionamento
+  // Encerra o ajuste de tamanho da imagem
   function stopResize() {
     isResizing = false;
     document.removeEventListener('mousemove', resizeImage);
     document.removeEventListener('mouseup', stopResize);
   }
   
+  // Inicia rotação
+  // Começa a girar a imagem
   function startRotate(e) {
     if (spacePressed || !selectedImage) return;
     
@@ -508,6 +549,8 @@ document.addEventListener("DOMContentLoaded", () => {
     document.addEventListener('mouseup', stopRotate);
   }
   
+  // Rotaciona a imagem
+  // Gira a imagem conforme o mouse se move
   function rotateImage(e) {
     if (!isRotating || !selectedImage) return;
     
@@ -526,6 +569,8 @@ document.addEventListener("DOMContentLoaded", () => {
     updateImageData(selectedImage, { rotation: newRotation });
   }
   
+  // Finaliza rotação
+  // Encerra o giro da imagem
   function stopRotate() {
     isRotating = false;
     document.removeEventListener('mousemove', rotateImage);
@@ -642,65 +687,118 @@ document.addEventListener("DOMContentLoaded", () => {
     tokenElement.dataset.id = token.id;
     tokenElement.dataset.size = token.size;
     tokenElement.title = `Token ${token.size}x${token.size}`;
+    tokenElement.tabIndex = 0; // Torna o elemento focável com teclado
+    
+    // Variável para controlar qual token da biblioteca está selecionado
+    let selectedLibraryToken = null;
+    
+    // Adicionar função para selecionar um token na biblioteca
+    function selectLibraryToken(element) {
+      // Remover seleção anterior
+      if (selectedLibraryToken) {
+        selectedLibraryToken.classList.remove('library-selected');
+      }
+      
+      // Aplicar nova seleção
+      selectedLibraryToken = element;
+      selectedLibraryToken.classList.add('library-selected');
+    }
+    
+    // Função para excluir um token da biblioteca
+    function deleteTokenFromLibrary(tokenId) {
+      const index = tokenLibrary.findIndex(t => t.id === tokenId);
+      if (index !== -1) {
+        tokenLibrary.splice(index, 1);
+        const tokenToRemove = document.querySelector(`.token-item[data-id="${tokenId}"]`);
+        if (tokenToRemove) {
+          tokenToRemove.remove();
+        }
+        selectedLibraryToken = null;
+      }
+    }
+    
+    // Evento de clique para selecionar o token
+    tokenElement.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      selectLibraryToken(tokenElement);
+    });
+    
+    // Evento de foco para selecionar o token quando usando Tab
+    tokenElement.addEventListener('focus', () => {
+      selectLibraryToken(tokenElement);
+    });
+    
+    // Evento de teclado para detectar Delete
+    tokenElement.addEventListener('keydown', (e) => {
+      if (e.key === 'Delete') {
+        e.preventDefault();
+        deleteTokenFromLibrary(token.id);
+      }
+    });
     
     tokenElement.addEventListener('mousedown', (e) => {
-      e.preventDefault();
-      
-      const dragToken = document.createElement('div');
-      dragToken.className = 'grid-token dragging';
-      dragToken.style.backgroundImage = `url(${token.url})`;
-      dragToken.style.width = `${token.size * 50}px`;
-      dragToken.style.height = `${token.size * 50}px`;
-      dragToken.style.position = 'fixed';
-      dragToken.style.pointerEvents = 'none';
-      dragToken.style.zIndex = '9999';
-      dragToken.style.opacity = '0.8';
-      dragToken.dataset.id = token.id;
-      dragToken.dataset.size = token.size;
-      document.body.appendChild(dragToken);
-      
-      dragToken.style.left = `${e.clientX - dragToken.offsetWidth / 2}px`;
-      dragToken.style.top = `${e.clientY - dragToken.offsetHeight / 2}px`;
-      
-      const moveHandler = (moveEvent) => {
-        dragToken.style.left = `${moveEvent.clientX - dragToken.offsetWidth / 2}px`;
-        dragToken.style.top = `${moveEvent.clientY - dragToken.offsetHeight / 2}px`;
-      };
-      
-      const upHandler = (upEvent) => {
-        document.removeEventListener('mousemove', moveHandler);
-        document.removeEventListener('mouseup', upHandler);
+      if (e.button === 0) { // Botão esquerdo do mouse
+        e.preventDefault();
         
-        const rect = grid.getBoundingClientRect();
+        const dragToken = document.createElement('div');
+        dragToken.className = 'grid-token dragging';
+        dragToken.style.backgroundImage = `url(${token.url})`;
+        dragToken.style.width = `${token.size * 50}px`;
+        dragToken.style.height = `${token.size * 50}px`;
+        dragToken.style.position = 'fixed';
+        dragToken.style.pointerEvents = 'none';
+        dragToken.style.zIndex = '9999';
+        dragToken.style.opacity = '0.8';
+        dragToken.dataset.id = token.id;
+        dragToken.dataset.size = token.size;
+        document.body.appendChild(dragToken);
         
-        if (upEvent.clientX >= rect.left && upEvent.clientX <= rect.right &&
-            upEvent.clientY >= rect.top && upEvent.clientY <= rect.bottom) {
-              
-          const mouseX = upEvent.clientX;
-          const mouseY = upEvent.clientY;
-          
-          const gridRect = grid.getBoundingClientRect();
-          
-          const gridX = (mouseX - gridRect.left) / scale;
-          const gridY = (mouseY - gridRect.top) / scale;
-          
-          const cellSize = 50;
-          const snappedX = Math.round(gridX / cellSize) * cellSize;
-          const snappedY = Math.round(gridY / cellSize) * cellSize;
-          
-          addTokenToGrid(token, snappedX, snappedY);
-        }
+        dragToken.style.left = `${e.clientX - dragToken.offsetWidth / 2}px`;
+        dragToken.style.top = `${e.clientY - dragToken.offsetHeight / 2}px`;
         
-        dragToken.remove();
-      };
-      
-      document.addEventListener('mousemove', moveHandler);
-      document.addEventListener('mouseup', upHandler);
+        const moveHandler = (moveEvent) => {
+          dragToken.style.left = `${moveEvent.clientX - dragToken.offsetWidth / 2}px`;
+          dragToken.style.top = `${moveEvent.clientY - dragToken.offsetHeight / 2}px`;
+        };
+        
+        const upHandler = (upEvent) => {
+          document.removeEventListener('mousemove', moveHandler);
+          document.removeEventListener('mouseup', upHandler);
+          
+          const rect = grid.getBoundingClientRect();
+          
+          if (upEvent.clientX >= rect.left && upEvent.clientX <= rect.right &&
+              upEvent.clientY >= rect.top && upEvent.clientY <= rect.bottom) {
+                
+            const mouseX = upEvent.clientX;
+            const mouseY = upEvent.clientY;
+            
+            const gridRect = grid.getBoundingClientRect();
+            
+            const gridX = (mouseX - gridRect.left) / scale;
+            const gridY = (mouseY - gridRect.top) / scale;
+            
+            const cellSize = 50;
+            const snappedX = Math.round(gridX / cellSize) * cellSize;
+            const snappedY = Math.round(gridY / cellSize) * cellSize;
+            
+            addTokenToGrid(token, snappedX, snappedY);
+          }
+          
+          dragToken.remove();
+        };
+        
+        document.addEventListener('mousemove', moveHandler);
+        document.addEventListener('mouseup', upHandler);
+      }
     });
     
     tokenLibraryElement.appendChild(tokenElement);
   }
 
+  // Coloca tokens no mapa
+  // Adiciona miniaturas no grid de jogo
   function addTokenToGrid(tokenData, x, y) {
     const tokenElement = document.createElement('div');
     tokenElement.className = 'grid-token';
@@ -745,24 +843,23 @@ document.addEventListener("DOMContentLoaded", () => {
     selectToken(token);
   }
 
-  // Adicione essa função para excluir o token selecionado
+  // Exclui token selecionado
+  // Remove um token do mapa
   function deleteSelectedToken() {
     if (!selectedToken) return;
     
-    // Remover o token do array de tokens
     const index = tokens.findIndex(token => token.id === selectedToken.id);
     if (index !== -1) {
       tokens.splice(index, 1);
     }
     
-    // Remover o elemento do DOM
     selectedToken.element.remove();
     
-    // Limpar a referência
     selectedToken = null;
   }
 
-  // Modifique a função selectToken para remover a adição do botão de exclusão
+  // Seleciona um token
+  // Mostra qual token está ativo
   function selectToken(token) {
     deselectImage();
     
@@ -774,7 +871,8 @@ document.addEventListener("DOMContentLoaded", () => {
     selectedToken.element.classList.add('selected');
   }
 
-  // Modifique a função deselectToken para simplificar (sem precisar remover o botão)
+  // Remove seleção de token
+  // Desativa o token atual
   function deselectToken() {
     if (selectedToken) {
       selectedToken.element.classList.remove('selected');
@@ -782,6 +880,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // Move token com teclas de seta
+  // Permite ajustar posição com o teclado
   function moveSelectedTokenWithArrows(direction) {
     if (!selectedToken) return;
     
@@ -945,7 +1045,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
   
-  // Adicione a função para centralizar o grid aqui dentro
+  // Centraliza o grid
+  // Retorna o mapa para a posição padrão
   function resetGridPosition() {
     // Redefinir escala para 1
     scale = 1;
@@ -961,7 +1062,8 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("Grid centralizado:", { offsetX, offsetY, scale });
   }
   
-  // Inicializar a posição do grid corretamente no carregamento
+  // Inicialização do grid
+  // Configura a posição inicial do mapa
   resetGridPosition();
   
   // ====================================================
@@ -1116,6 +1218,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
   
+  // Ativa sistema de tokens
+  // Carrega a funcionalidade de tokens
   initializeTokenSystem();
 
   // Deselecionar elementos ao clicar fora
