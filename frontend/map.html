@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mapa - Oblivion</title>
+
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/map.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
+
+  <script defer src="js/stars.js"></script>
+  <script defer src="js/map.js"></script>
+</head>
+<body>
+  <header>
+    <h1 class="logo" onclick="window.location.href='main.html'">OBLIVION</h1>
+    <nav>
+      <button class="btn"><a href="main.html">Início</a></button>
+      <button class="btn"><a href="anotacoes.html">Anotações</a></button>
+      <button class="btn"><a href="perfil.html">Perfil</a></button>
+    </nav>
+  </header>
+
+  <main>
+    <div id="map-container">
+      <div id="grid"></div>
+    </div>
+
+    <div id="pincelMenu" class="pincel-container hidden">
+        <div class="cores">
+          <button class="cor" data-cor="#ffffff" title="Branco" style="background-color: #ffffff;"></button>
+          <button class="cor" data-cor="#000000" title="Preto" style="background-color: #000000;"></button>
+          <button class="cor" data-cor="#00ffaa" title="Verde" style="background-color: #00ffaa;"></button>
+        </div>
+        <div class="largura">
+          <label for="espessura">Espessura:</label>
+          <input type="range" id="espessura" min="1" max="20" value="5">
+        </div>
+        <button id="borrachaBtn" class="btn-borracha" title="Borracha"><i class="fas fa-eraser"></i></button>
+      </div>
+      
+      <div id="tokenMenu" class="token-container hidden">
+        <h3>Tokens</h3>
+        <div class="token-options">
+          <div class="token-size-selector">
+            <span>Tamanho:</span>
+            <select id="tokenSizeSelector">
+              <option value="1">1x1</option>
+              <option value="2">2x2</option>
+              <option value="3">3x3</option>
+              <option value="4">4x4</option>
+            </select>
+          </div>
+          <input type="file" id="tokenInput" accept="image/*">
+          <button id="confirmTokenBtn" class="btn-confirm">Adicionar</button>
+        </div>
+        <div class="token-divider"></div>
+        <h4>Seus tokens</h4>
+        <div class="token-library" id="tokenLibrary"></div>
+      </div>
+  </main>
+
+  <div class="fab-container">
+    <button class="fab-toggle" id="fabToggle" title="Menu">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="fab-buttons" id="fabButtons">
+        <button title="Pincel"><i class="fas fa-pen"></i></button>
+        <button title="Adicionar Imagem" id="addImageBtn"><i class="fas fa-image"></i></button>
+        <button title="Tokens" id="addTokenBtn"><i class="fas fa-plus"></i></button>
+    </div>
+  </div>
+  
+  <div id="imageMenu" class="image-container hidden">
+    <h3>Adicionar imagem de fundo</h3>
+    <input type="file" id="imageInput" accept="image/*">
+    <div class="image-controls">
+        <button id="confirmImageBtn" class="btn-confirm">Confirmar</button>
+        <button id="cancelImageBtn" class="btn-cancel">Cancelar</button>
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; 2025 Oblivion RPG - Todos os direitos reservados.</p>
+  </footer>
+</body>
+</html>
