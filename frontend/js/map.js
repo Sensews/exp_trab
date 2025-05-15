@@ -1,17 +1,16 @@
 // CONFIGURAÇÃO INICIAL DO MAPA
 document.addEventListener("DOMContentLoaded", () => {
-  // Elementos principais e dimensões
+  // ====================================================
+  // CONFIGURAÇÃO BÁSICA
+  // Define as variáveis principais e configura o ambiente do mapa
+  // ====================================================
   const container = document.getElementById("map-container");
   const grid = document.getElementById("grid");
-  const gridWidth = 10000;
-  const gridHeight = 10000;
+  const gridWidth = 2500;
+  const gridHeight = 2500;
   const viewWidth = container.offsetWidth;
   const viewHeight = container.offsetHeight;
   
-  // Adicione esta constante de margem
-  const gridMargin = 500; // Margem de segurança em pixels
-  
-  // Variáveis de controle de navegação
   let isDragging = false;
   let lastX = 0, lastY = 0;
   let offsetX = viewWidth / 2 - gridWidth / 2;
@@ -20,12 +19,12 @@ document.addEventListener("DOMContentLoaded", () => {
   let scale = 1;
   let shiftPressed = false;
   
-  // Variáveis de desenho
+  // Variáveis para desenho
   const svgNamespace = "http://www.w3.org/2000/svg";
   let currentPath = null;
   let pathPoints = [];
   
-  // Variáveis de gerenciamento de imagens
+  // Variáveis para imagens
   let nextZIndex = -1;
   let backgroundImages = [];
   let selectedImage = null;
@@ -34,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let resizeHandle = '';
   let startX, startY, startWidth, startHeight, startAngle, startRotation;
   
-  // Variáveis de desenho à mão livre
+  // Variáveis para desenho à mão livre
   let pincelAtivo = false;
   let corSelecionada = "#ffffff";
   let espessura = 5;
@@ -42,31 +41,71 @@ document.addEventListener("DOMContentLoaded", () => {
   let lastDrawX = null;
   let lastDrawY = null;
   
-  // GERENCIAMENTO DE TOKENS
+  // Variáveis para tokens
   let tokens = [];
   let tokenLibrary = [];
   let selectedToken = null;
   let isDraggingToken = false;
   let tokenDragStartX, tokenDragStartY;
-  
-  // FUNÇÕES AUXILIARES GERAIS
+
+  // ====================================================
+  // FUNÇÕES UTILITÁRIAS
+  // Funções simples usadas em várias partes do código
+  // ====================================================
   function clamp(value, min, max) {
     return Math.max(min, Math.min(value, max));
   }
   
   function updateGridPosition() {
-    grid.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
+    // Usar transform translate com ponto de origem no centro
+    // Importante: manter o -50%, -50% para centralizar via CSS
+    grid.style.transform = `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px)) scale(${scale})`;
     
-    // Também atualize os tokens para mantê-los alinhados ao grid
+    // Atualizar tokens conforme a posição do grid
     tokens.forEach(token => {
       const element = token.element;
       if (element) {
-        element.style.transformOrigin = 'top left';
+        element.style.transformOrigin = 'center center';
       }
     });
   }
   
-  // GERENCIAMENTO DE IMAGENS DE FUNDO
+  function ensureGridVisibility() {
+    const scaledGridWidth = gridWidth * scale;
+    const scaledGridHeight = gridHeight * scale;
+    
+    // Calcular corretamente os limites de navegação
+    // Quando o grid é maior que a viewport
+    if (scaledGridWidth > viewWidth || scaledGridHeight > viewHeight) {
+      // Permitir uma navegação mais livre - menos limitações severas
+      // Calcular quanto do grid deve ficar visível ao navegar
+      const visibleWidth = Math.min(viewWidth * 0.8, scaledGridWidth * 0.8);
+      const visibleHeight = Math.min(viewHeight * 0.8, scaledGridHeight * 0.8);
+      
+      // Limites mais flexíveis
+      const minX = viewWidth - (scaledGridWidth - visibleWidth);
+      const maxX = -visibleWidth;
+      const minY = viewHeight - (scaledGridHeight - visibleHeight);
+      const maxY = -visibleHeight;
+      
+      // Aplicar os limites de maneira mais suave
+      if (offsetX < minX) offsetX = minX;
+      if (offsetX > maxX) offsetX = maxX;
+      if (offsetY < minY) offsetY = minY;
+      if (offsetY > maxY) offsetY = maxY;
+    } else {
+      // Centralizar perfeitamente quando o grid é menor que a viewport
+      offsetX = (viewWidth - scaledGridWidth) / 2;
+      offsetY = (viewHeight - scaledGridHeight) / 2;
+    }
+    
+    updateGridPosition();
+  }
+
+  // ====================================================
+  // GERENCIAMENTO DE IMAGENS
+  // Permite adicionar, mover, redimensionar e rotacionar imagens no mapa
+  // ====================================================
   function addBackgroundImage(imageUrl) {
     const img = document.createElement('div');
     img.className = 'background-image';
@@ -175,15 +214,11 @@ document.addEventListener("DOMContentLoaded", () => {
     imgElement.dataset.anchored = 'false';
     
     imgElement.addEventListener('mousedown', (e) => {
-      if (spacePressed) {
-        return;
-      }
+      if (spacePressed) return;
       
       const isAnchored = imgElement.dataset.anchored === 'true';
       
-      if (isAnchored && !shiftPressed) {
-        return;
-      }
+      if (isAnchored && !shiftPressed) return;
       
       const isControlElement = e.target.closest('.resize-handle') || 
                               e.target.closest('.rotate-handle') || 
@@ -376,8 +411,11 @@ document.addEventListener("DOMContentLoaded", () => {
       };
     }
   }
-  
-  // REDIMENSIONAMENTO E ROTAÇÃO DE IMAGENS
+
+  // ====================================================
+  // REDIMENSIONAMENTO E ROTAÇÃO
+  // Controla o ajuste de tamanho e rotação das imagens
+  // ====================================================
   function startResize(e) {
     if (spacePressed || !selectedImage) return;
     
@@ -493,193 +531,11 @@ document.addEventListener("DOMContentLoaded", () => {
     document.removeEventListener('mousemove', rotateImage);
     document.removeEventListener('mouseup', stopRotate);
   }
-  
-  // NAVEGAÇÃO E CONTROLE DE TECLADO
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Shift") {
-      shiftPressed = true;
-    }
-    
-    if (e.code === "Space") {
-      if (isResizing || isRotating || isDraggingToken) return;
-      
-      spacePressed = true;
-      container.classList.add("space-pressed");
-      document.body.style.cursor = 'grab';
-      
-      document.querySelectorAll('.background-image').forEach(img => {
-        img.classList.add('ignore-mouse');
-      });
-      
-      if (desenhando) {
-        currentPath = null;
-        pathPoints = [];
-        desenhando = false;
-      }
-      
-      e.preventDefault();
-    }
 
-    // Mover token selecionado com as setas
-    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-      if (!spacePressed && selectedToken) {
-        e.preventDefault();
-        moveSelectedTokenWithArrows(e.key);
-      }
-    }
-
-    if (e.key.toLowerCase() === "g" && e.shiftKey) {
-      // Centralizar o grid com margens de segurança
-      offsetX = viewWidth / 2 - gridWidth / 2;
-      offsetY = viewHeight / 2 - gridHeight / 2;
-      scale = 1;
-      updateGridPosition();
-    }
-  });
-
-  document.addEventListener("keyup", (e) => {
-    if (e.key === "Shift") {
-      shiftPressed = false;
-    }
-    
-    if (e.code === "Space") {
-      spacePressed = false;
-      container.classList.remove("space-pressed");
-      document.body.style.cursor = '';
-      
-      document.querySelectorAll('.background-image').forEach(img => {
-        img.classList.remove('ignore-mouse');
-      });
-    }
-  });
-  
-  // EVENTOS DO MOUSE
-  container.addEventListener("mousedown", (e) => {
-    if (spacePressed) {
-      isDragging = true;
-      lastX = e.clientX;
-      lastY = e.clientY;
-      container.classList.add("dragging");
-      document.body.style.cursor = 'grabbing';
-      
-      if (container.setPointerCapture) {
-        container.setPointerCapture(e.pointerId);
-      }
-      
-      e.preventDefault();
-      e.stopPropagation();
-    }
-  });
-  
-  document.addEventListener("mouseup", () => {
-    isDragging = false;
-    container.classList.remove("dragging");
-    
-    if (desenhando) {
-      currentPath = null;
-      pathPoints = [];
-    }
-    
-    desenhando = false;
-    lastDrawX = null;
-    lastDrawY = null;
-  });
-  
-  document.addEventListener("mousemove", (e) => {
-    if (!isDragging || !spacePressed) return;
-  
-    const dx = e.clientX - lastX;
-    const dy = e.clientY - lastY;
-    lastX = e.clientX;
-    lastY = e.clientY;
-  
-    // Aplicar limites com margens de segurança
-    const minX = viewWidth - (gridWidth + gridMargin) * scale;
-    const maxX = gridMargin * scale;
-    const minY = viewHeight - (gridHeight + gridMargin) * scale;
-    const maxY = gridMargin * scale;
-    
-    offsetX = clamp(offsetX + dx, minX, maxX);
-    offsetY = clamp(offsetY + dy, minY, maxY);
-  
-    updateGridPosition();
-  });
-  
-  // ZOOM COM RODA DO MOUSE
-  container.addEventListener("wheel", (e) => {
-    if (spacePressed) return;
-    e.preventDefault();
-
-    const zoomIntensity = 0.1;
-    const delta = e.deltaY < 0 ? 1 : -1;
-    
-    const newScale = clamp(scale * (1 + delta * zoomIntensity), 0.5, 3);
-    
-    const mouseX = e.clientX;
-    const mouseY = e.clientY;
-    
-    const mouseXInGrid = (mouseX - offsetX) / scale;
-    const mouseYInGrid = (mouseY - offsetY) / scale;
-    
-    offsetX = mouseX - mouseXInGrid * newScale;
-    offsetY = mouseY - mouseYInGrid * newScale;
-    
-    scale = newScale;
-    
-    updateGridPosition();
-    ensureGridVisibility(); // Verificar a visibilidade após o zoom
-  }, { passive: false });
-  
-  // DESELECIONAR QUANDO CLICAR FORA
-  document.addEventListener("mousedown", (e) => {
-    if (selectedImage && 
-        !e.target.closest('.background-image') && 
-        !e.target.closest('.image-controls-container')) {
-      deselectImage();
-    }
-  });
-  
-  // DESATIVAR EVENTOS DE MOUSE EM IMAGENS QUANDO NAVEGANDO
-  document.addEventListener('DOMContentLoaded', () => {
-    const style = document.createElement('style');
-    style.textContent = `
-      .background-image {
-        position: absolute;
-        pointer-events: auto !important; 
-        z-index: -1;
-      }
-      
-      #grid * {
-        pointer-events: auto;
-      }
-    `;
-    document.head.appendChild(style);
-  });
-  
-  // FUNÇÕES DE DESENHO À MÃO LIVRE
-  grid.addEventListener("mousedown", (e) => {
-    if (!pincelAtivo || spacePressed) return;
-    desenhando = true;
-    
-    currentPath = null;
-    
-    if (corSelecionada === "transparent") {
-      useBorracha(e);
-    } else {
-      desenhar(e);
-    }
-  });
-  
-  grid.addEventListener("mousemove", (e) => {
-    if (desenhando && pincelAtivo && !spacePressed) {
-      if (corSelecionada === "transparent") {
-        useBorracha(e);
-      } else {
-        desenhar(e);
-      }
-    }
-  });
-  
+  // ====================================================
+  // FERRAMENTAS DE DESENHO
+  // Permite desenhar linhas e formas diretamente no mapa
+  // ====================================================
   function desenhar(e) {
     const rect = grid.getBoundingClientRect();
     const scaleX = grid.offsetWidth / rect.width;
@@ -740,101 +596,31 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
-  
-  // INTERFACE DE USUÁRIO
-  updateGridPosition();
-  
-  const fabToggle = document.getElementById("fabToggle");
-  const fabButtons = document.getElementById("fabButtons");
-  
-  fabToggle.addEventListener("click", () => {
-    fabButtons.classList.toggle("show");
-  });
-  
-  // CONTROLES DE PINCEL
-  const pincelBtn = document.querySelector('.fab-buttons button:nth-child(1)');
-  const pincelMenu = document.getElementById('pincelMenu');
-  const corButtons = document.querySelectorAll('.cor');
-  const espessuraInput = document.getElementById('espessura');
-  const borrachaBtn = document.getElementById('borrachaBtn');
-  
-  pincelBtn.addEventListener("click", () => {
-    pincelAtivo = !pincelAtivo;
-    pincelMenu.classList.toggle("hidden", !pincelAtivo);
-  });
-  
-  corButtons.forEach(btn => {
-    btn.addEventListener("click", () => {
-      corSelecionada = btn.dataset.cor;
-    });
-  });
-  
-  espessuraInput.addEventListener("input", () => {
-    espessura = parseInt(espessuraInput.value);
-  });
-  
-  borrachaBtn.addEventListener("click", () => {
-    corSelecionada = "transparent";
-  });
-  
-  // GERENCIAMENTO DE IMAGENS
-  const addImageBtn = document.querySelector('.fab-buttons button:nth-child(3)');
-  const imageMenu = document.getElementById('imageMenu');
-  const imageInput = document.getElementById('imageInput');
-  const confirmImageBtn = document.getElementById('confirmImageBtn');
-  const cancelImageBtn = document.getElementById('cancelImageBtn');
-  
-  addImageBtn.addEventListener('click', () => {
-    imageMenu.classList.remove('hidden');
-  });
-  
-  cancelImageBtn.addEventListener('click', () => {
-    imageMenu.classList.add('hidden');
-    imageInput.value = '';
-  });
-  
-  confirmImageBtn.addEventListener('click', () => {
-    if (imageInput.files && imageInput.files[0]) {
-      const reader = new FileReader();
-      
-      reader.onload = function(e) {
-        addBackgroundImage(e.target.result);
-        imageMenu.classList.add('hidden');
-        imageInput.value = '';
-      };
-      
-      reader.readAsDataURL(imageInput.files[0]);
-    }
-  }); 
-  
-  // GERENCIAMENTO DE TOKENS
+
+  // ====================================================
+  // SISTEMA DE TOKENS
+  // Gerencia os tokens de personagens que podem ser colocados no mapa
+  // ====================================================
   function updateTokenMenu() {
-    // Adicionar botão de fechar ao tokenMenu
     const tokenMenu = document.getElementById('tokenMenu');
     
-    // Verificar se já existe um botão de fechar
     if (!tokenMenu.querySelector('.token-close-btn')) {
-      // Criar div de cabeçalho com título e botão de fechar
       const headerDiv = document.createElement('div');
       headerDiv.className = 'token-header';
       
-      // Mover o título existente para esta div
       const title = tokenMenu.querySelector('h3');
       if (title) {
         const titleClone = title.cloneNode(true);
         headerDiv.appendChild(titleClone);
         
-        // Criar botão de fechar
         const closeBtn = document.createElement('button');
         closeBtn.className = 'token-close-btn';
         closeBtn.innerHTML = '<i class="fas fa-times"></i>';
         closeBtn.title = 'Fechar';
         headerDiv.appendChild(closeBtn);
         
-        // Substituir o título original pelo novo header
         tokenMenu.replaceChild(headerDiv, title);
         
-        // Adicionar evento de clique ao botão fechar
         closeBtn.addEventListener('click', () => {
           tokenMenu.classList.add('hidden');
         });
@@ -857,11 +643,9 @@ document.addEventListener("DOMContentLoaded", () => {
     tokenElement.dataset.size = token.size;
     tokenElement.title = `Token ${token.size}x${token.size}`;
     
-    // Fazer o token ser arrastável da biblioteca para o grid
     tokenElement.addEventListener('mousedown', (e) => {
       e.preventDefault();
       
-      // Criar elemento temporário para arrastar
       const dragToken = document.createElement('div');
       dragToken.className = 'grid-token dragging';
       dragToken.style.backgroundImage = `url(${token.url})`;
@@ -875,54 +659,38 @@ document.addEventListener("DOMContentLoaded", () => {
       dragToken.dataset.size = token.size;
       document.body.appendChild(dragToken);
       
-      // Posicionar no mouse
       dragToken.style.left = `${e.clientX - dragToken.offsetWidth / 2}px`;
       dragToken.style.top = `${e.clientY - dragToken.offsetHeight / 2}px`;
       
-      // Mover com o mouse
       const moveHandler = (moveEvent) => {
         dragToken.style.left = `${moveEvent.clientX - dragToken.offsetWidth / 2}px`;
         dragToken.style.top = `${moveEvent.clientY - dragToken.offsetHeight / 2}px`;
       };
       
-      // Soltar o token
       const upHandler = (upEvent) => {
         document.removeEventListener('mousemove', moveHandler);
         document.removeEventListener('mouseup', upHandler);
         
-        // Calcular a posição no grid
         const rect = grid.getBoundingClientRect();
         
-        // Verificar se o token está sobre o grid
         if (upEvent.clientX >= rect.left && upEvent.clientX <= rect.right &&
             upEvent.clientY >= rect.top && upEvent.clientY <= rect.bottom) {
               
-          // 1. Calcular posição do mouse em relação à viewport
           const mouseX = upEvent.clientX;
           const mouseY = upEvent.clientY;
           
-          // 2. Obter deslocamento atual do grid
           const gridRect = grid.getBoundingClientRect();
           
-          // 3. Converter para coordenadas do grid considerando escala e transformação
           const gridX = (mouseX - gridRect.left) / scale;
           const gridY = (mouseY - gridRect.top) / scale;
           
-          // 4. Ajustar à grade
           const cellSize = 50;
           const snappedX = Math.round(gridX / cellSize) * cellSize;
           const snappedY = Math.round(gridY / cellSize) * cellSize;
           
-          // Log para debug
-          console.log('Mouse:', mouseX, mouseY);
-          console.log('Grid rect:', gridRect.left, gridRect.top);
-          console.log('Grid coords:', gridX, gridY);
-          console.log('Snapped:', snappedX, snappedY);
-          
           addTokenToGrid(token, snappedX, snappedY);
         }
         
-        // Remover o elemento temporário
         dragToken.remove();
       };
       
@@ -930,11 +698,7 @@ document.addEventListener("DOMContentLoaded", () => {
       document.addEventListener('mouseup', upHandler);
     });
     
-    // Adicionar o token à biblioteca
     tokenLibraryElement.appendChild(tokenElement);
-    
-    // Log para depuração
-    console.log(`Token adicionado à biblioteca: ${token.id}, tamanho: ${token.size}x${token.size}`);
   }
 
   function addTokenToGrid(tokenData, x, y) {
@@ -946,13 +710,11 @@ document.addEventListener("DOMContentLoaded", () => {
     tokenElement.style.width = `${tokenData.size * cellSize}px`;
     tokenElement.style.height = `${tokenData.size * cellSize}px`;
     
-    // CORREÇÃO: Posicionar o token exatamente nas coordenadas do grid
     tokenElement.style.position = 'absolute';
     tokenElement.style.left = `${x}px`;
     tokenElement.style.top = `${y}px`;
     tokenElement.dataset.size = tokenData.size;
     
-    // Armazenar dados do token
     const token = {
       id: `grid-token-${Date.now()}`,
       element: tokenElement,
@@ -964,7 +726,6 @@ document.addEventListener("DOMContentLoaded", () => {
     
     tokenElement.dataset.id = token.id;
     
-    // Adicionar evento de selecionar token
     tokenElement.addEventListener('mousedown', (e) => {
       if (spacePressed) return;
       
@@ -973,27 +734,24 @@ document.addEventListener("DOMContentLoaded", () => {
       
       selectToken(token);
       
-      if (e.button === 0) { // Botão esquerdo
+      if (e.button === 0) {
         startDragToken(e);
       }
     });
     
-    // IMPORTANTE: Adicionar o token diretamente ao grid com z-index adequado
-    tokenElement.style.zIndex = "5"; // Acima do grid, abaixo dos controles
+    tokenElement.style.zIndex = "5";
     grid.appendChild(tokenElement);
     tokens.push(token);
     selectToken(token);
   }
 
   function selectToken(token) {
-    // Deselecionar token atual e imagem atual
     deselectImage();
     
     if (selectedToken) {
       selectedToken.element.classList.remove('selected');
     }
     
-    // Selecionar novo token
     selectedToken = token;
     selectedToken.element.classList.add('selected');
   }
@@ -1067,9 +825,259 @@ document.addEventListener("DOMContentLoaded", () => {
     selectedToken.element.style.top = `${selectedToken.y}px`;
   }
 
-  function initializeTokenSystem() {
-    console.log("Inicializando sistema de tokens");
+  // ====================================================
+  // NAVEGAÇÃO DO MAPA
+  // Controla zoom, deslocamento e interação com o mapa
+  // ====================================================
+  container.addEventListener("wheel", (e) => {
+    if (spacePressed) return;
+    e.preventDefault();
+
+    const zoomIntensity = 0.1;
+    const delta = e.deltaY < 0 ? 1 : -1;
     
+    // Limitar o zoom entre 0.5 e 3
+    const newScale = clamp(scale * (1 + delta * zoomIntensity), 0.5, 3);
+    
+    // Ajustar a escala
+    scale = newScale;
+    
+    // Atualizar a posição do grid com a nova escala
+    updateGridPosition();
+  }, { passive: false });
+  
+  container.addEventListener("mousedown", (e) => {
+    // Verificação mais rigorosa - o espaço deve estar pressionado antes de iniciar o arrasto
+    if (!spacePressed) {
+      return;
+    }
+    
+    isDragging = true;
+    lastX = e.clientX;
+    lastY = e.clientY;
+    container.classList.add("dragging");
+    document.body.style.cursor = 'grabbing';
+    
+    if (container.setPointerCapture) {
+      container.setPointerCapture(e.pointerId);
+    }
+    
+    e.preventDefault();
+    e.stopPropagation();
+  });
+  
+  // Substitua o event listener de mousemove para garantir que o grid só seja movido quando o espaço estiver pressionado
+  document.addEventListener("mousemove", (e) => {
+    // Verificação mais rigorosa - ambas as condições devem ser verdadeiras
+    if (!(isDragging && spacePressed)) {
+      return;
+    }
+
+    const dx = e.clientX - lastX;
+    const dy = e.clientY - lastY;
+    lastX = e.clientX;
+    lastY = e.clientY;
+
+    // Remove as restrições severas e aplica o movimento com mais liberdade
+    offsetX += dx;
+    offsetY += dy;
+
+    // Verificar a visibilidade apenas após o movimento
+    updateGridPosition();
+  });
+  
+  document.addEventListener("mouseup", () => {
+    isDragging = false;
+    container.classList.remove("dragging");
+    
+    if (desenhando) {
+      currentPath = null;
+      pathPoints = [];
+    }
+    
+    desenhando = false;
+    lastDrawX = null;
+    lastDrawY = null;
+  });
+
+  // ====================================================
+  // EVENTOS DE TECLADO
+  // Controla todos os atalhos de teclado do mapa
+  // ====================================================
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Shift") {
+      shiftPressed = true;
+    }
+    
+    if (e.code === "Space") {
+      if (isResizing || isRotating || isDraggingToken) return;
+      
+      spacePressed = true;
+      container.classList.add("space-pressed");
+      document.body.style.cursor = 'grab';
+      
+      document.querySelectorAll('.background-image').forEach(img => {
+        img.classList.add('ignore-mouse');
+      });
+      
+      if (desenhando) {
+        currentPath = null;
+        pathPoints = [];
+        desenhando = false;
+      }
+      
+      e.preventDefault();
+    }
+
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+      if (!spacePressed && selectedToken) {
+        e.preventDefault();
+        moveSelectedTokenWithArrows(e.key);
+      }
+    }
+
+    if (e.key.toLowerCase() === "g" && e.shiftKey) {
+      resetGridPosition();
+    }
+  });
+  
+  document.addEventListener("keyup", (e) => {
+    if (e.key === "Shift") {
+      shiftPressed = false;
+    }
+    
+    if (e.code === "Space") {
+      spacePressed = false;
+      isDragging = false; // Também desativar o arrasto quando soltar o espaço
+      container.classList.remove("space-pressed");
+      document.body.style.cursor = '';
+      
+      document.querySelectorAll('.background-image').forEach(img => {
+        img.classList.remove('ignore-mouse');
+      });
+    }
+  });
+  
+  // Adicione a função para centralizar o grid aqui dentro
+  function resetGridPosition() {
+    // Redefinir escala para 1
+    scale = 1;
+    
+    // Ajustar o offset para centralizar o grid
+    // Redefinir para 0,0 porque já centralizamos via CSS
+    offsetX = 0;
+    offsetY = 0;
+    
+    // Aplicar as alterações
+    grid.style.transform = `translate(-50%, -50%) scale(${scale})`;
+    
+    console.log("Grid centralizado:", { offsetX, offsetY, scale });
+  }
+  
+  // Inicializar a posição do grid corretamente no carregamento
+  resetGridPosition();
+  
+  // ====================================================
+  // EVENTOS DE DESENHO
+  // Detecta e processa os eventos de desenho no mapa
+  // ====================================================
+  grid.addEventListener("mousedown", (e) => {
+    if (!pincelAtivo || spacePressed) return;
+    desenhando = true;
+    
+    currentPath = null;
+    
+    if (corSelecionada === "transparent") {
+      useBorracha(e);
+    } else {
+      desenhar(e);
+    }
+  });
+  
+  grid.addEventListener("mousemove", (e) => {
+    if (desenhando && pincelAtivo && !spacePressed) {
+      if (corSelecionada === "transparent") {
+        useBorracha(e);
+      } else {
+        desenhar(e);
+      }
+    }
+  });
+
+  // ====================================================
+  // INTERFACE DE USUÁRIO
+  // Configura e gerencia os botões da interface
+  // ====================================================
+  updateGridPosition();
+  
+  const fabToggle = document.getElementById("fabToggle");
+  const fabButtons = document.getElementById("fabButtons");
+  
+  fabToggle.addEventListener("click", () => {
+    fabButtons.classList.toggle("show");
+  });
+  
+  // Controles de pincel
+  const pincelBtn = document.querySelector('.fab-buttons button:nth-child(1)');
+  const pincelMenu = document.getElementById('pincelMenu');
+  const corButtons = document.querySelectorAll('.cor');
+  const espessuraInput = document.getElementById('espessura');
+  const borrachaBtn = document.getElementById('borrachaBtn');
+  
+  pincelBtn.addEventListener("click", () => {
+    pincelAtivo = !pincelAtivo;
+    pincelMenu.classList.toggle("hidden", !pincelAtivo);
+  });
+  
+  corButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      corSelecionada = btn.dataset.cor;
+    });
+  });
+  
+  espessuraInput.addEventListener("input", () => {
+    espessura = parseInt(espessuraInput.value);
+  });
+  
+  borrachaBtn.addEventListener("click", () => {
+    corSelecionada = "transparent";
+  });
+  
+  // Menu de imagens
+  const addImageBtn = document.querySelector('.fab-buttons button:nth-child(3)');
+  const imageMenu = document.getElementById('imageMenu');
+  const imageInput = document.getElementById('imageInput');
+  const confirmImageBtn = document.getElementById('confirmImageBtn');
+  const cancelImageBtn = document.getElementById('cancelImageBtn');
+  
+  addImageBtn.addEventListener('click', () => {
+    imageMenu.classList.remove('hidden');
+  });
+  
+  cancelImageBtn.addEventListener('click', () => {
+    imageMenu.classList.add('hidden');
+    imageInput.value = '';
+  });
+  
+  confirmImageBtn.addEventListener('click', () => {
+    if (imageInput.files && imageInput.files[0]) {
+      const reader = new FileReader();
+      
+      reader.onload = function(e) {
+        addBackgroundImage(e.target.result);
+        imageMenu.classList.add('hidden');
+        imageInput.value = '';
+      };
+      
+      reader.readAsDataURL(imageInput.files[0]);
+    }
+  }); 
+
+  // ====================================================
+  // INICIALIZAÇÃO DO SISTEMA DE TOKENS
+  // Configura e inicializa o sistema de tokens
+  // ====================================================
+  function initializeTokenSystem() {
     const addTokenBtn = document.getElementById('addTokenBtn');
     const tokenMenu = document.getElementById('tokenMenu');
     const tokenInput = document.getElementById('tokenInput');
@@ -1078,30 +1086,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const tokenSizeSelector = document.getElementById('tokenSizeSelector');
     
     if (!addTokenBtn || !tokenMenu || !tokenInput || !confirmTokenBtn || !tokenLibraryElement || !tokenSizeSelector) {
-      console.error("Elementos necessários para o sistema de tokens não encontrados!");
-      console.log({
-        addTokenBtn, 
-        tokenMenu, 
-        tokenInput, 
-        confirmTokenBtn, 
-        tokenLibraryElement, 
-        tokenSizeSelector
-      });
       return;
     }
     
-    // Atualizar o menu para adicionar o botão de fechar
     updateTokenMenu();
     
-    // Mostrar menu de tokens ao clicar no botão
     addTokenBtn.addEventListener('click', () => {
-      console.log("Botão de token clicado");
       tokenMenu.classList.remove('hidden');
     });
     
-    // Adicionar token à biblioteca
     confirmTokenBtn.addEventListener('click', () => {
-      console.log("Botão confirmar token clicado");
       if (tokenInput.files && tokenInput.files[0]) {
         const reader = new FileReader();
         
@@ -1113,28 +1107,27 @@ document.addEventListener("DOMContentLoaded", () => {
             size: tokenSize
           };
           
-          console.log(`Adicionando novo token: tamanho ${tokenSize}x${tokenSize}`);
           tokenLibrary.push(newToken);
           addTokenToLibrary(newToken);
           
-          // Limpar input
           tokenInput.value = '';
         };
         
         reader.readAsDataURL(tokenInput.files[0]);
-      } else {
-        console.log("Nenhum arquivo selecionado");
       }
     });
   }
   
-  // Remova a chamada duplicada de DOMContentLoaded e chame o initializeTokenSystem no mesmo contexto principal
-
-  // No final do seu DOMContentLoaded principal, adicione:
   initializeTokenSystem();
 
-  // Adicione um ouvinte de evento para o mousedown para deselecionar tokens
+  // Deselecionar elementos ao clicar fora
   document.addEventListener("mousedown", (e) => {
+    if (selectedImage && 
+        !e.target.closest('.background-image') && 
+        !e.target.closest('.image-controls-container')) {
+      deselectImage();
+    }
+    
     if (selectedToken && 
         !e.target.closest('.grid-token') && 
         !e.target.closest('.token-item')) {
@@ -1142,114 +1135,3 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-
-// Adicione estas constantes no início do seu código
-const gridMargin = 500; // Margem de segurança em pixels
-const maxPan = 1000;    // Limite máximo de panorâmica além das bordas
-
-// Modifique a inicialização do grid para centralizar com margem
-function initializeGrid() {
-  // Centralizar inicialmente o grid com margens
-  offsetX = viewWidth / 2 - gridWidth / 2;
-  offsetY = viewHeight / 2 - gridHeight / 2;
-  
-  // Definir limites de navegação com margens
-  updateGridPosition();
-}
-
-// Modifique a função updateGridPosition para aplicar transformação
-function updateGridPosition() {
-  grid.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
-  
-  // Também atualize os tokens para mantê-los alinhados ao grid
-  tokens.forEach(token => {
-    const element = token.element;
-    if (element) {
-      element.style.transformOrigin = 'top left';
-    }
-  });
-}
-
-// Modifique o evento mousemove para incluir os limites com margem
-document.addEventListener("mousemove", (e) => {
-  if (!isDragging || !spacePressed) return;
-
-  const dx = e.clientX - lastX;
-  const dy = e.clientY - lastY;
-  lastX = e.clientX;
-  lastY = e.clientY;
-
-  // Aplicar limites com margens de segurança
-  const minX = viewWidth - (gridWidth + gridMargin) * scale;
-  const maxX = gridMargin * scale;
-  const minY = viewHeight - (gridHeight + gridMargin) * scale;
-  const maxY = gridMargin * scale;
-  
-  offsetX = clamp(offsetX + dx, minX, maxX);
-  offsetY = clamp(offsetY + dy, minY, maxY);
-
-  updateGridPosition();
-});
-
-// Modifique o evento de reset (Shift+G) para incluir as margens
-document.addEventListener("keydown", (e) => {
-  // ... código existente ...
-  
-  if (e.key.toLowerCase() === "g" && e.shiftKey) {
-    // Centralizar o grid com margens de segurança
-    offsetX = viewWidth / 2 - gridWidth / 2;
-    offsetY = viewHeight / 2 - gridHeight / 2;
-    scale = 1;
-    updateGridPosition();
-  }
-  
-  // ... resto do código ...
-});
-
-// Adicione esta função para garantir que o grid permaneça visível
-function ensureGridVisibility() {
-  // Calcular as dimensões visíveis do grid
-  const visibleWidth = gridWidth * scale;
-  const visibleHeight = gridHeight * scale;
-  
-  // Verificar se o grid está muito fora da tela
-  if (offsetX < -visibleWidth + gridMargin) {
-    offsetX = -visibleWidth + gridMargin;
-  }
-  if (offsetX > viewWidth - gridMargin) {
-    offsetX = viewWidth - gridMargin;
-  }
-  if (offsetY < -visibleHeight + gridMargin) {
-    offsetY = -visibleHeight + gridMargin;
-  }
-  if (offsetY > viewHeight - gridMargin) {
-    offsetY = viewHeight - gridMargin;
-  }
-  
-  updateGridPosition();
-}
-
-// Modifique o evento de zoom para incluir essa verificação
-container.addEventListener("wheel", (e) => {
-  if (spacePressed) return;
-  e.preventDefault();
-
-  const zoomIntensity = 0.1;
-  const delta = e.deltaY < 0 ? 1 : -1;
-  
-  const newScale = clamp(scale * (1 + delta * zoomIntensity), 0.5, 3);
-  
-  const mouseX = e.clientX;
-  const mouseY = e.clientY;
-  
-  const mouseXInGrid = (mouseX - offsetX) / scale;
-  const mouseYInGrid = (mouseY - offsetY) / scale;
-  
-  offsetX = mouseX - mouseXInGrid * newScale;
-  offsetY = mouseY - mouseYInGrid * newScale;
-  
-  scale = newScale;
-  
-  updateGridPosition();
-  ensureGridVisibility(); // Verificar a visibilidade após o zoom
-}, { passive: false });

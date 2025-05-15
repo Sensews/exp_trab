@@ -28,17 +28,19 @@ body {
   }
   
   #grid {
-    position: absolute;
-    width: 10000px;
-    height: 10000px;
+    position: absolute; 
+    /* Alterar o tamanho do grid para corresponder ao JS (100x100 pixels) */
+    width: 2500px;  /* Usando 1000px para dar mais área visível ao grid */
+    height: 2500px;
     background-color: rgba(18, 18, 18, 0.95);
     background-image: 
       linear-gradient(to right, #00ffaa1a 1px, transparent 1px),
       linear-gradient(to bottom, #00ffaa1a 1px, transparent 1px);
     background-size: 50px 50px;
-    left: 0;
-    top: 0;
-    transform: translate(0, 0);
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    transform-origin: center center;
     pointer-events: auto;
   }
   
