@@ -17,11 +17,19 @@ if ($conn->connect_error) {
     die("Erro na conexão com o banco de dados.");
 }
 
+// Verificar se a tabela tem a coluna senha_hash_visual
+$result = $conn->query("SHOW COLUMNS FROM usuarios LIKE 'senha_hash_visual'");
+if($result->num_rows == 0) {
+    // Se não existir, adicionar a coluna
+    $conn->query("ALTER TABLE usuarios ADD COLUMN senha_hash_visual VARCHAR(8) AFTER senha");
+}
+
 $nome = trim($_POST['nome'] ?? '');
 $email = trim($_POST['email'] ?? '');
 $telefone = trim($_POST['telefone'] ?? '');
 $senha = $_POST['senha'] ?? '';
 $confirma = $_POST['confirmar-senha'] ?? '';
+$senha_hash_visual = $_POST['senha_hash_visual'] ?? '';
 
 if ($senha !== $confirma) {
     http_response_code(400);
@@ -41,6 +49,13 @@ function verificar_forca_senha($senha) {
   if ($forca >= 3) return 'Moderada';
   if ($forca >= 2) return 'Fraca';
   return 'Muito fraca';
+}
+
+// Gerar hash visual no PHP (backup se o JavaScript falhar)
+function gerar_hash_visual($senha) {
+    if (empty($senha)) return '';
+    $hash = hash('sha256', $senha);
+    return substr($hash, 0, 8);
 }
 
 $forca_senha = verificar_forca_senha($senha);
@@ -73,12 +88,17 @@ $stmt->close();
 $senha_hash = password_hash($senha, PASSWORD_DEFAULT);
 $token = bin2hex(random_bytes(32));
 
-$stmt = $conn->prepare("INSERT INTO usuarios (nome, email, telefone, senha, confirmado, token_verificacao) VALUES (?, ?, ?, ?, 0, ?)");
+// Se o hash visual não vier do JavaScript, gere aqui
+if (empty($senha_hash_visual)) {
+    $senha_hash_visual = gerar_hash_visual($senha);
+}
+
+$stmt = $conn->prepare("INSERT INTO usuarios (nome, email, telefone, senha, senha_hash_visual, confirmado, token_verificacao) VALUES (?, ?, ?, ?, ?, 0, ?)");
 if (!$stmt) {
     http_response_code(500);
     die("Erro interno ao preparar query.");
 }
-$stmt->bind_param("sssss", $nome, $email, $telefone, $senha_hash, $token);
+$stmt->bind_param("ssssss", $nome, $email, $telefone, $senha_hash, $senha_hash_visual, $token);
 
 if ($stmt->execute()) {
     $link = "http://localhost/exp_trab/backend/verificar.php?token=$token";
@@ -100,6 +120,7 @@ if ($stmt->execute()) {
         $mail->isHTML(true);
         $mail->Subject = 'Confirmação de Cadastro - Oblivion';
 
+        // Adicionando a visualização do hash no e-mail também
         $mail->Body = "
         <html>
         <head>
@@ -108,6 +129,8 @@ if ($stmt->execute()) {
             .container { background-color: #1e1e1e; padding: 20px; border-radius: 10px; border: 1px solid #00ffaa44; box-shadow: 0 0 15px rgba(0,255,170,0.2); }
             .btn { display: inline-block; padding: 10px 20px; background-color: #00ffaa; color: #121212; border-radius: 5px; text-decoration: none; font-weight: bold; margin-top: 20px; }
             .btn:hover { background-color: #00e699; }
+            .hash-visual { display: flex; margin: 15px auto; height: 20px; width: 200px; }
+            .hash-block { height: 20px; width: 25px; }
           </style>
         </head>
         <body>
@@ -116,6 +139,18 @@ if ($stmt->execute()) {
             <p>Olá, <strong>$nome</strong>!</p>
             <p>Estamos quase lá... para concluir seu cadastro, basta confirmar seu e-mail clicando no botão abaixo:</p>
             <a class='btn' href='$link'>Confirmar Cadastro</a>
+            <p>Sua assinatura visual de senha (para verificação):</p>
+            <div class='hash-visual'>";
+            
+        // Gerar blocos coloridos para o e-mail
+        for ($i = 0; $i < 8; $i++) {
+            $colorValue = substr($senha_hash_visual, $i, 1);
+            $hue = (hexdec($colorValue) * 25) % 360;
+            $mail->Body .= "<div class='hash-block' style='background-color: hsl($hue, 80%, 50%);'></div>";
+        }
+            
+        $mail->Body .= "
+            </div>
             <p style='margin-top: 30px; font-size: 14px; color: #999;'>Se você não realizou este cadastro, apenas ignore este e-mail.</p>
           </div>
         </body>
