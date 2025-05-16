@@ -1,22 +1,67 @@
 window.addEventListener('load', () => {
+    // Adiciona o script do CryptoJS à página
+    const cryptoScript = document.createElement('script');
+    cryptoScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js';
+    document.head.appendChild(cryptoScript);
+    
+    // ===== INICIALIZAÇÃO DOS ELEMENTOS =====
     const telefoneInput = document.querySelector('#telefone');
-    telefoneInput.addEventListener('keydown', bloquearEntradaNaoNumerica);
-    telefoneInput.addEventListener('keyup', formatarParaTelefone);
-
     const senhaInput = document.getElementById('senha');
     const confirmarSenhaInput = document.getElementById('confirmar-senha');
     const form = document.getElementById('form-cadastro');
     const botaoCadastro = document.getElementById('btn-cadastrar');
 
+    // ===== CONFIGURAÇÃO DE ELEMENTOS DINAMICAMENTE CRIADOS =====
     const senhaForcaOutput = document.createElement('div');
     const senhaErroOutput = document.createElement('div');
+    const senhaHashVisual = document.createElement('div');
+    
+    // Estilização dos elementos dinâmicos
     senhaForcaOutput.style.fontSize = '12px';
     senhaErroOutput.style.fontSize = '12px';
     senhaErroOutput.style.color = 'red';
+    
+    senhaHashVisual.style.height = '20px';
+    senhaHashVisual.style.marginTop = '8px';
+    senhaHashVisual.style.display = 'flex';
+    senhaHashVisual.style.borderRadius = '3px';
+    senhaHashVisual.style.overflow = 'hidden';
 
+    // Campo oculto para enviar o hash ao servidor
+    const senhaHashInput = document.createElement('input');
+    senhaHashInput.type = 'hidden';
+    senhaHashInput.name = 'senha_hash_visual';
+    senhaHashInput.id = 'senha_hash_visual';
+    form.appendChild(senhaHashInput);
+
+    // Adiciona elementos ao DOM
     senhaInput.parentNode.appendChild(senhaForcaOutput);
+    senhaInput.parentNode.appendChild(senhaHashVisual);
     confirmarSenhaInput.parentNode.appendChild(senhaErroOutput);
 
+    // ===== FUNÇÃO DE GERAÇÃO DE HASH VISUAL =====
+    const gerarHashVisual = (senha) => {
+        if (!senha || typeof CryptoJS === 'undefined') {
+            senhaHashVisual.innerHTML = '';
+            return;
+        }
+        
+        const hash = CryptoJS.SHA256(senha).toString();
+        
+        senhaHashVisual.innerHTML = '';
+        for (let i = 0; i < 8; i++) {
+            const colorValue = hash.substring(i * 4, (i * 4) + 6);
+            const block = document.createElement('div');
+            block.style.width = '25px';
+            block.style.height = '100%';
+            block.style.backgroundColor = '#' + colorValue;
+            senhaHashVisual.appendChild(block);
+        }
+        
+        senhaHashInput.value = hash.substring(0, 8);
+    };
+
+    // ===== FUNÇÕES DE VALIDAÇÃO DE SENHA =====
     const verificarForcaSenha = (senha) => {
         let forca = 0;
         if (senha.length >= 8) forca++;
@@ -39,6 +84,10 @@ window.addEventListener('load', () => {
         botaoCadastro.disabled = !(forca === 'Muito forte' && senhasCoincidem);
     };
 
+    // ===== CONFIGURAÇÃO DE EVENTOS =====
+    telefoneInput.addEventListener('keydown', bloquearEntradaNaoNumerica);
+    telefoneInput.addEventListener('keyup', formatarParaTelefone);
+
     senhaInput.addEventListener('input', () => {
         const forca = verificarForcaSenha(senhaInput.value);
         senhaForcaOutput.textContent = `Força da senha: ${forca}`;
@@ -46,6 +95,8 @@ window.addEventListener('load', () => {
             forca === 'Muito forte' ? 'green' :
             forca === 'Forte' ? 'blue' :
             forca === 'Moderada' ? 'orange' : 'red';
+        
+        gerarHashVisual(senhaInput.value);
         validarFormulario();
     });
 
@@ -62,12 +113,14 @@ window.addEventListener('load', () => {
         }
     });
 
+    // ===== VERIFICAÇÃO DE REDIRECIONAMENTO =====
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('sucesso') === '1') {
         document.getElementById('popup-modal').style.display = 'block';
     }
 });
 
+// ===== FUNÇÕES AUXILIARES =====
 const bloquearEntradaNaoNumerica = (evento) => {
     if (evento.ctrlKey || evento.key.length > 1 || /[0-9]/.test(evento.key)) return;
     evento.preventDefault();
