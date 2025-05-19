@@ -14,18 +14,11 @@ window.addEventListener('load', () => {
     // ===== CONFIGURAÇÃO DE ELEMENTOS DINAMICAMENTE CRIADOS =====
     const senhaForcaOutput = document.createElement('div');
     const senhaErroOutput = document.createElement('div');
-    const senhaHashVisual = document.createElement('div');
     
     // Estilização dos elementos dinâmicos
     senhaForcaOutput.style.fontSize = '12px';
     senhaErroOutput.style.fontSize = '12px';
     senhaErroOutput.style.color = 'red';
-    
-    senhaHashVisual.style.height = '20px';
-    senhaHashVisual.style.marginTop = '8px';
-    senhaHashVisual.style.display = 'flex';
-    senhaHashVisual.style.borderRadius = '3px';
-    senhaHashVisual.style.overflow = 'hidden';
 
     // Campo oculto para enviar o hash ao servidor
     const senhaHashInput = document.createElement('input');
@@ -36,28 +29,15 @@ window.addEventListener('load', () => {
 
     // Adiciona elementos ao DOM
     senhaInput.parentNode.appendChild(senhaForcaOutput);
-    senhaInput.parentNode.appendChild(senhaHashVisual);
     confirmarSenhaInput.parentNode.appendChild(senhaErroOutput);
 
-    // ===== FUNÇÃO DE GERAÇÃO DE HASH =====
-    const gerarHashVisual = (senha) => {
+    // ===== FUNÇÃO DE GERAÇÃO DE HASH (SIMPLIFICADA) =====
+    const gerarHash = (senha) => {
         if (!senha || typeof CryptoJS === 'undefined') {
-            senhaHashVisual.innerHTML = '';
             return;
         }
         
         const hash = CryptoJS.SHA256(senha).toString();
-        
-        senhaHashVisual.innerHTML = '';
-        for (let i = 0; i < 8; i++) {
-            const colorValue = hash.substring(i * 4, (i * 4) + 6);
-            const block = document.createElement('div');
-            block.style.width = '25px';
-            block.style.height = '100%';
-            block.style.backgroundColor = '#' + colorValue;
-            senhaHashVisual.appendChild(block);
-        }
-        
         senhaHashInput.value = hash.substring(0, 8);
     };
 
@@ -96,7 +76,7 @@ window.addEventListener('load', () => {
             forca === 'Forte' ? 'blue' :
             forca === 'Moderada' ? 'orange' : 'red';
         
-        gerarHashVisual(senhaInput.value);
+        gerarHash(senhaInput.value);
         validarFormulario();
     });
 
