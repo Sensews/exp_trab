@@ -595,7 +595,15 @@ textarea {
     min-height: 150px;
 }
 
-/* Responsive Adjustments */
+/* Responsividade Aprimorada */
+@media (max-width: 1200px) {
+    .ficha-container {
+        width: 95%;
+        padding: 20px 10px;
+        margin: 70px auto 20px;
+    }
+}
+
 @media (max-width: 1100px) {
     .stats-container {
         grid-template-columns: 1fr 1fr;
@@ -605,6 +613,7 @@ textarea {
         grid-column: span 2;
         display: grid;
         grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
     }
 
     .attributes-column h3 {
@@ -614,16 +623,61 @@ textarea {
     .attribute-box {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+
+    .vitals-column {
+        grid-column: span 2;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+
+    .vital-stats {
+        grid-column: span 2;
+    }
+}
+
+@media (max-width: 900px) {
+    .ficha {
+        padding: 15px;
+    }
+    
+    .save-controls {
+        flex-wrap: wrap;
+    }
+    
+    .spellcasting-info {
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    
+    .spell-level-slots {
+        justify-content: flex-start;
+        gap: 10px 20px;
     }
 }
 
 @media (max-width: 768px) {
-    .stats-container {
-        grid-template-columns: 1fr;
+    .ficha-container {
+        margin-top: 60px;
     }
     
-    .attributes-column {
+    .stats-container {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .attributes-column, .skills-saves-column, .vitals-column {
         grid-column: span 1;
+    }
+    
+    .vitals-column {
+        display: block;
+    }
+    
+    .vital-stats {
+        grid-template-columns: repeat(2, 1fr);
     }
     
     .features-equipment {
@@ -637,16 +691,57 @@ textarea {
     .dice-controls {
         flex-direction: column;
         gap: 15px;
+        align-items: start;
+    }
+
+    .quick-dice {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    h3 {
+        font-size: 1rem;
+    }
+    
+    .info-group label {
+        font-size: 0.75rem;
+    }
+    
+    .attribute-box {
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 
-@media (max-width: 500px) {
-    .attribute-box {
-        grid-template-columns: repeat(2, 1fr);
+@media (max-width: 600px) {
+    .stats-container, .attributes-column {
+        gap: 10px;
+    }
+    
+    .attribute {
+        padding: 8px 5px;
+    }
+    
+    .attribute-label {
+        font-size: 0.6rem;
+    }
+    
+    .attribute-input {
+        font-size: 1rem;
+    }
+    
+    .attribute-mod {
+        width: 30px;
+        height: 30px;
+        font-size: 0.9rem;
     }
     
     .vital-stats {
         grid-template-columns: 1fr;
+    }
+    
+    .spell-level-slots {
+        flex-direction: column;
+        align-items: start;
     }
     
     .info-row {
@@ -656,5 +751,189 @@ textarea {
     
     .currency {
         flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 10px;
+    }
+    
+    .save-controls .btn {
+        font-size: 0.8rem;
+        padding: 8px 12px;
+    }
+    
+    .attribute-box {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .ficha-container {
+        padding: 15px 5px;
+        margin-top: 55px;
+    }
+    
+    .ficha {
+        padding: 10px;
+    }
+    
+    .hp-max, .hp-current, .hp-temp, .hd-container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    
+    .hp-max input, .hp-current input, .hp-temp input {
+        width: 100%;
+    }
+    
+    .attack-table th {
+        font-size: 0.7rem;
+    }
+    
+    .attack-name, .attack-bonus, .attack-damage {
+        font-size: 0.8rem;
+    }
+    
+    .attack-bonus {
+        width: 40px;
+    }
+    
+    .dice-btn {
+        padding: 6px 8px;
+        font-size: 0.7rem;
+    }
+    
+    .save-item, .skill-item {
+        margin-bottom: 2px;
+    }
+}
+
+@media (max-width: 380px) {
+    .ficha h3 {
+        font-size: 0.9rem;
+    }
+    
+    .ficha-header {
+        margin-bottom: 15px;
+    }
+    
+    .save-mod, .skill-mod {
+        width: 20px;
+        font-size: 0.8rem;
+    }
+    
+    .currency-item {
+        flex: 1;
+        min-width: calc(50% - 20px);
+    }
+    
+    .save-controls .btn {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+    
+    .save-controls {
+        flex-direction: column;
+    }
+    
+    .spell-ability, .spell-save, .spell-attack {
+        width: 100%;
+    }
+}
+
+/* Estilos de impressão */
+@media print {
+    body, html {
+        background: white !important;
+        font-size: 12pt;
+    }
+    
+    header, footer, .save-controls, .dice-roller {
+        display: none !important;
+    }
+    
+    .ficha-container {
+        margin: 0;
+        padding: 0;
+        box-shadow: none;
+        background: white;
+    }
+    
+    .ficha {
+        border: 1px solid #999;
+        background: white;
+        color: black;
+        box-shadow: none;
+    }
+    
+    .ficha h3 {
+        color: black;
+        border-bottom: 1px solid black;
+    }
+    
+    .attribute, .saving-throws, .skills, .hit-points, .equipment-section, .features-section, 
+    .personality-section, .magic-section, .notes-section {
+        border: 1px solid #999;
+        background: white;
+    }
+    
+    .attribute-mod, #profBonus, .spell-save span, .spell-attack span {
+        border: 1px solid #999;
+        background: white !important;
+    }
+    
+    input, select, textarea {
+        border: none !important;
+        background: transparent !important;
+        color: black !important;
+    }
+    
+    .attribute-label, .info-group label {
+        color: black !important;
+    }
+    
+    @page {
+        margin: 0.5cm;
+    }
+}
+
+@media (max-width: 600px) {
+    header {
+        flex-direction: column;
+        padding: 10px;
+        gap: 10px;
+    }
+    
+    header nav {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    header .btn {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+    }
+    
+    h1.logo {
+        font-size: 1.5rem;
+    }
+}
+
+@media (pointer: coarse) {
+    input[type="checkbox"], input[type="radio"] {
+        min-width: 18px;
+        min-height: 18px;
+    }
+    
+    .btn, button, select {
+        min-height: 44px;
+    }
+    
+    input, select, textarea {
+        font-size: 16px;
+    }
+    
+    .dice-btn {
+        min-width: 44px;
+        min-height: 44px;
     }
 }
