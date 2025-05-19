@@ -39,7 +39,7 @@ window.addEventListener('load', () => {
     senhaInput.parentNode.appendChild(senhaHashVisual);
     confirmarSenhaInput.parentNode.appendChild(senhaErroOutput);
 
-    // ===== FUNÇÃO DE GERAÇÃO DE HASH VISUAL =====
+    // ===== FUNÇÃO DE GERAÇÃO DE HASH =====
     const gerarHashVisual = (senha) => {
         if (!senha || typeof CryptoJS === 'undefined') {
             senhaHashVisual.innerHTML = '';
