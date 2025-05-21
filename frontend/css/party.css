@@ -85,3 +85,118 @@ nav {
   margin-top: 2px;
   text-align: center;
 }
+
+/* Botões para iniciar sessão */
+.sessao-btn-container {
+  display: flex;
+  justify-content: flex-start;
+  margin: 12px 20px;
+  gap: 10px;
+}
+
+/* Área principal da tela com mapa e chat */
+.main-content {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  padding: 0 12px;
+  align-items: flex-start;
+  box-sizing: border-box;
+}
+
+/* Mapa exibido à esquerda */
+#mapaView {
+  flex-grow: 1;
+  height: 500px;
+  background: #333 center/contain no-repeat;
+  border: 2px solid #00ffaa55;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+/* Chat ou ficha do jogador à direita */
+#fichaJogador {
+  width: 300px;
+  background: #1a1a1a;
+  border: 2px solid #00ffaa55;
+  border-radius: 6px;
+  padding: 16px;
+  height: 500px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+#fichaJogador h2 {
+  font-size: 18px;
+  margin-bottom: 12px;
+  color: #00ffaa;
+  text-align: center;
+}
+
+#fichaJogador p {
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+/* Área de mensagens com rolagem */
+.chat-mensagens {
+  flex: 1;
+  overflow-y: auto;
+  background: #1a1a1a;
+  border: 1px solid #444;
+  padding: 10px;
+  margin-bottom: 10px;
+  scrollbar-width: thin;
+  scrollbar-color: #888 #222;
+  min-height: 0;
+}
+
+/* Campo para envio de mensagem */
+.chat-form {
+  display: flex;
+  gap: 8px;
+}
+
+.chat-form input {
+  flex: 1;
+  padding: 8px;
+  background: #fff;
+  color: #000;
+  border: none;
+  border-radius: 4px;
+}
+
+/* Botão de envio do chat */
+.chat-form button {
+  padding: 8px 12px;
+  font-weight: bold;
+  border: 2px solid #00ffaa;
+  background: transparent;
+  color: #00ffaa;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.chat-form button:hover {
+  background: #00ffaa;
+  color: #121212;
+}
+
+button {
+  padding: 6px 16px;
+  font-weight: bold;
+  border: 2px solid #00ffaa;
+  background: transparent;
+  color: #00ffaa;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+button:hover {
+  background: #00ffaa;
+  color: #121212;
+}
