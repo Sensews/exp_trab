@@ -111,4 +111,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
     await carregarProjetos();
   };  
+  // Criação de nova anotação dentro de um projeto
+  async function criarAnotacao(projeto) {
+    const titulo = prompt("Nome da nova anotação:");
+    if (!titulo) return;
+
+    await fetch("../backend/anotacoes.php?action=criarAnotacao", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ projeto, titulo })
+    });
+
+    await carregarProjetos();
+    await abrirNota(projeto, titulo);
+    sidebar.style.transform = "translateX(-100%)"; // Fecha a sidebar após criar
+  }
+
+  // Abre uma anotação e carrega seu conteúdo
+  async function abrirNota(projeto, titulo) {
+    const res = await fetch(`../backend/anotacoes.php?action=carregarConteudo&projeto=${encodeURIComponent(projeto)}&titulo=${encodeURIComponent(titulo)}`);
+    const data = await res.json();
+    quill.root.innerHTML = data.conteudo || "";
+    currentProjeto = projeto;
+    currentNota = titulo;
+  }
 });   
