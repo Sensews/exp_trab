@@ -57,20 +57,53 @@ function salvarPerfil() {
     tipo: tipoUsuarioAtual
   };
 
+  // Mostrar feedback visual que está processando
+  const btnSalvar = document.getElementById("btnSalvar");
+  const textoOriginal = btnSalvar.textContent;
+  btnSalvar.textContent = "Salvando...";
+  btnSalvar.disabled = true;
+
   fetch("../backend/perfil.php?action=salvar", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(dados)
   })
-    .then(res => res.json())
+    .then(res => {
+      // Verificar se a resposta é um redirecionamento
+      if (res.redirected) {
+        throw new Error("Redirecionado para: " + res.url);
+      }
+      
+      // Verificar se é uma resposta bem-sucedida
+      if (!res.ok) {
+        throw new Error("Erro no servidor: " + res.status);
+      }
+      
+      // Verificar tipo de conteúdo
+      const contentType = res.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Resposta não-JSON recebida");
+      }
+      
+      return res.json();
+    })
     .then(res => {
       if (res.status === "ok") {
         alert("Perfil atualizado!");
         atualizarPerfil();
-        modal.classList.remove("open"); //FECHA O MODAL
+        modal.classList.remove("open");
       } else {
         alert("Erro ao salvar: " + res.msg);
       }
+    })
+    .catch(err => {
+      console.error("Erro ao salvar perfil:", err);
+      alert("Ocorreu um erro ao salvar o perfil. Por favor, tente novamente.");
+    })
+    .finally(() => {
+      // Restaurar estado do botão
+      btnSalvar.textContent = textoOriginal;
+      btnSalvar.disabled = false;
     });
 }
 

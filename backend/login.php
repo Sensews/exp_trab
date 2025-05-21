@@ -44,7 +44,7 @@ if (!password_verify($senha, $usuarioDados['senha'])) {
 }
 
 session_start();
-$_SESSION['usuario_id'] = $usuarioDados['id'];
+$_SESSION['id_usuario'] = $usuarioDados['id'];
 $_SESSION['usuario_nome'] = $usuarioDados['nome'];
 
 echo json_encode([
