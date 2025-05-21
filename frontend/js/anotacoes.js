@@ -1,6 +1,16 @@
-document.addEventListener("DOMContentLoaded", function () {
-  // Inicializa o Quill
-  var quill = new Quill('#editor-container', {
+document.addEventListener("DOMContentLoaded", () => {
+  // Elementos principais da página
+  const sidebar = document.getElementById("sidebarProjetos");
+  const hamburgerBtn = document.getElementById("hamburgerProjetos");
+  const container = document.getElementById("projetosContainer");
+
+  // Estado atual
+  let currentProjeto = null;
+  let currentNota = null;
+  let quill;
+
+  // Inicializa o editor Quill
+  quill = new Quill('#editor-container', {
     theme: 'snow',
     modules: {
       toolbar: [
@@ -14,73 +24,65 @@ document.addEventListener("DOMContentLoaded", function () {
         [{ 'indent': '-1' }, { 'indent': '+1' }],
         [{ 'direction': 'rtl' }],
         [{ 'align': [] }],
-        ['link', 'image', 'video', 'formula'],
+        ['formula'],
         ['clean']
       ]
     }
   });
 
-  // Salva o conteúdo da nota sempre que for alterado
-  quill.on('text-change', function () {
-    if (currentProjeto && currentNota) {
-      salvarConteudo(currentProjeto, currentNota, quill.root.innerHTML);
-    }
+  // Salva automaticamente ao digitar
+  quill.on('text-change', () => {
+    if (!currentProjeto || !currentNota) return;
+    fetch("../backend/anotacoes.php?action=salvarConteudo", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        projeto: currentProjeto,
+        titulo: currentNota,
+        conteudo: quill.root.innerHTML
+      })
+    });
   });
 
-  const sidebar = document.getElementById("sidebarProjetos");
-  const hamburgerBtn = document.getElementById("hamburgerProjetos");
-  const container = document.getElementById("projetosContainer");
-
-  // Recupera os projetos do localStorage 
-  let projetos = JSON.parse(localStorage.getItem("oblivionProjetos")) || {};
-  let currentProjeto = null;
-  let currentNota = null;
-
-  // Abre e fecha a sidebar
-  hamburgerBtn.addEventListener("click", () => {
-    sidebar.style.transform = sidebar.style.transform === "translateX(0%)"
-      ? "translateX(-100%)"
-      : "translateX(0%)";
-  });
-
-  // Salva a lista de projetos no localStorage
-  function salvarProjetos() {
-    localStorage.setItem("oblivionProjetos", JSON.stringify(projetos));
-  }
-
-  // Atualiza a sidebar com todos os projetos e anotações
-  function renderizarSidebar() {
+// Monta a sidebar com os projetos e suas anotações
+  function renderizarSidebar(projetos) {
     container.innerHTML = "";
 
-    for (const projeto in projetos) {
+    for (const projeto of Object.keys(projetos)) {
       const divProjeto = document.createElement("div");
       divProjeto.classList.add("sidebar-projeto");
 
       const titulo = document.createElement("div");
-      titulo.textContent = "📂 " + projeto;
       titulo.classList.add("titulo-projeto");
+      titulo.innerHTML = `📂 ${projeto} <a class="btn-lixeira" href="#" onclick="event.preventDefault(); excluirProjeto('${projeto}')"></a>`;
 
       const ul = document.createElement("ul");
-      ul.classList.add("lista-notas");
 
-      // Lista de anotações de cada projeto
       projetos[projeto].forEach(nota => {
         const li = document.createElement("li");
         li.classList.add("item-nota");
 
         const btn = document.createElement("button");
         btn.className = "btn btn-nota";
-        btn.textContent = nota;
-        btn.onclick = () => abrirNota(projeto, nota);
+        btn.textContent = nota.titulo;
+        btn.onclick = () => abrirNota(projeto, nota.titulo);
+
+        const apagar = document.createElement("a");
+        apagar.className = "btn-lixeira";
+        apagar.href = "#";
+        apagar.onclick = (e) => {
+          e.preventDefault();
+          excluirAnotacao(projeto, nota.titulo);
+        };
 
         li.appendChild(btn);
+        li.appendChild(apagar);
         ul.appendChild(li);
       });
 
-      // Botão para adicionar nova anotação no projeto
       const btnNovaNota = document.createElement("button");
-      btnNovaNota.textContent = "➕ Nova Anotação";
       btnNovaNota.className = "btn btn-nova-nota";
+      btnNovaNota.textContent = "➕ Nova Anotação";
       btnNovaNota.onclick = () => criarAnotacao(projeto);
 
       divProjeto.appendChild(titulo);
@@ -88,70 +90,68 @@ document.addEventListener("DOMContentLoaded", function () {
       divProjeto.appendChild(btnNovaNota);
       container.appendChild(divProjeto);
     }
+  } 
+// Carrega todos os projetos e notas do backend
+  async function carregarProjetos() {
+    const res = await fetch("../backend/anotacoes.php?action=carregarProjetos");
+    const dados = await res.json();
+    renderizarSidebar(dados);
   }
 
-  // Cria um novo projeto
-  function criarProjeto() {
+  // Criação de novo projeto
+  window.criarProjeto = async function () {
     const nome = prompt("Nome do novo projeto:");
-    if (!nome) return alert("Você precisa digitar um nome.");
-    if (projetos[nome]) return alert("Já existe um projeto com esse nome.");
+    if (!nome) return;
 
-    projetos[nome] = [];
-    salvarProjetos();
-    renderizarSidebar();
+    await fetch("../backend/anotacoes.php?action=criarProjeto", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nome })
+    });
 
-    sidebar.style.transform = "translateX(0%)";
+    await carregarProjetos();
+  };  
+  // Criação de nova anotação dentro de um projeto
+  async function criarAnotacao(projeto) {
+    const titulo = prompt("Nome da nova anotação:");
+    if (!titulo) return;
+
+    await fetch("../backend/anotacoes.php?action=criarAnotacao", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ projeto, titulo })
+    });
+
+    await carregarProjetos();
+    await abrirNota(projeto, titulo);
+    sidebar.style.transform = "translateX(-100%)"; // Fecha a sidebar após criar
   }
 
-  window.criarProjeto = criarProjeto;
-
-  // Cria uma nova anotação em um projeto
-  function criarAnotacao(projeto) {
-    const nome = prompt("Nome da nova anotação:");
-    if (!nome) return alert("Você precisa digitar um nome.");
-    if (projetos[projeto].includes(nome)) return alert("Essa anotação já existe nesse projeto.");
-
-    projetos[projeto].push(nome);
-    salvarProjetos();
-    salvarConteudo(projeto, nome, "");
-    abrirNota(projeto, nome);
-
-    // Fecha a sidebar após criar
-    sidebar.style.transform = "translateX(-100%)";
-
-    setTimeout(() => {
-      document.getElementById("editor-container").scrollIntoView({ behavior: "smooth", block: "start" });
-      quill.focus();
-      quill.root.style.boxShadow = "0 0 12px #00ffaa88";
-      setTimeout(() => quill.root.style.boxShadow = "none", 1000);
-    }, 300);
-  }
-
-  // Salva o conteúdo de uma anotação
-  function salvarConteudo(projeto, nota, conteudo) {
-    localStorage.setItem(`oblivionAnotacoes_${projeto}_${nota}`, conteudo);
-  }
-
-  // Abre uma anotação para edição
-  function abrirNota(projeto, nota) {
-    const conteudo = localStorage.getItem(`oblivionAnotacoes_${projeto}_${nota}`) || "";
-    quill.root.innerHTML = conteudo;
+  // Abre uma anotação e carrega seu conteúdo
+  async function abrirNota(projeto, titulo) {
+    const res = await fetch(`../backend/anotacoes.php?action=carregarConteudo&projeto=${encodeURIComponent(projeto)}&titulo=${encodeURIComponent(titulo)}`);
+    const data = await res.json();
+    quill.root.innerHTML = data.conteudo || "";
     currentProjeto = projeto;
-    currentNota = nota;
-    renderizarSidebar();
+    currentNota = titulo;
   }
 
-  // Botão para salvar manualmente
-  window.salvarAnotacoes = function () {
-    if (!currentProjeto || !currentNota) {
-      alert("Selecione uma anotação na sidebar.");
-      return;
-    }
-    salvarConteudo(currentProjeto, currentNota, quill.root.innerHTML);
-    alert("Anotação salva.");
+// Salva manualmente a anotação atual
+  window.salvarAnotacoes = async function () {
+    if (!currentProjeto || !currentNota) return alert("Selecione uma anotação.");
+    await fetch("../backend/anotacoes.php?action=salvarConteudo", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        projeto: currentProjeto,
+        titulo: currentNota,
+        conteudo: quill.root.innerHTML
+      })
+    });
+    alert("Salvo.");
   };
 
-  // Exportar a anotação
+  // Exporta a anotação como HTML
   window.exportarAnotacoes = function () {
     if (!currentNota) return alert("Nenhuma anotação selecionada.");
     const content = quill.root.innerHTML;
@@ -162,15 +162,53 @@ document.addEventListener("DOMContentLoaded", function () {
     link.click();
   };
 
-  // Limpar a anotação 
+ // Limpa a área da anotação atual
   window.limparAnotacoes = function () {
-    if (confirm("Deseja apagar a anotação atual?")) {
+    if (confirm("Apagar a anotação atual?")) {
       quill.root.innerHTML = '';
     }
   };
 
-  // Inicializa a sidebar ao carregar
-  renderizarSidebar();
-  }
-);
+  // Exclui uma anotação do projeto
+  window.excluirAnotacao = async function (projeto, titulo) {
+    if (!confirm(`Deseja apagar a anotação "${titulo}"?`)) return;
+    await fetch("../backend/anotacoes.php?action=excluirAnotacao", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ projeto, titulo })
+    });
+    await carregarProjetos();
 
+    if (currentProjeto === projeto && currentNota === titulo) {
+      quill.root.innerHTML = "";
+      currentNota = null;
+    }
+  };
+
+  // Exclui um projeto inteiro
+  window.excluirProjeto = async function (projeto) {
+    if (!confirm(`Deseja apagar o projeto "${projeto}" com todas as anotações?`)) return;
+    await fetch("../backend/anotacoes.php?action=excluirProjeto", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ projeto })
+    });
+    await carregarProjetos();
+
+    if (currentProjeto === projeto) {
+      quill.root.innerHTML = "";
+      currentNota = null;
+      currentProjeto = null;
+    }
+  };
+
+ // Mostra/esconde a sidebar com o botão hamburguer
+  hamburgerBtn.addEventListener("click", () => {
+    sidebar.style.transform = sidebar.style.transform === "translateX(0%)"
+      ? "translateX(-100%)"
+      : "translateX(0%)";
+  });
+
+  // Carrega os dados ao iniciar a página
+  carregarProjetos();
+});   
