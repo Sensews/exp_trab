@@ -55,4 +55,62 @@ document.addEventListener('DOMContentLoaded', () => {
       select.appendChild(opt);
     }
   }
+ // Listener para submissão do formulário de criação de party
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault(); // Evita recarregamento da página
+
+    // Coleta os valores dos campos do formulário
+    const nome = document.getElementById('nomeParty').value.trim();
+    const senha = document.getElementById('senhaParty').value.trim();
+    const limite = document.getElementById('limiteParty')?.value ?? 5;
+    const mapaId = select.value;
+
+    // Verificação de campos obrigatórios
+    if (!nome || !senha || !mapaId) {
+      alert('Preencha todos os campos obrigatórios.');
+      return;
+    }
+
+    // Monta o objeto FormData com os dados do formulário
+    const formData = new FormData();
+    formData.append('nome', nome);
+    formData.append('senha', senha);
+    formData.append('mapaId', mapaId);
+    formData.append('limite', limite);
+    formData.append('id_perfil', id_perfil); // Vindo da sessão
+
+    try {
+      const response = await fetch('../backend/criar_party.php', {
+        method: 'POST',
+        body: formData
+      });
+
+      const text = await response.text();
+      let resultado;
+
+      try {
+        resultado = JSON.parse(text);
+      } catch (err) {
+        // Se a resposta não for JSON válido
+        console.error('Resposta inválida do servidor:', text);
+        alert('Erro: resposta inválida do servidor.');
+        return;
+      }
+
+      // Se a criação foi bem-sucedida
+      if (resultado.sucesso) {
+        alert(`Party criada com sucesso!\nCódigo: ${resultado.codigo}\nSenha: ${resultado.senha}`);
+        idPartyCriada = resultado.id_party;
+        btnIrParaParty.style.display = 'inline-block'; // Mostra o botão de redirecionamento
+        btnIrParaParty.dataset.partyId = idPartyCriada;
+      } else {
+        alert(resultado.erro || 'Erro ao criar a party.');
+      }
+
+    } catch (err) {
+      // Se houver erro na requisição
+      console.error("Erro na requisição:", err);
+      alert('Erro na comunicação com o servidor.');
+    }
+  });
 });
