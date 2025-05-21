@@ -83,3 +83,28 @@ if ($res->num_rows === 0) {
 
 // Gera um código único para a nova party
 $codigo = gerarCodigoUnico($conexao);
+
+// Cria a party no banco de dados
+$stmt = $conexao->prepare("
+    INSERT INTO party (nome, senha, codigo, id_mestre, id_mapa, limite_jogadores)
+    VALUES (?, ?, ?, ?, ?, ?)
+");
+$stmt->bind_param("sssiii", $nome, $senha, $codigo, $idPerfil, $idMapa, $limite);
+$stmt->execute();
+$idParty = $conexao->insert_id;
+
+// Adiciona o próprio mestre como membro da party
+$stmt = $conexao->prepare("
+    INSERT INTO party_membros (id_party, id_perfil, status)
+    VALUES (?, ?, 'ativo')
+");
+$stmt->bind_param("ii", $idParty, $idPerfil);
+$stmt->execute();
+
+// Resposta final de sucesso com dados da party criada
+responder([
+    'sucesso'  => true,
+    'id_party' => $idParty,
+    'codigo'   => $codigo,
+    'senha'    => $senha
+]);
