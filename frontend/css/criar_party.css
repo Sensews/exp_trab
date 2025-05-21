@@ -77,3 +77,31 @@ select {
   box-sizing: border-box;
   text-align: center;
 }
+
+/* BOTÕES DE AÇÃO */
+.botoes-party {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.botoes-party button {
+  font-size: 16px;
+  padding: 12px 20px;
+  font-weight: bold;
+  border: 2px solid #00ffaa;
+  background: transparent;
+  color: #00ffaa;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+  flex: 1;
+  min-width: 150px;
+}
+
+.botoes-party button:hover {
+  background-color: #00ffaa;
+  color: #121212;
+}
