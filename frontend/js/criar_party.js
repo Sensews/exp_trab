@@ -113,4 +113,30 @@ document.addEventListener('DOMContentLoaded', () => {
       alert('Erro na comunicação com o servidor.');
     }
   });
+
+// Quando o botão "Ir para a party" for clicado
+  btnIrParaParty.addEventListener('click', () => {
+    const id = btnIrParaParty.dataset.partyId;
+    if (id) {
+      window.location.href = `party.html?id=${id}`;
+    } else {
+      alert("Party ainda não foi criada.");
+    }
+  });
+
+  // Ao carregar a página, busca o perfil do usuário logado para obter o ID
+  fetch("../backend/perfil.php?action=carregar")
+    .then(res => res.json())
+    .then(data => {
+      if (!data.id_perfil) {
+        alert("Perfil não encontrado.");
+        return;
+      }
+
+      id_perfil = data.id_perfil; // Define o id_perfil dinamicamente com base na sessão
+      carregarMapas(); // Só carrega os mapas após garantir o id_perfil
+    })
+    .catch(() => {
+      alert("Erro ao buscar perfil.");
+    });
 });
