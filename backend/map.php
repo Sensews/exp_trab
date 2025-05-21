@@ -172,3 +172,22 @@ if ($action === "salvarTokenBiblioteca") {
         json_response(["success" => false, "error" => $stmt->error]);
     }
 }
+
+// 10. Carregar mapas do mestre
+if ($action === "carregar") {
+    $stmt = $conexao->prepare("SELECT id, nome FROM mapas WHERE id_perfil = ?");
+    $stmt->bind_param("i", $id_perfil);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $mapas = [];
+    while ($row = $result->fetch_assoc()) {
+        $mapas[] = $row;
+    }
+
+    json_response($mapas);
+}
+
+
+// Se nenhuma ação válida for chamada
+json_response(["success" => false, "error" => "Ação inválida ou não especificada."]);
