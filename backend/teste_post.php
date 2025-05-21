@@ -69,3 +69,29 @@ if ($action === "salvar") {
 
     exit;
 }
+
+// === AÇÃO: carregar os posts do perfil logado ===
+if ($action === "postsUsuario") {
+    $sql = "SELECT texto, imagem, criado_em 
+            FROM posts 
+            WHERE id_perfil = (
+                SELECT id_perfil FROM perfil WHERE id_usuario = ?
+            )
+            ORDER BY criado_em DESC";
+
+    $stmt = $conexao->prepare($sql);
+    $stmt->bind_param("i", $id_usuario);
+    $stmt->execute();
+    $res = $stmt->get_result();
+
+    // Monta array com todos os posts
+    $posts = [];
+    while ($row = $res->fetch_assoc()) {
+        $posts[] = $row;
+    }
+
+    // Retorna os posts como JSON
+    echo json_encode($posts);
+    exit;
+}
+?>
