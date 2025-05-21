@@ -78,3 +78,35 @@ function salvarPerfil() {
     });
 }
 
+
+// Atualiza o conteúdo da tela com os dados do perfil do banco
+function atualizarPerfil() {
+  fetch("../backend/perfil.php?action=carregar")
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById('nome').textContent = data.nome || 'Seu nome';
+      document.getElementById('arroba').textContent = '@' + (data.arroba || 'seuarroba');
+      document.getElementById('arrobaPost').textContent = '@' + (data.arroba || 'seuarroba');
+      document.getElementById('bio').textContent = data.bio || 'Sua bio aqui';
+      document.getElementById('local').textContent = data.local || 'Sua cidade';
+      document.getElementById('aniversario').textContent = data.aniversario
+        ? `Aniversário: ${data.aniversario.split('-').reverse().join('/')}`
+        : 'Aniversário: DD/MM/AAAA';
+
+      const avatar = data.avatar || 'https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png';
+      document.getElementById('avatar').src = avatar;
+      document.getElementById('modalAvatar').src = avatar;
+      document.getElementById("iconHeader").src = avatar;
+
+      if (data.banner) {
+        const banner = document.getElementById('banner');
+        banner.style.backgroundImage = `url('${data.banner}')`;
+        banner.style.backgroundSize = 'cover';
+        banner.style.backgroundPosition = 'center';
+      }
+
+      tipoUsuarioAtual = data.tipo || 'jogador';
+      atualizarTipo(tipoUsuarioAtual);
+    });
+}
+
