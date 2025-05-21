@@ -172,3 +172,13 @@ function resizeAndStoreImage(file, width, height, callback) {
   };
   reader.readAsDataURL(file);
 }
+
+// Ao selecionar uma nova imagem de avatar, redimensiona
+document.getElementById('inputAvatar').addEventListener('change', function () {
+  const file = this.files[0];
+  if (file) {
+    resizeAndStoreImage(file, 130, 130, (resizedUrl) => {
+      document.getElementById('modalAvatar').src = resizedUrl;
+    });
+  }
+});
