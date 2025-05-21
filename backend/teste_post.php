@@ -1,97 +1,103 @@
 <?php
-// Inclui a conexão com o banco de dados e verificação de sessão
+// Carrega conexão com o banco e verificação de sessão
 require_once("conexao.php");
 require_once("time.php");
 
-// Inicia a sessão
+// Exibe erros para debug (em produção, remova)
+ini_set("display_errors", 1);
+error_reporting(E_ALL);
+
+// Inicia sessão e verifica autenticação
 session_start();
+$id_perfil = $_SESSION['id_perfil'] ?? null;
 
-// Obtém o ID do usuário autenticado da sessão
-$id_usuario = $_SESSION["id_usuario"] ?? null;
+if (!$id_perfil) {
+    echo json_encode(["erro" => "Perfil não autenticado."]);
+    exit;
+}
 
-// Obtém a ação solicitada via GET
-$action = $_GET["action"] ?? '';
+// 🔁 Verificação redundante: consulta novamente o id_perfil a partir de id_usuario
+$sqlPerfil = "SELECT id_perfil FROM perfil WHERE id_usuario = ?";
+$stmt = $conexao->prepare($sqlPerfil);
+$stmt->bind_param("i", $id_usuario); // ⚠️ $id_usuario não foi definido na sessão
+$stmt->execute();
+$res = $stmt->get_result();
+$row = $res->fetch_assoc();
 
-// Verifica se o usuário está autenticado
-if (!$id_usuario) {
+if (!$row) {
+    echo json_encode(["erro" => "Perfil não encontrado."]);
+    exit;
+}
+
+$id_perfil = $row["id_perfil"];
+
+// Ação recebida via GET ou POST
+$action = $_REQUEST["action"] ?? "";
+
+
+// === 1. Criar post ===
+if ($action === "criarPost") {
+    $texto = $_POST["texto"] ?? "";
+    $imagem = "";
+
+    // Verifica se uma imagem foi enviada
+    if (isset($_FILES["imagem"]) && $_FILES["imagem"]["tmp_name"]) {
+        $extensao = pathinfo($_FILES["imagem"]["name"], PATHINFO_EXTENSION);
+        $nomeArquivo = uniqid("img_") . "." . $extensao;
+        $caminhoFinal = "uploads/" . $nomeArquivo;
+
+        // Move o arquivo para a pasta final
+        if (move_uploaded_file($_FILES["imagem"]["tmp_name"], $caminhoFinal)) {
+            $imagem = $caminhoFinal;
+        }
+    }
+
+    // Insere o post no banco
+    $sql = "INSERT INTO posts (id_perfil, texto, imagem) VALUES (?, ?, ?)";
+    $stmt = $conexao->prepare($sql);
+    $stmt->bind_param("iss", $id_perfil, $texto, $imagem);
+    $stmt->execute();
+
+    $id = $stmt->insert_id;
+
     echo json_encode([
-        "status" => "erro",
-        "msg" => "Usuário não autenticado."
+        "sucesso" => true,
+        "id" => $id,
+        "texto" => $texto,
+        "imagem" => $imagem
     ]);
     exit;
 }
 
-// === AÇÃO: carregar dados do perfil ===
-if ($action === "carregar") {
-    $sql = "SELECT * FROM perfil WHERE id_usuario = ?";
-    $stmt = $conexao->prepare($sql);
-    $stmt->bind_param("i", $id_usuario);
-    $stmt->execute();
-    $res = $stmt->get_result();
 
-    // Retorna os dados do perfil como JSON
-    echo json_encode($res->fetch_assoc());
-    exit;
-}
-
-// === AÇÃO: salvar alterações do perfil ===
-if ($action === "salvar") {
-    // Recebe os dados enviados em JSON
-    $data = json_decode(file_get_contents("php://input"), true);
-
-    $sql = "UPDATE perfil 
-            SET nome = ?, arroba = ?, bio = ?, local = ?, aniversario = ?, avatar = ?, banner = ?, tipo = ? 
-            WHERE id_usuario = ?";
-    
-    $stmt = $conexao->prepare($sql);
-    $stmt->bind_param(
-        "ssssssssi",
-        $data["nome"],
-        $data["arroba"],
-        $data["bio"],
-        $data["local"],
-        $data["aniversario"],
-        $data["avatar"],
-        $data["banner"],
-        $data["tipo"],
-        $id_usuario
-    );
-
-        // Verifica se a atualização foi bem-sucedida
-    if ($stmt->execute()) {
-        echo json_encode(["status" => "ok"]);
-    } else {
-        echo json_encode([
-            "status" => "erro",
-            "msg" => $stmt->error
-        ]);
-    }
-
-    exit;
-}
-
-// === AÇÃO: carregar os posts do perfil logado ===
-if ($action === "postsUsuario") {
-    $sql = "SELECT texto, imagem, criado_em 
+// === 2. Carregar posts (com arroba e avatar do autor) ===
+if ($action === "carregarPosts") {
+    $sql = "SELECT posts.id, posts.texto, posts.imagem, posts.criado_em, perfil.arroba, perfil.avatar 
             FROM posts 
-            WHERE id_perfil = (
-                SELECT id_perfil FROM perfil WHERE id_usuario = ?
-            )
-            ORDER BY criado_em DESC";
+            JOIN perfil ON posts.id_perfil = perfil.id_perfil 
+            ORDER BY posts.id DESC";
+    $res = $conexao->query($sql);
 
-    $stmt = $conexao->prepare($sql);
-    $stmt->bind_param("i", $id_usuario);
-    $stmt->execute();
-    $res = $stmt->get_result();
-
-    // Monta array com todos os posts
     $posts = [];
     while ($row = $res->fetch_assoc()) {
         $posts[] = $row;
     }
 
-    // Retorna os posts como JSON
     echo json_encode($posts);
     exit;
 }
-?>
+
+
+// === 3. Comentar em um post ===
+if ($action === "comentar") {
+    $id_post = intval($_POST["id_post"]);
+    $comentario = $_POST["comentario"] ?? "";
+
+    $sql = "INSERT INTO comentarios (id_perfil, id_post, texto) VALUES (?, ?, ?)";
+    $stmt = $conexao->prepare($sql);
+    $stmt->bind_param("iis", $id_perfil, $id_post, $comentario);
+    $stmt->execute();
+
+    echo json_encode(["sucesso" => true]);
+    exit;
+}
