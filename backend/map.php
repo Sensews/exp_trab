@@ -120,3 +120,23 @@ if ($action === "carregarTokensMapa") {
 
     json_response($tokens);
 }
+
+// 7. Salvar token no mapa
+if ($action === "salvarToken") {
+    $dados = json_decode(file_get_contents("php://input"), true);
+    if (!isset($dados["id_mapa"], $dados["id_token_biblioteca"], $dados["url"], $dados["x"], $dados["y"], $dados["tamanho"])) {
+        json_response(["success" => false, "error" => "Dados incompletos"]);
+    }
+
+    $stmt = $conexao->prepare("INSERT INTO mapa_tokens (id_mapa, id_token_biblioteca, url, posicao_x, posicao_y, tamanho) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("iisddi",
+        $dados["id_mapa"], $dados["id_token_biblioteca"], $dados["url"],
+        $dados["x"], $dados["y"], $dados["tamanho"]
+    );
+
+    if ($stmt->execute()) {
+        json_response(["success" => true]);
+    } else {
+        json_response(["success" => false, "error" => $stmt->error]);
+    }
+}
