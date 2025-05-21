@@ -10,6 +10,8 @@ require 'PHPMailer/src/Exception.php';
 require 'PHPMailer/src/PHPMailer.php';
 require 'PHPMailer/src/SMTP.php';
 
+require_once 'env_decoder.php';
+
 $conn = new mysqli("localhost", "root", "", "oblivion");
 if ($conn->connect_error) {
     die("Erro na conexão com o banco de dados.");
@@ -57,8 +59,9 @@ try {
     $mail->SMTPAuth = true;
     $mail->SMTPSecure = 'ssl';
 
-    $mail->Username = $_ENV['EMAIL_USERNAME'];
-    $mail->Password = $_ENV['EMAIL_PASSWORD'];
+    $email_username = obter_env('EMAIL_USERNAME');
+    $email_password = obter_env('EMAIL_PASSWORD');
+
     $mail->setFrom('Oblivion@gmail.com', 'Oblivion RPG');
     $mail->addAddress($usuario['email'], $usuario['nome']);
 

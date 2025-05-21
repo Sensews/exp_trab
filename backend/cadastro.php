@@ -11,6 +11,8 @@ require 'PHPMailer/src/Exception.php';
 require 'PHPMailer/src/PHPMailer.php';
 require 'PHPMailer/src/SMTP.php';
 
+require_once 'env_decoder.php';
+
 $conn = new mysqli("localhost", "root", "", "oblivion");
 if ($conn->connect_error) {
     http_response_code(500);
@@ -111,8 +113,8 @@ if ($stmt->execute()) {
         $mail->Port = 465;
         $mail->SMTPAuth = true;
         $mail->SMTPSecure = 'ssl';
-        $mail->Username = $_ENV['EMAIL_USERNAME'];
-        $mail->Password = $_ENV['EMAIL_PASSWORD'];
+        $mail->Username = obter_env('EMAIL_USERNAME');
+        $mail->Password = obter_env('EMAIL_PASSWORD');
         $mail->setFrom('Oblivion@gmail.com', 'Oblivion RPG');
         $mail->addAddress($email, $nome);
         $mail->CharSet = 'UTF-8';
