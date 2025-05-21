@@ -101,3 +101,31 @@ if ($action === "comentar") {
     echo json_encode(["sucesso" => true]);
     exit;
 }
+
+
+// === 4. Curtir um post ===
+if ($action === "curtir") {
+    $id_post = intval($_POST["id_post"]);
+
+    $sql = "INSERT IGNORE INTO curtidas_posts (id_perfil, id_post) VALUES (?, ?)";
+    $stmt = $conexao->prepare($sql);
+    $stmt->bind_param("ii", $id_perfil, $id_post);
+    $stmt->execute();
+
+    echo json_encode(["sucesso" => true]);
+    exit;
+}
+
+
+// === 5. Remover curtida de um post ===
+if ($action === "removerCurtida") {
+    $id_post = intval($_POST["id_post"]);
+
+    $sql = "DELETE FROM curtidas_posts WHERE id_perfil = ? AND id_post = ?";
+    $stmt = $conexao->prepare($sql);
+    $stmt->bind_param("ii", $id_perfil, $id_post);
+    $stmt->execute();
+
+    echo json_encode(["sucesso" => true]);
+    exit;
+}
