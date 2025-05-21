@@ -208,3 +208,25 @@ window.onload = () => {
   atualizarPerfil();
   carregarPostsDoPerfil();
 }
+
+// Busca e exibe os posts do usuário na página de perfil
+function carregarPostsDoPerfil() {
+  fetch("../backend/perfil.php?action=postsUsuario")
+    .then(res => res.json())
+    .then(posts => {
+      const container = document.getElementById("postsPerfil");
+      if (!container) return;
+
+      container.innerHTML = "";
+      posts.forEach(post => {
+        const div = document.createElement("div");
+        div.className = "post-perfil";
+        div.innerHTML = `
+          <p>${post.texto}</p>
+          ${post.imagem ? `<img src="../backend/${post.imagem}" alt="Imagem do post" style="max-width:100%; border-radius:8px;" />` : ""}
+          <small>${new Date(post.criado_em).toLocaleString()}</small>
+        `;
+        container.appendChild(div);
+      });
+    });
+}
