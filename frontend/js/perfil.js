@@ -153,3 +153,22 @@ document.getElementById('alternarTipoBtn').addEventListener('click', () => {
     })
   });
 });
+
+// Redimensiona imagem antes de salvar (para avatar/banner)
+function resizeAndStoreImage(file, width, height, callback) {
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      const resizedDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+      callback(resizedDataUrl);
+    };
+    img.src = event.target.result;
+  };
+  reader.readAsDataURL(file);
+}
