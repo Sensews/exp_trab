@@ -50,3 +50,55 @@ if ($action === "carregarProjetos") {
     echo json_encode($dados);
     exit;
 }
+
+// === Criar novo projeto ===
+if ($action === "criarProjeto") {
+    $json = json_decode(file_get_contents("php://input"), true);
+    $nome = $json["nome"];
+
+    $sql = "INSERT INTO projetos (id_perfil, nome) VALUES (?, ?)";
+    $stmt = $conexao->prepare($sql);
+    $stmt->bind_param("is", $id_perfil, $nome);
+
+    if (!$stmt->execute()) {
+        http_response_code(500);
+        echo json_encode(["erro" => $stmt->error]);
+        exit;
+    }
+
+    echo json_encode(["sucesso" => true]);
+    exit;
+}
+
+
+// === Criar nova anotação ===
+if ($action === "criarAnotacao") {
+    $json = json_decode(file_get_contents("php://input"), true);
+    $projeto = $json["projeto"];
+    $titulo = $json["titulo"];
+
+    // Verifica se o projeto existe
+    $sql = "SELECT id FROM projetos WHERE nome = ? AND id_perfil = ?";
+    $stmt = $conexao->prepare($sql);
+    $stmt->bind_param("si", $projeto, $id_perfil);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    $row = $res->fetch_assoc();
+
+    if (!$row) {
+        http_response_code(400);
+        echo json_encode(["erro" => "Projeto não encontrado"]);
+        exit;
+    }
+
+    $id_projeto = $row["id"];
+
+    // Cria anotação vazia
+    $sql = "INSERT INTO notas (id_projeto, titulo, conteudo) VALUES (?, ?, '')";
+    $stmt = $conexao->prepare($sql);
+    $stmt->bind_param("is", $id_projeto, $titulo);
+    $stmt->execute();
+
+    echo json_encode(["sucesso" => true]);
+    exit;
+}
