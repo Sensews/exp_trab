@@ -20,3 +20,16 @@ if (!$id_usuario) {
     ]);
     exit;
 }
+
+// === AÇÃO: carregar dados do perfil ===
+if ($action === "carregar") {
+    $sql = "SELECT * FROM perfil WHERE id_usuario = ?";
+    $stmt = $conexao->prepare($sql);
+    $stmt->bind_param("i", $id_usuario);
+    $stmt->execute();
+    $res = $stmt->get_result();
+
+    // Retorna os dados do perfil como JSON
+    echo json_encode($res->fetch_assoc());
+    exit;
+}
