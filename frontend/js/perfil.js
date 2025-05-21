@@ -18,7 +18,6 @@ function abrirModal() {
       document.getElementById('inputAniversario').value = data.aniversario || '';
       document.getElementById('contadorBio').textContent = `${data.bio?.length || 0} / 160`;
 
-      // Define a imagem do banner
       if (data.banner) {
         const banner = document.getElementById('modalBanner');
         banner.style.backgroundImage = `url('${data.banner}')`;
@@ -26,7 +25,6 @@ function abrirModal() {
         banner.style.backgroundPosition = 'center';
       }
 
-      // Define o tipo do usuário (jogador ou mestre)
       if (data.tipo) {
         tipoUsuarioAtual = data.tipo;
         atualizarTipo(data.tipo);
@@ -34,6 +32,7 @@ function abrirModal() {
     });
 }
 
+// Salva os dados do perfil
 function salvarPerfil() {
   const nome = document.getElementById('inputNome').value.trim();
   const arroba = document.getElementById('inputArroba').value.trim();
@@ -43,12 +42,10 @@ function salvarPerfil() {
   const avatar = document.getElementById('modalAvatar').src;
   const banner = document.getElementById('modalBanner').style.backgroundImage.replace(/^url\(["']?/, '').replace(/["']?\)$/, '');
 
-  // Validações básicas
   if (!nome || !arroba) return alert("Nome e usuário são obrigatórios!");
   if (nome.length > 30) return alert("O nome não pode ter mais que 30 caracteres.");
   if (arroba.length > 15) return alert("O nome de usuário não pode ter mais que 15 caracteres.");
 
-  // Prepara os dados
   const dados = {
     nome,
     arroba,
@@ -60,7 +57,6 @@ function salvarPerfil() {
     tipo: tipoUsuarioAtual
   };
 
-  // Envia os dados via POST para o backend
   fetch("../backend/perfil.php?action=salvar", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -71,15 +67,14 @@ function salvarPerfil() {
       if (res.status === "ok") {
         alert("Perfil atualizado!");
         atualizarPerfil();
-        modal.classList.remove("open");
+        modal.classList.remove("open"); //FECHA O MODAL
       } else {
         alert("Erro ao salvar: " + res.msg);
       }
     });
 }
 
-
-// Atualiza o conteúdo da tela com os dados do perfil do banco
+// Atualiza os dados do perfil na tela
 function atualizarPerfil() {
   fetch("../backend/perfil.php?action=carregar")
     .then(res => res.json())
@@ -110,7 +105,7 @@ function atualizarPerfil() {
     });
 }
 
-// Altera o texto e botão conforme o tipo do usuário
+// Altera o texto do tipo de usuário e botão de ação
 function atualizarTipo(tipo) {
   const tipoTexto = document.getElementById('tipoUsuarioTexto');
   const btnTrocar = document.getElementById('alternarTipoBtn');
@@ -119,7 +114,6 @@ function atualizarTipo(tipo) {
   tipoTexto.textContent = `Tipo: ${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`;
   btnTrocar.textContent = tipo === 'jogador' ? 'Tornar-se Mestre' : 'Voltar a ser Jogador';
 
-  // Troca o botão de ação (Criar ou Entrar em Party)
   acoes.innerHTML = '';
   const btn = document.createElement('button');
   btn.textContent = tipo === 'jogador' ? 'Entrar em Party' : 'Criar Party';
@@ -130,14 +124,13 @@ function atualizarTipo(tipo) {
   acoes.appendChild(btn);
 }
 
-// Alterna entre jogador e mestre ao clicar no botão
+// Alterna tipo de usuário e salva
 document.getElementById('alternarTipoBtn').addEventListener('click', () => {
   if (tipoUsuarioAtual === 'mestre' && !confirm("Deseja voltar a ser Jogador?\n⚠️ Sua party será excluída...")) return;
 
   tipoUsuarioAtual = tipoUsuarioAtual === 'jogador' ? 'mestre' : 'jogador';
   atualizarTipo(tipoUsuarioAtual);
 
-  // Salva alteração de tipo no banco
   fetch("../backend/perfil.php?action=salvar", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -151,10 +144,13 @@ document.getElementById('alternarTipoBtn').addEventListener('click', () => {
       banner: document.getElementById("banner").style.backgroundImage.replace(/^url\(["']?/, '').replace(/["']?\)$/, ''),
       tipo: tipoUsuarioAtual
     })
+  }).then(() => {
+    atualizarPerfil();
+    modal.classList.remove("open"); // FECHAR MODAL 
   });
 });
 
-// Redimensiona imagem antes de salvar (para avatar/banner)
+// Redimensiona imagens antes de salvar
 function resizeAndStoreImage(file, width, height, callback) {
   const reader = new FileReader();
   reader.onload = (event) => {
@@ -173,7 +169,6 @@ function resizeAndStoreImage(file, width, height, callback) {
   reader.readAsDataURL(file);
 }
 
-// Ao selecionar uma nova imagem de avatar, redimensiona
 document.getElementById('inputAvatar').addEventListener('change', function () {
   const file = this.files[0];
   if (file) {
@@ -183,7 +178,6 @@ document.getElementById('inputAvatar').addEventListener('change', function () {
   }
 });
 
-// Ao selecionar nova imagem de banner
 document.getElementById('inputBanner').addEventListener('change', function () {
   const file = this.files[0];
   if (file) {
@@ -196,20 +190,19 @@ document.getElementById('inputBanner').addEventListener('change', function () {
   }
 });
 
-// Atualiza contador de bio dinamicamente
 document.getElementById('inputBio').addEventListener('input', function () {
   this.style.height = 'auto';
   this.style.height = this.scrollHeight + 'px';
   document.getElementById('contadorBio').textContent = `${this.value.length} / 160`;
 });
 
-// Ao carregar a página, atualiza o perfil e carrega os posts
+// Carrega perfil e posts ao abrir página
 window.onload = () => {
   atualizarPerfil();
   carregarPostsDoPerfil();
-}
+};
 
-// Busca e exibe os posts do usuário na página de perfil
+// Exibe os posts do usuário
 function carregarPostsDoPerfil() {
   fetch("../backend/perfil.php?action=postsUsuario")
     .then(res => res.json())
@@ -230,3 +223,6 @@ function carregarPostsDoPerfil() {
       });
     });
 }
+
+// Vincula botão "Salvar" com a função
+document.getElementById("btnSalvar").addEventListener("click", salvarPerfil);

@@ -85,11 +85,22 @@ if ($stmt->execute()) {
     // CRIAR PERFIL AUTOMATICAMENTE
     $id_usuario = $conn->insert_id;
 
-    $stmtPerfil = $conn->prepare("INSERT INTO perfil (id_usuario, nome, arroba, tipo) VALUES (?, ?, '', 'jogador')");
+    // Cria perfil sem arroba inicialmente
+    $stmtPerfil = $conn->prepare("INSERT INTO perfil (id_usuario, nome, tipo) VALUES (?, ?, 'jogador')");
     $stmtPerfil->bind_param("is", $id_usuario, $nome);
     $stmtPerfil->execute();
+
+    // Gera arroba com base no ID do perfil
+    $id_perfil = $conn->insert_id;
     $stmtPerfil->close();
 
+    $arroba = "oblivion" . $id_perfil;
+    $stmtArroba = $conn->prepare("UPDATE perfil SET arroba = ? WHERE id_perfil = ?");
+    $stmtArroba->bind_param("si", $arroba, $id_perfil);
+    $stmtArroba->execute();
+    $stmtArroba->close();
+
+    // Envio de e-mail de verificação
     $link = "http://localhost/exp_trab/backend/verificar.php?token=$token";
     $mail = new PHPMailer(true);
 

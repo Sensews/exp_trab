@@ -1,18 +1,13 @@
 <?php
-// Inclui a conexão com o banco de dados e verificação de sessão
+header('Content-Type: application/json'); // Sempre retorna JSON
 require_once("conexao.php");
-require_once("time.php");
+require_once("time.php"); // Já inicia a sessão e valida login
 
-// Inicia a sessão
-session_start();
-
-// Obtém o ID do usuário autenticado da sessão
+// Obtém o ID do usuário da sessão
 $id_usuario = $_SESSION["id_usuario"] ?? null;
-
-// Obtém a ação solicitada via GET
 $action = $_GET["action"] ?? '';
 
-// Verifica se o usuário está autenticado
+// Se o usuário não estiver autenticado
 if (!$id_usuario) {
     echo json_encode([
         "status" => "erro",
@@ -28,9 +23,9 @@ if ($action === "carregar") {
     $stmt->bind_param("i", $id_usuario);
     $stmt->execute();
     $res = $stmt->get_result();
+    $perfil = $res->fetch_assoc();
 
-    // Retorna os dados do perfil como JSON
-    echo json_encode($res->fetch_assoc());
+    echo json_encode($perfil ?: []);
     exit;
 }
 
@@ -39,10 +34,15 @@ if ($action === "salvar") {
     // Recebe os dados enviados em JSON
     $data = json_decode(file_get_contents("php://input"), true);
 
+    if (!$data) {
+        echo json_encode(["status" => "erro", "msg" => "Dados inválidos."]);
+        exit;
+    }
+
     $sql = "UPDATE perfil 
             SET nome = ?, arroba = ?, bio = ?, local = ?, aniversario = ?, avatar = ?, banner = ?, tipo = ? 
             WHERE id_usuario = ?";
-    
+
     $stmt = $conexao->prepare($sql);
     $stmt->bind_param(
         "ssssssssi",
@@ -57,20 +57,16 @@ if ($action === "salvar") {
         $id_usuario
     );
 
-    // Verifica se a atualização foi bem-sucedida
     if ($stmt->execute()) {
         echo json_encode(["status" => "ok"]);
     } else {
-        echo json_encode([
-            "status" => "erro",
-            "msg" => $stmt->error
-        ]);
+        echo json_encode(["status" => "erro", "msg" => $stmt->error]);
     }
 
     exit;
 }
 
-// === AÇÃO: carregar os posts do perfil logado ===
+// === AÇÃO: carregar posts do usuário ===
 if ($action === "postsUsuario") {
     $sql = "SELECT texto, imagem, criado_em 
             FROM posts 
@@ -84,14 +80,15 @@ if ($action === "postsUsuario") {
     $stmt->execute();
     $res = $stmt->get_result();
 
-    // Monta array com todos os posts
     $posts = [];
     while ($row = $res->fetch_assoc()) {
         $posts[] = $row;
     }
 
-    // Retorna os posts como JSON
     echo json_encode($posts);
     exit;
 }
-?>
+
+// === AÇÃO não reconhecida ===
+echo json_encode(["status" => "erro", "msg" => "Ação inválida."]);
+exit;

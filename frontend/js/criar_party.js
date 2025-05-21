@@ -2,25 +2,32 @@
 document.addEventListener('DOMContentLoaded', () => {
 
   // Elementos do DOM utilizados
-  const select = document.getElementById('escolhaMapa');          
-  const btnIrParaParty = document.getElementById('btnIrParty');    
-  const form = document.getElementById('formCriarParty');          
+  const select = document.getElementById('escolhaMapa');         
+  const btnIrParaParty = document.getElementById('btnIrParty');  
+  const form = document.getElementById('formCriarParty');         
 
   // Variáveis de controle
   let id_perfil = null;         
-  let idPartyCriada = null;      
+  let idPartyCriada = null;    
 
-  // Função para carregar os mapas salvos do usuário no select
+  // Função para carregar os mapas do usuário no <select>
   async function carregarMapas() {
-    select.innerHTML = ''; // Limpa o select antes de adicionar opções
+    select.innerHTML = '';
 
     try {
-      const response = await fetch(`../backend/map.php?action=carregar&id_perfil=${id_perfil}`);
+      // Envia requisição POST para buscar os mapas do perfil
+      const response = await fetch(`../backend/map.php`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "carregar", id_perfil: id_perfil })
+      });
+
       const data = await response.json();
 
+      // Garante que o retorno seja um array de mapas
       if (!Array.isArray(data)) throw new Error("Formato inválido");
 
-      // Se não houver mapas salvos
+      // Se o usuário não tiver nenhum mapa salvo
       if (data.length === 0) {
         const opt = document.createElement('option');
         opt.textContent = 'Você ainda não tem mapas salvos.';
@@ -29,7 +36,8 @@ document.addEventListener('DOMContentLoaded', () => {
         select.appendChild(opt);
         return;
       }
-// Adiciona uma opção padrão ao select
+
+      // Opção padrão
       const optPadrao = document.createElement('option');
       optPadrao.textContent = 'Selecione um mapa...';
       optPadrao.disabled = true;
@@ -37,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
       optPadrao.value = '';
       select.appendChild(optPadrao);
 
-      // Adiciona os mapas do usuário no select
+      // Adiciona os mapas ao <select>
       data.forEach(mapa => {
         const opt = document.createElement('option');
         opt.value = mapa.id;
@@ -46,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
     } catch (err) {
-      // Se der erro na requisição
+      // Caso haja erro na requisição
       console.error("Erro ao carregar mapas:", err);
       const opt = document.createElement('option');
       opt.textContent = 'Erro ao carregar mapas.';
@@ -55,31 +63,33 @@ document.addEventListener('DOMContentLoaded', () => {
       select.appendChild(opt);
     }
   }
- // Listener para submissão do formulário de criação de party
+
+  // Evento de submissão do formulário de criação da party
   form.addEventListener('submit', async (e) => {
     e.preventDefault(); // Evita recarregamento da página
 
-    // Coleta os valores dos campos do formulário
+    // Coleta os dados dos campos do formulário
     const nome = document.getElementById('nomeParty').value.trim();
     const senha = document.getElementById('senhaParty').value.trim();
     const limite = document.getElementById('limiteParty')?.value ?? 5;
     const mapaId = select.value;
 
-    // Verificação de campos obrigatórios
+    // Validação básica
     if (!nome || !senha || !mapaId) {
       alert('Preencha todos os campos obrigatórios.');
       return;
     }
 
-    // Monta o objeto FormData com os dados do formulário
+    // Monta o FormData com os dados para enviar via POST
     const formData = new FormData();
     formData.append('nome', nome);
     formData.append('senha', senha);
     formData.append('mapaId', mapaId);
     formData.append('limite', limite);
-    formData.append('id_perfil', id_perfil); // Vindo da sessão
+    formData.append('id_perfil', id_perfil);
 
     try {
+      // Envia a requisição para criar a party
       const response = await fetch('../backend/criar_party.php', {
         method: 'POST',
         body: formData
@@ -88,20 +98,20 @@ document.addEventListener('DOMContentLoaded', () => {
       const text = await response.text();
       let resultado;
 
+      // Tenta converter para JSON
       try {
         resultado = JSON.parse(text);
       } catch (err) {
-        // Se a resposta não for JSON válido
         console.error('Resposta inválida do servidor:', text);
         alert('Erro: resposta inválida do servidor.');
         return;
       }
 
-      // Se a criação foi bem-sucedida
+      // Se a criação for bem-sucedida
       if (resultado.sucesso) {
         alert(`Party criada com sucesso!\nCódigo: ${resultado.codigo}\nSenha: ${resultado.senha}`);
         idPartyCriada = resultado.id_party;
-        btnIrParaParty.style.display = 'inline-block'; // Mostra o botão de redirecionamento
+        btnIrParaParty.style.display = 'inline-block'; // Mostra botão de redirecionar
         btnIrParaParty.dataset.partyId = idPartyCriada;
       } else {
         alert(resultado.erro || 'Erro ao criar a party.');
@@ -114,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-// Quando o botão "Ir para a party" for clicado
+  // Evento de clique no botão "Ir para a party"
   btnIrParaParty.addEventListener('click', () => {
     const id = btnIrParaParty.dataset.partyId;
     if (id) {
@@ -124,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Ao carregar a página, busca o perfil do usuário logado para obter o ID
+  // Ao carregar a página, busca o perfil do usuário logado
   fetch("../backend/perfil.php?action=carregar")
     .then(res => res.json())
     .then(data => {
@@ -133,8 +143,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      id_perfil = data.id_perfil; // Define o id_perfil dinamicamente com base na sessão
-      carregarMapas(); // Só carrega os mapas após garantir o id_perfil
+      id_perfil = data.id_perfil; // Define o ID do perfil
+      carregarMapas(); // E carrega os mapas do perfil
     })
     .catch(() => {
       alert("Erro ao buscar perfil.");
