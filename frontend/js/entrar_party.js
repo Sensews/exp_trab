@@ -64,4 +64,45 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-});
+// Envia os dados do formulário para tentar entrar na party
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    mensagemErro.textContent = ''; // Limpa erro anterior
+
+    const codigo = codigoInput.value.trim();
+    const senha = senhaInput.value.trim();
+    const fichaId = fichaSelect.value;
+
+    // Validação básica
+    if (!codigo || !senha || !fichaId || !id_perfil) {
+      mensagemErro.textContent = 'Preencha todos os campos.';
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('codigo', codigo);
+    formData.append('senha', senha);
+    formData.append('id_ficha', fichaId);
+    formData.append('id_perfil', id_perfil);
+
+    try {
+      const response = await fetch('../backend/entrar_party.php', {
+        method: 'POST',
+        body: formData
+      });
+
+      const result = await response.json();
+
+      if (result.sucesso) {
+        // Redireciona para a página da party
+        window.location.href = 'party.html';
+      } else {
+        // Mostra erro retornado pelo servidor
+        mensagemErro.textContent = result.erro || 'Erro ao entrar na party.';
+      }
+    } catch (error) {
+      console.error('Erro:', error);
+      mensagemErro.textContent = 'Erro na comunicação com o servidor.';
+    }
+  });
+});  
