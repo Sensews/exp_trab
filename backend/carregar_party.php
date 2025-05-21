@@ -41,3 +41,39 @@ try {
         ]);
         exit;
     }
+    
+  // Recupera os dados da party criada pelo mestre
+    $party = $res->fetch_assoc();
+
+    // 👥 Busca todos os membros que pertencem à party do mestre
+    $sql_membros = "SELECT pf.nome, pm.status
+                    FROM party_membros pm
+                    JOIN perfil pf ON pm.id_perfil = pf.id_perfil
+                    WHERE pm.id_party = ?";
+    
+    $stmt_membros = $conexao->prepare($sql_membros);
+    $stmt_membros->bind_param("i", $party['id']);
+    $stmt_membros->execute();
+    $res_membros = $stmt_membros->get_result();
+
+    // Monta o array com os dados dos membros
+    $membros = [];
+    while ($row = $res_membros->fetch_assoc()) {
+        $membros[] = $row;
+    }
+
+    // Retorna a party e os membros associados
+    echo json_encode([
+        'success' => true,
+        'party' => $party,
+        'membros' => $membros
+    ]);
+
+} catch (Exception $e) {
+    // Em caso de erro na execução da query ou conexão
+    echo json_encode([
+        'success' => false,
+        'erro' => 'Erro ao carregar party: ' . $e->getMessage()
+    ]);
+}
+?>
