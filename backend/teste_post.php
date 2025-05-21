@@ -33,3 +33,26 @@ if ($action === "carregar") {
     echo json_encode($res->fetch_assoc());
     exit;
 }
+
+// === AÇÃO: salvar alterações do perfil ===
+if ($action === "salvar") {
+    // Recebe os dados enviados em JSON
+    $data = json_decode(file_get_contents("php://input"), true);
+
+    $sql = "UPDATE perfil 
+            SET nome = ?, arroba = ?, bio = ?, local = ?, aniversario = ?, avatar = ?, banner = ?, tipo = ? 
+            WHERE id_usuario = ?";
+    
+    $stmt = $conexao->prepare($sql);
+    $stmt->bind_param(
+        "ssssssssi",
+        $data["nome"],
+        $data["arroba"],
+        $data["bio"],
+        $data["local"],
+        $data["aniversario"],
+        $data["avatar"],
+        $data["banner"],
+        $data["tipo"],
+        $id_usuario
+    );
