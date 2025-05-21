@@ -1373,3 +1373,18 @@ function salvarDesenho() {
     });
   }
 }
+
+function salvarTokenMapa(tokenData, x, y) {
+  fetch("../backend/map.php?action=salvarToken", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      id_mapa: 1,
+      id_token_biblioteca: tokenData.id,
+      url: tokenData.url,
+      x: x,
+      y: y,
+      tamanho: tokenData.size
+    })
+  });
+}
