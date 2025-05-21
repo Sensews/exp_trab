@@ -129,3 +129,34 @@ if ($action === "removerCurtida") {
     echo json_encode(["sucesso" => true]);
     exit;
 }
+
+
+// === 6. Verificar curtida de um post ===
+if ($action === "verificarCurtida") {
+    $id_post = intval($_GET["id_post"]);
+
+    // Total de curtidas no post
+    $sql1 = "SELECT COUNT(*) AS total FROM curtidas_posts WHERE id_post = ?";
+    $stmt1 = $conexao->prepare($sql1);
+    $stmt1->bind_param("i", $id_post);
+    $stmt1->execute();
+    $res1 = $stmt1->get_result();
+    $total = $res1->fetch_assoc()["total"];
+
+    // Se o usuário atual já curtiu o post
+    $sql2 = "SELECT COUNT(*) AS curtido FROM curtidas_posts WHERE id_post = ? AND id_perfil = ?";
+    $stmt2 = $conexao->prepare($sql2);
+    $stmt2->bind_param("ii", $id_post, $id_perfil);
+    $stmt2->execute();
+    $res2 = $stmt2->get_result();
+    $curtido = $res2->fetch_assoc()["curtido"] > 0;
+
+    echo json_encode([
+        "total" => $total,
+        "curtido" => $curtido
+    ]);
+    exit;
+}
+
+// === Ação não reconhecida ===
+echo json_encode(["erro" => "Ação inválida."]);
