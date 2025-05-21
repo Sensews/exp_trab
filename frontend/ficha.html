@@ -7,20 +7,42 @@
     
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/ficha.css">
+    <link rel="stylesheet" href="css/burg.css">
+    <link rel="stylesheet" href="css/fotoperfil.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     
     <script defer src="js/ficha.js"></script>
     <script defer src="js/stars.js"></script>
+    <script src="js/burg_perfil.js" defer></script>
 </head>
 <body>
-    <header>
-        <h1 class="logo" onclick="window.location.href='main.html'">OBLIVION</h1>
-        <nav>
-            <button class="btn"><a href="main.html">Início</a></button>
-            <button class="btn"><a href="login.html">Login</a></button>
-            <button class="btn"><a href="cadastro.html">Cadastro</a></button>
-        </nav>
-    </header>
+ <header>
+  <h1 class="logo" onclick="window.location.href='main.html'">OBLIVION</h1>
+
+  <div class="nav-wrapper">
+    <nav>
+      <button class="btn"><a href="main.html">Início</a></button>
+      <div class="dropdown">
+        <button class="btn">Jogo</button>
+        <div class="dropdown-content">
+          <a href="ficha.html">Fichas</a>
+          <a href="map.html">Mapas</a>
+          <a href="anotacoes.html">Anotações</a>
+        </div>
+      </div>
+      <button class="btn"><a href="comunidade.html">Comunidade</a></button>
+    </nav>
+
+    <a href="perfil.html" title="Perfil">
+      <div class="profile-icon">
+        <img id="iconHeader" src="https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png" alt="Perfil">
+      </div>
+    </a>
+
+    <button class="hamburger" id="hamburgerMenuMobile" aria-label="Abrir menu">☰</button>
+  </div>
+</header>
+
 
     <main class="ficha-container">
         <div class="save-controls">
