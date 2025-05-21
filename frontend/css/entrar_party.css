@@ -34,3 +34,42 @@ html, body {
   text-shadow: 2px 2px 10px #00ffaa7e; 
   color: #ffffff;
 }
+
+/* FORMULÁRIO DE ENTRADA */
+form {
+  width: 100%;
+  max-width: 550px;
+  background: #1e1e1e;
+  border: 2px solid #00ffaa55;
+  border-radius: 10px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+  font-size: 16px;
+  box-sizing: border-box;
+  justify-content: flex-start;
+  position: relative;
+}
+
+label {
+  font-size: 18px;
+  font-weight: bold;
+  color: #00ffaa;
+}
+
+/* Campos de entrada (texto, senha e select) */
+input[type="text"],
+input[type="password"],
+select {
+  padding: 12px;
+  font-size: 16px;
+  border-radius: 6px;
+  border: 2px solid #00ffaa;
+  background-color: #121212;
+  color: #ffffff;
+  width: 100%;
+  text-align: center;
+  box-sizing: border-box;
+}
