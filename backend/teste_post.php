@@ -56,3 +56,16 @@ if ($action === "salvar") {
         $data["tipo"],
         $id_usuario
     );
+
+        // Verifica se a atualização foi bem-sucedida
+    if ($stmt->execute()) {
+        echo json_encode(["status" => "ok"]);
+    } else {
+        echo json_encode([
+            "status" => "erro",
+            "msg" => $stmt->error
+        ]);
+    }
+
+    exit;
+}
