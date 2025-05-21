@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Criar Party</title>
+
+  <!-- Estilos -->
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/criar_party.css" />
+  <link rel="stylesheet" href="css/party.css" />
+  <link rel="stylesheet" href="css/burg.css" />
+  <link rel="stylesheet" href="css/fotoperfil.css" />
+
+  <!-- Ícones -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+  <!-- Scripts -->
+  <script src="js/stars.js"></script>
+  <script src="js/criar_party.js" defer></script>
+  <script src="js/burg.js" defer></script>
+  <script src="js/burg_perfil.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
+</head>
+<body>
+  <div class="page-wrapper">
+    <header>
+      <h1 class="logo" onclick="location.href='main.html'">OBLIVION</h1>
+      <div class="nav-wrapper">
+        <nav>
+          <button class="btn"><a href="main.html">Início</a></button>
+          <div class="dropdown">
+            <button class="btn">Jogo</button>
+            <div class="dropdown-content">
+              <a href="ficha.html">Fichas</a>
+              <a href="map.html">Mapas</a>
+              <a href="anotacoes.html">Anotações</a>
+              <a href="party.html">Party</a>
+            </div>
+          </div>
+          <button class="btn"><a href="comunidade.html">Comunidade</a></button>
+        </nav>
+        <a href="perfil.html" title="Perfil">
+          <div class="profile-icon">
+            <img id="iconHeader" src="https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png" alt="Perfil">
+          </div>
+        </a>
+        <button class="hamburger" id="hamburgerMenuMobile" aria-label="Abrir menu">☰</button>
+      </div>
+    </header>
+
+    <nav class="mobile-nav">
+      <a class="btn" href="main.html">Início</a>
+      <a class="btn" href="ficha.html">Fichas</a>
+      <a class="btn" href="map.html">Mapas</a>
+      <a class="btn" href="anotacoes.html">Anotações</a>
+      <a class="btn" href="comunidade.html">Comunidade</a>
+      <a class="btn" href="party.html">Party</a>
+    </nav>
+
+    <div class="container">
+      <h2>Criar uma Party</h2>
+
+      <!-- Formulário para criar a party -->
+      <form id="formCriarParty">
+        <label for="nomeParty">Nome da Party:</label>
+        <input type="text" id="nomeParty" name="nomeParty" required placeholder="Digite o nome da sua party"/>
+
+        <label for="senhaParty">Senha da Party:</label>
+        <input type="password" id="senhaParty" name="senhaParty" required placeholder="Digite uma senha"/>
+
+        <label for="escolhaMapa">Escolha um mapa salvo:</label>
+        <select id="escolhaMapa" required>
+          <!-- opções carregadas via JavaScript -->
+        </select>
+
+        <label for="limiteParty">Número máximo de jogadores:</label>
+        <select id="limiteParty" required>
+          <option value="5">5 jogadores</option>
+          <option value="8">8 jogadores</option>
+          <option value="10">10 jogadores</option>
+          <option value="15">15 jogadores</option>
+        </select>
+
+        <!-- Campo de erro exibido dinamicamente -->
+        <div id="mensagemErro" class="mensagem-erro"></div>
+
+        <!-- Botões do formulário -->
+        <div class="botoes-party">
+          <button type="submit" id="btnCriarParty">Criar Party</button>
+          <button id="btnIrParty" style="display: none;">Ir para a Party</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</body>
+</html>
