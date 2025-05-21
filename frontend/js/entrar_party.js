@@ -22,4 +22,46 @@ document.addEventListener('DOMContentLoaded', () => {
     .catch(() => {
       mensagemErro.textContent = 'Erro ao carregar perfil.';
     });
+
+// Carrega as fichas do perfil para o <select>
+  async function carregarFichas() {
+    try {
+      const res = await fetch(`../backend/ficha.php?action=listar&id_perfil=${id_perfil}`);
+      const fichas = await res.json();
+
+      fichaSelect.innerHTML = '';
+
+      if (fichas.length === 0) {
+        const opt = document.createElement('option');
+        opt.textContent = 'Nenhuma ficha encontrada.';
+        opt.disabled = true;
+        opt.selected = true;
+        fichaSelect.appendChild(opt);
+        return;
+      }
+
+      const optPadrao = document.createElement('option');
+      optPadrao.textContent = 'Selecione sua ficha...';
+      optPadrao.disabled = true;
+      optPadrao.selected = true;
+      fichaSelect.appendChild(optPadrao);
+
+      // Adiciona as fichas como opções
+      fichas.forEach(ficha => {
+        const opt = document.createElement('option');
+        opt.value = ficha.id;
+        opt.textContent = ficha.nome;
+        fichaSelect.appendChild(opt);
+      });
+
+    } catch (err) {
+      console.error("Erro ao carregar fichas:", err);
+      const opt = document.createElement('option');
+      opt.textContent = 'Erro ao carregar fichas.';
+      opt.disabled = true;
+      opt.selected = true;
+      fichaSelect.appendChild(opt);
+    }
+  }
+
 });
