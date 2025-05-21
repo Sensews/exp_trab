@@ -48,10 +48,12 @@ document.addEventListener("DOMContentLoaded", () => {
   // Variáveis para tokens
   // Permite colocar e mover miniaturas de personagens no mapa
   let tokens = [];
+  let centerViewAfterAddingImage = true;
   let tokenLibrary = [];
   let selectedToken = null;
   let isDraggingToken = false;
   let tokenDragStartX, tokenDragStartY;
+  
 
   // Funções úteis
   // Pequenas funções usadas em vários lugares do código
@@ -115,48 +117,62 @@ document.addEventListener("DOMContentLoaded", () => {
   // Permite adicionar, mover, redimensionar e rotacionar imagens no mapa
   // ====================================================
   function addBackgroundImage(imageUrl) {
-    const img = document.createElement('div');
-    img.className = 'background-image';
-    img.style.backgroundImage = `url(${imageUrl})`;
-    img.style.backgroundSize = 'contain';
-    img.style.backgroundRepeat = 'no-repeat';
-    img.style.width = '300px';
-    img.style.height = '300px';
-    img.style.position = 'absolute';
-    
-    // Posicionar no centro do grid (em vez do centro da viewport)
-    // As coordenadas do centro do grid são sempre (gridWidth/2, gridHeight/2)
-    const centerX = gridWidth / 2;
-    const centerY = gridHeight / 2;
-    
-    img.style.left = `${centerX}px`;
-    img.style.top = `${centerY}px`;
-    img.style.transform = 'translate(-50%, -50%)';
-    img.style.zIndex = nextZIndex--;
-    
-    grid.insertBefore(img, grid.firstChild);
-    
-    addImageControls(img);
-    
-    backgroundImages.push({
-      element: img,
-      url: imageUrl,
-      width: 300,
-      height: 300,
-      x: centerX,
-      y: centerY,
-      rotation: 0,
-      zIndex: parseInt(img.style.zIndex)
-    });
-    
-    selectImage(img);
-    
-    // Opcionalmente, centralizar a visualização no grid após adicionar a imagem
-    if (centerViewAfterAddingImage) {
-      // Rola a visualização para mostrar o centro do grid
-      resetGridPosition();
-    }
+  const img = document.createElement('div');
+  img.className = 'background-image';
+  img.style.backgroundImage = `url(${imageUrl})`;
+  img.style.backgroundSize = 'contain';
+  img.style.backgroundRepeat = 'no-repeat';
+  img.style.width = '300px';
+  img.style.height = '300px';
+  img.style.position = 'absolute';
+
+  const centerX = gridWidth / 2;
+  const centerY = gridHeight / 2;
+
+  img.style.left = `${centerX}px`;
+  img.style.top = `${centerY}px`;
+  img.style.transform = 'translate(-50%, -50%)';
+  img.style.zIndex = nextZIndex--;
+
+  grid.insertBefore(img, grid.firstChild);
+
+  addImageControls(img);
+
+  backgroundImages.push({
+    element: img,
+    url: imageUrl,
+    width: 300,
+    height: 300,
+    x: centerX,
+    y: centerY,
+    rotation: 0,
+    zIndex: parseInt(img.style.zIndex)
+  });
+
+  selectImage(img);
+
+  // ✅ SALVAR AUTOMATICAMENTE NO BANCO
+  const imgData = {
+    url: imageUrl,
+    x: centerX,
+    y: centerY,
+    width: 300,
+    height: 300,
+    rotation: 0,
+    zIndex: parseInt(img.style.zIndex),
+    anchored: false
+  };
+
+  console.log("Chamando salvarImagemNoBanco:", imgData);
+
+  salvarImagemNoBanco(imgData);
+
+  // Removido o erro: centerViewAfterAddingImage indefinido
+  // Se quiser centralizar o mapa depois, descomente abaixo:
+  // resetGridPosition();
   }
+
+
   
   function addImageControls(imgElement) {
     imgElement.style.pointerEvents = 'auto';
@@ -1237,3 +1253,150 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
+
+// ============================================
+// Integração com o PHP - Salvamento e Carregamento
+// ============================================
+
+function salvarImagemNoBanco(imgData, idMapa = 1) {
+  fetch("../backend/map.php?action=salvarImagem", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      id_mapa: idMapa,
+      url: imgData.url,
+      x: imgData.x,
+      y: imgData.y,
+      largura: imgData.width,
+      altura: imgData.height,
+      rotacao: imgData.rotation,
+      z_index: imgData.zIndex,
+      trancada: imgData.anchored ? 1 : 0
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    console.log("Resposta do PHP ao salvar imagem:", data);
+  })
+  .catch(error => {
+    console.error("Erro ao salvar imagem no banco:", error);
+  });
+}
+
+
+function carregarDadosIniciais() {
+  // Imagens
+  fetch("../backend/map.php?action=carregarImagens&id_mapa=1")
+    .then(res => res.json())
+    .then(imagens => {
+      imagens.forEach(img => {
+        addBackgroundImage(img.url);
+        let data = backgroundImages[backgroundImages.length - 1];
+        data.x = img.posicao_x;
+        data.y = img.posicao_y;
+        data.width = img.largura;
+        data.height = img.altura;
+        data.rotation = img.rotacao;
+        data.zIndex = img.z_index;
+      });
+    });
+
+  // Desenhos
+  fetch("../backend/map.php?action=carregarDesenhos&id_mapa=1")
+    .then(res => res.json())
+    .then(desenhos => {
+      desenhos.forEach(d => {
+        const svg = document.createElementNS(svgNamespace, "svg");
+        svg.setAttribute("width", "100%");
+        svg.setAttribute("height", "100%");
+        svg.style.position = "absolute";
+        svg.style.top = "0";
+        svg.style.left = "0";
+        svg.style.pointerEvents = "none";
+        svg.classList.add("drawing-svg");
+
+        const path = document.createElementNS(svgNamespace, "path");
+        path.setAttribute("d", d.path_data);
+        path.setAttribute("stroke", d.cor);
+        path.setAttribute("stroke-width", d.espessura);
+        path.setAttribute("fill", "none");
+        path.setAttribute("stroke-linecap", "round");
+        path.setAttribute("stroke-linejoin", "round");
+
+        svg.appendChild(path);
+        grid.appendChild(svg);
+      });
+    });
+
+  // Tokens no mapa
+  fetch("../backend/map.php?action=carregarTokensMapa&id_mapa=1")
+    .then(res => res.json())
+    .then(tokens => {
+      tokens.forEach(t => {
+        addTokenToGrid(t, t.posicao_x, t.posicao_y);
+      });
+    });
+
+  // Tokens da biblioteca
+  fetch("../backend/map.php?action=carregarBibliotecaTokens")
+    .then(res => res.json())
+    .then(tokens => {
+      tokens.forEach(token => {
+        tokenLibrary.push({
+          id: token.id,
+          url: token.url,
+          size: token.tamanho
+        });
+        addTokenToLibrary(token);
+      });
+    });
+}
+
+// Adicionar chamada ao carregar tudo
+document.addEventListener("DOMContentLoaded", () => {
+  carregarDadosIniciais();
+});
+
+
+function salvarDesenho() {
+  if (pathPoints.length > 1) {
+    fetch("../backend/map.php?action=salvarDesenho", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id_mapa: 1,
+        path_data: pathPoints.join(" "),
+        cor: corSelecionada,
+        espessura: espessura
+      })
+    });
+  }
+}
+
+function salvarTokenMapa(tokenData, x, y) {
+  fetch("../backend/map.php?action=salvarToken", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      id_mapa: 1,
+      id_token_biblioteca: tokenData.id,
+      url: tokenData.url,
+      x: x,
+      y: y,
+      tamanho: tokenData.size
+    })
+  });
+}
+
+function salvarTokenBiblioteca(newToken) {
+  fetch("../backend/map.php?action=salvarTokenBiblioteca", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      url: newToken.url,
+      nome: newToken.id,
+      tamanho: newToken.size
+    })
+  });
+}
