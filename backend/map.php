@@ -46,3 +46,24 @@ if ($action === "carregarImagens") {
 
     json_response($imagens);
 }
+
+// 3. Salvar imagem
+if ($action === "salvarImagem") {
+    $dados = json_decode(file_get_contents("php://input"), true);
+    if (!isset($dados["id_mapa"], $dados["url"], $dados["x"], $dados["y"], $dados["largura"], $dados["altura"], $dados["rotacao"], $dados["z_index"], $dados["trancada"])) {
+        json_response(["success" => false, "error" => "Dados incompletos"]);
+    }
+
+    $stmt = $conexao->prepare("INSERT INTO mapa_imagens (id_mapa, url, posicao_x, posicao_y, largura, altura, rotacao, z_index, trancada) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("isddddiii",
+        $dados["id_mapa"], $dados["url"], $dados["x"], $dados["y"],
+        $dados["largura"], $dados["altura"], $dados["rotacao"],
+        $dados["z_index"], $dados["trancada"]
+    );
+
+    if ($stmt->execute()) {
+        json_response(["success" => true]);
+    } else {
+        json_response(["success" => false, "error" => $stmt->error]);
+    }
+}
