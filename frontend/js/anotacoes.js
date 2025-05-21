@@ -161,4 +161,44 @@ document.addEventListener("DOMContentLoaded", () => {
     link.download = `${currentNota}.html`;
     link.click();
   };
+
+ // Limpa a área da anotação atual
+  window.limparAnotacoes = function () {
+    if (confirm("Apagar a anotação atual?")) {
+      quill.root.innerHTML = '';
+    }
+  };
+
+  // Exclui uma anotação do projeto
+  window.excluirAnotacao = async function (projeto, titulo) {
+    if (!confirm(`Deseja apagar a anotação "${titulo}"?`)) return;
+    await fetch("../backend/anotacoes.php?action=excluirAnotacao", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ projeto, titulo })
+    });
+    await carregarProjetos();
+
+    if (currentProjeto === projeto && currentNota === titulo) {
+      quill.root.innerHTML = "";
+      currentNota = null;
+    }
+  };
+
+  // Exclui um projeto inteiro
+  window.excluirProjeto = async function (projeto) {
+    if (!confirm(`Deseja apagar o projeto "${projeto}" com todas as anotações?`)) return;
+    await fetch("../backend/anotacoes.php?action=excluirProjeto", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ projeto })
+    });
+    await carregarProjetos();
+
+    if (currentProjeto === projeto) {
+      quill.root.innerHTML = "";
+      currentNota = null;
+      currentProjeto = null;
+    }
+  };
 });   
