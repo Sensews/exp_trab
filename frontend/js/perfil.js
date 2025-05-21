@@ -182,3 +182,16 @@ document.getElementById('inputAvatar').addEventListener('change', function () {
     });
   }
 });
+
+// Ao selecionar nova imagem de banner
+document.getElementById('inputBanner').addEventListener('change', function () {
+  const file = this.files[0];
+  if (file) {
+    resizeAndStoreImage(file, 800, 200, (resizedUrl) => {
+      const modalBanner = document.getElementById('modalBanner');
+      modalBanner.style.backgroundImage = `url('${resizedUrl}')`;
+      modalBanner.style.backgroundSize = 'cover';
+      modalBanner.style.backgroundPosition = 'center';
+    });
+  }
+});
