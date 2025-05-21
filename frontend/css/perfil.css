@@ -1,17 +1,18 @@
 @charset "UTF-8";
 
-/* === CONFIGURAÇÕES GERAIS DA PÁGINA === */
 .page-wrapper {
   display: flex;
   flex-direction: column;
-  padding-top: 100px; 
+  padding-top: 80px;
   min-height: 100vh;
 }
 
-.container { 
-  max-width: 720px;
-  margin: 0 auto 40px auto;
-  border: 1px solid #2a2a2a;
+.container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 40px;
 }
 
 header {
@@ -24,7 +25,7 @@ header {
   position: fixed;
   top: 0;
   width: 100%;
-  z-index: 2000; /*FAZ O HAMBURGUINHO DE JOGO SOBRESCREVER O BANNER DO PERFIL*/ 
+  z-index: 2000; /*FAZ O HAMBURGUINHO DE JOGO SOBRESCREVER O BANNER DO PERFIL*/
 }
 
 .logo {
@@ -50,16 +51,17 @@ nav {
   text-decoration: none;
 }
 
-/* === PERFIL === */
+/* Imagem de capa no perfil */
 .banner {
   height: 200px;
   background: #444 center/cover no-repeat;
+  width: 100%;
 }
 
-/* Container da imagem de perfil */
+/* Foto de perfil */
 .avatar-wrapper {
   width: 130px;
-  margin: -65px 0 0 16px; /* A IMAGEM SOBREPÕE O BANNER*/
+  margin: -65px 0 0 16px;
 }
 
 .avatar {
@@ -69,11 +71,15 @@ nav {
   background: #555;
 }
 
+/* Container com dados do perfil */
 .profile {
   padding: 20px;
+  max-width: 600px;
+  width: 95%;
+  margin: 0 auto;
 }
 
-/* "editar perfil" */
+/* Cabeçalho com nome e botões */
 .header {
   display: flex;
   justify-content: space-between;
@@ -95,9 +101,10 @@ nav {
 .bio {
   margin: 10px 0;
   text-align: left;
-  word-break: break-word; /* QUEBRA TEXTOS GRANDES*/
+  word-break: break-word;
 }
 
+/* Informações extras do perfil */
 .info span {
   display: flex;
   align-items: center;
@@ -112,34 +119,59 @@ nav {
 .info-location::before { content: '📍'; }
 .info-date::before { content: '📅'; }
 
-/* Post de exemplo */
-.post {
+/* Estilo de post dentro do perfil */
+.profile .post {
+  margin-top: 20px;
   padding: 16px;
   border-top: 1px solid #2a2a2a;
+  word-break: break-word;
+  color: #eee;
+  font-size: 15px;
   text-align: left;
+  width: 100%;
 }
 
 .post .arroba {
   font-weight: bold;
 }
 
-/* Botão "Editar perfil" */
-.edit-btn {
-  padding: 6px 16px;
+/* Botões padrão do perfil */
+.edit-btn,
+#alternarTipoBtn,
+#acoesTipoUsuario button {
+  padding: 6px 14px;
   border: 2px solid #00FFAA;
   color: #00FFAA;
   background: transparent;
   font-weight: bold;
   cursor: pointer;
   transition: 0.3s;
+  border-radius: 4px;
 }
 
-.edit-btn:hover {
-  background: #00FFAA;
+.edit-btn:hover,
+#alternarTipoBtn:hover,
+#acoesTipoUsuario button:hover {
+  background-color: #00FFAA;
   color: #121212;
 }
 
-/* === MODAL DE EDITAR PERFIL === */
+/* Bloco de tipo de usuário */
+.tipo-usuario {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.tipo-usuario p {
+  font-size: 16px;
+  color: #ccc;
+  margin: 0;
+}
+
+/* Modal de edição de perfil */
 .modal {
   display: none;
   position: fixed;
@@ -151,12 +183,11 @@ nav {
   overflow-y: auto;
 }
 
-/* Modal visível */
 .modal.open {
   display: flex;
 }
 
-/* Conteúdo do modal */
+/* Conteúdo interno do modal */
 .modal-content {
   background: #1a1a1a;
   width: 100%;
@@ -187,7 +218,7 @@ nav {
   cursor: pointer;
 }
 
-/* Banner dentro do modal */
+/* Área do banner dentro do modal */
 .modal-banner {
   position: relative;
   height: 200px;
@@ -208,7 +239,7 @@ nav {
   color: #00FFAA;
 }
 
-/* Avatar dentro do modal */
+/* Avatar do modal */
 .modal-avatar-wrapper {
   position: relative;
   width: 80px;
@@ -226,7 +257,7 @@ nav {
   background-color: #444;
 }
 
-/* Botão pequeno com ícone da câmera no avatar */
+/* Botão de editar o avatar */
 .avatar-btn {
   position: absolute;
   bottom: 0;
@@ -239,7 +270,7 @@ nav {
   color: #00FFAA;
 }
 
-/* Esconde o input de arquivo */
+/* Campo de upload oculto */
 input[type='file'] {
   display: none;
 }
@@ -252,7 +283,6 @@ input[type='file'] {
   gap: 12px;
 }
 
-/* campos do formulário */
 .modal-form label {
   font-size: 14px;
   display: flex;
@@ -292,7 +322,7 @@ footer {
   font-size: 14px;
 }
 
-/* Contador da bio*/
+/* Contador de caracteres da bio */
 .contador-wrapper {
   display: flex;
   justify-content: flex-end;
@@ -306,10 +336,25 @@ footer {
   padding-right: 4px;
 }
 
-/* === MEDIA QUERIES === */
+/* Lista de posts no perfil */
+.posts-container {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.post-perfil {
+  background: #222;
+  color: white;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+/* Responsividade */
 @media (max-width: 768px) {
   nav {
-    display: none; /* esconde menu */
+    display: none;
   }
 
   .container {
@@ -327,6 +372,24 @@ footer {
 
   .modal {
     padding: 100px 8px 16px !important;
+  }
+
+  .edit-btn, #alternarTipoBtn, #acoesTipoUsuario button {
+    font-size: 13px;
+    padding: 5px 10px;
+  }
+
+  .tipo-usuario {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  #acoesTipoUsuario {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px;
   }
 }
 
@@ -348,8 +411,7 @@ footer {
     font-size: 12px;
   }
 
-  .modal-form input,
-  .modal-form textarea {
+  .modal-form input, .modal-form textarea {
     font-size: 13px;
   }
 
@@ -357,5 +419,10 @@ footer {
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
+  }
+
+  .edit-btn, #alternarTipoBtn, #acoesTipoUsuario button {
+    font-size: 12px;
+    padding: 4px 8px;
   }
 }

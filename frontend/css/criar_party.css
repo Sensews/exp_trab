@@ -1,0 +1,149 @@
+@charset "UTF-8";
+
+html, body {
+  background-color: rgba(18, 18, 18, 0.95);
+  font-family: 'JetBrains Mono', monospace;
+  color: #ffffff;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* CONTAINER CENTRAL */
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 120px 20px 40px;
+  min-height: 100vh;
+  max-width: 600px;
+  margin: 0 auto;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.container h2 {
+  text-align: center;
+  color: #ffffff;
+  font-size: 36px;
+  margin-top: 20px;
+  margin-bottom: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  text-shadow: 2px 2px 10px #00ffaa7e;
+}
+
+/* FORMULÁRIO */
+form {
+  width: 100%;
+  max-width: 550px;
+  background: #1e1e1e;
+  border: 2px solid #00ffaa55;
+  border-radius: 10px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+  font-size: 16px;
+  box-sizing: border-box;
+  overflow: visible !important;
+  justify-content: flex-start;
+  position: relative;
+  box-shadow: 0 0 10px #00ffaa33;
+}
+
+label {
+  font-size: 18px;
+  font-weight: bold;
+  color: #00ffaa;
+  text-align: center;
+}
+
+input[type="text"],
+input[type="password"],
+select {
+  padding: 12px;
+  font-size: 16px;
+  border-radius: 6px;
+  border: 2px solid #00ffaa;
+  background-color: #121212;
+  color: #ffffff;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+/* BOTÕES DE AÇÃO */
+.botoes-party {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.botoes-party button {
+  font-size: 16px;
+  padding: 12px 20px;
+  font-weight: bold;
+  border: 2px solid #00ffaa;
+  background: transparent;
+  color: #00ffaa;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+  flex: 1;
+  min-width: 150px;
+}
+
+.botoes-party button:hover {
+  background-color: #00ffaa;
+  color: #121212;
+}
+
+/* MENSAGEM DE ERRO */
+.mensagem-erro {
+  text-align: center;
+  font-size: 15px;
+  color: red;
+  background-color: rgba(255, 0, 0, 0.1);
+  padding: 8px;
+  margin-top: -5px;
+  border-radius: 4px;
+  width: 100%;
+  display: none;
+}
+
+.mensagem-erro.mostrar {
+  display: block;
+}
+
+/* RESPONSIVO */
+@media (max-width: 480px) {
+  .container {
+    padding: 80px 16px 30px;
+  }
+
+  .container h2 {
+    font-size: 24px;
+  }
+
+  label, input, select, button {
+    font-size: 14px;
+  }
+
+  .botoes-party {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .botoes-party button {
+    min-width: unset;
+    width: 100%;
+  }
+}
