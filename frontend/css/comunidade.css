@@ -181,6 +181,32 @@ body {
     margin-bottom: 10px;
     border: 1px solid #00FFAA;
   }
+
+  /* Avatar + arroba lado a lado */
+  .post-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .post-header .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #00FFAA;
+    flex-shrink: 0;
+    display: block;
+  }
+
+  .post-header .autor {
+    font-weight: bold;
+    color: #00FFAA;
+    font-size: 15px;
+    line-height: 1;
+  }
+
   /*reação dos tweet*/
   .actions {
     display: flex;
@@ -265,79 +291,55 @@ body {
     }
   }
   
-  @media (max-width: 768px) {
-    header {
-      height: auto;
-      padding: 10px 20px;
-      align-items: flex-start;
-      flex-wrap: wrap;
-    }
-  
-    .logo {
-      font-size: 22px;
-      margin-bottom: 10px;
-    }
-  
-    .mobile-controls {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-left: auto;
-    }
-  
-    .profile-mobile {
-      display: block;
-    }
-  
-    .nav-wrapper a[title="Perfil"] {
-      display: none;
-    }
-  
-    .nav-wrapper {
-      display: none;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 10px;
-      width: 100%;
-    }
-  
-    nav {
-      flex-direction: column;
-      align-items: flex-start;
-      width: 100%;
-    }
-  
-    .btn {
-      width: 100%;
-      text-align: left;
-    }
-  
-    .dropdown-content {
-      left: 0;
-      transform: none;
-    }
-  
-    .container {
-      max-width: 95%;
-    }
-  
-    .tweet {
-      font-size: 14px;
-    }
-  
-    .chat-area {
-      flex-direction: column;
-    }
-  
-    .chat-area input {
-      width: 100%;
-      margin-bottom: 8px;
-    }
-  
-    .chat-area button {
-      width: 100%;
-    }
+@media (max-width: 768px) {
+  header {
+    height: 60px;
+    padding: 0 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
+
+  .logo {
+    font-size: 22px;
+    margin: 0;
+  }
+
+  .nav-wrapper {
+    display: flex !important;
+    justify-content: space-between;
+    align-items: center;
+    width: auto;
+    gap: 10px;
+  }
+
+  nav {
+    display: none !important;
+  }
+
+  .right-controls {
+    display: flex !important;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .profile-icon img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .hamburger {
+    display: block !important;
+    font-size: 20px;
+    padding: 5px 10px;
+    border: 2px solid #00FFAA;
+    border-radius: 8px;
+    background: transparent;
+    color: #00FFAA;
+  }
+}
   
   @media (max-width: 480px) {
     .profile-icon {
