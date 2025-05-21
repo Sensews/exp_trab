@@ -7,7 +7,7 @@ mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
 // Inclui arquivos essenciais
 require_once("conexao.php");
-require_once("time.php");
+include_once 'time.php';
 
 // Inicia a sessão e valida se o usuário está autenticado
 session_start();

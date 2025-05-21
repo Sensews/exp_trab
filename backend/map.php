@@ -1,6 +1,6 @@
 <?php
 require_once("conexao.php");
-require_once("time.php");
+include_once 'time.php';
 header('Content-Type: application/json');
 session_start();
 $id_perfil = $_SESSION['id_perfil'] ?? null;

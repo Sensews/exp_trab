@@ -43,9 +43,26 @@ if (!password_verify($senha, $usuarioDados['senha'])) {
     exit;
 }
 
+// Obter o perfil do usuário
+$stmtPerfil = $conn->prepare("SELECT id_perfil FROM perfil WHERE id_usuario = ?");
+$stmtPerfil->bind_param("i", $usuarioDados['id']);
+$stmtPerfil->execute();
+$resultadoPerfil = $stmtPerfil->get_result();
+$perfilDados = $resultadoPerfil->fetch_assoc();
+$id_perfil = $perfilDados['id_perfil'];
+
+// Atualizar o timestamp do último login no banco de dados
+$timestamp_atual = time();
+$stmtUpdateLogin = $conn->prepare("UPDATE usuarios SET ultimo_login = ? WHERE id = ?");
+$stmtUpdateLogin->bind_param("ii", $timestamp_atual, $usuarioDados['id']);
+$stmtUpdateLogin->execute();
+
 session_start();
 $_SESSION['id_usuario'] = $usuarioDados['id'];
+$_SESSION['id_perfil'] = $id_perfil;
 $_SESSION['usuario_nome'] = $usuarioDados['nome'];
+$_SESSION['momento_login'] = $timestamp_atual;
+$_SESSION['ultimo_acesso'] = $timestamp_atual;
 
 echo json_encode([
     "status" => "ok",
