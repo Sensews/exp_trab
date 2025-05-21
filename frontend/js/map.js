@@ -1388,3 +1388,15 @@ function salvarTokenMapa(tokenData, x, y) {
     })
   });
 }
+
+function salvarTokenBiblioteca(newToken) {
+  fetch("../backend/map.php?action=salvarTokenBiblioteca", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      url: newToken.url,
+      nome: newToken.id,
+      tamanho: newToken.size
+    })
+  });
+}
