@@ -102,3 +102,21 @@ if ($action === "salvarDesenho") {
         json_response(["success" => false, "error" => $stmt->error]);
     }
 }
+
+// 6. Carregar tokens no mapa
+if ($action === "carregarTokensMapa") {
+    $id_mapa = $_GET["id_mapa"] ?? null;
+    if (!$id_mapa) json_response(["success" => false, "error" => "id_mapa ausente"]);
+
+    $stmt = $conexao->prepare("SELECT * FROM mapa_tokens WHERE id_mapa = ?");
+    $stmt->bind_param("i", $id_mapa);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $tokens = [];
+    while ($row = $result->fetch_assoc()) {
+        $tokens[] = $row;
+    }
+
+    json_response($tokens);
+}
