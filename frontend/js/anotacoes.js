@@ -135,4 +135,30 @@ document.addEventListener("DOMContentLoaded", () => {
     currentProjeto = projeto;
     currentNota = titulo;
   }
+
+// Salva manualmente a anotação atual
+  window.salvarAnotacoes = async function () {
+    if (!currentProjeto || !currentNota) return alert("Selecione uma anotação.");
+    await fetch("../backend/anotacoes.php?action=salvarConteudo", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        projeto: currentProjeto,
+        titulo: currentNota,
+        conteudo: quill.root.innerHTML
+      })
+    });
+    alert("Salvo.");
+  };
+
+  // Exporta a anotação como HTML
+  window.exportarAnotacoes = function () {
+    if (!currentNota) return alert("Nenhuma anotação selecionada.");
+    const content = quill.root.innerHTML;
+    const blob = new Blob([content], { type: "text/html" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `${currentNota}.html`;
+    link.click();
+  };
 });   
