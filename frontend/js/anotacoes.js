@@ -91,4 +91,24 @@ document.addEventListener("DOMContentLoaded", () => {
       container.appendChild(divProjeto);
     }
   } 
+// Carrega todos os projetos e notas do backend
+  async function carregarProjetos() {
+    const res = await fetch("../backend/anotacoes.php?action=carregarProjetos");
+    const dados = await res.json();
+    renderizarSidebar(dados);
+  }
+
+  // Criação de novo projeto
+  window.criarProjeto = async function () {
+    const nome = prompt("Nome do novo projeto:");
+    if (!nome) return;
+
+    await fetch("../backend/anotacoes.php?action=criarProjeto", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nome })
+    });
+
+    await carregarProjetos();
+  };  
 });   
