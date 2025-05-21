@@ -10,7 +10,6 @@ $dotenv->load();
 require 'PHPMailer/src/Exception.php';
 require 'PHPMailer/src/PHPMailer.php';
 require 'PHPMailer/src/SMTP.php';
-
 require_once 'env_decoder.php';
 
 $conn = new mysqli("localhost", "root", "", "oblivion");
@@ -31,25 +30,25 @@ if ($senha !== $confirma) {
 }
 
 function verificar_forca_senha($senha) {
-  $forca = 0;
-  if (strlen($senha) >= 8) $forca++;
-  if (preg_match('/[A-Z]/', $senha)) $forca++;
-  if (preg_match('/[a-z]/', $senha)) $forca++;
-  if (preg_match('/[0-9]/', $senha)) $forca++;
-  if (preg_match('/[^A-Za-z0-9]/', $senha)) $forca++;
+    $forca = 0;
+    if (strlen($senha) >= 8) $forca++;
+    if (preg_match('/[A-Z]/', $senha)) $forca++;
+    if (preg_match('/[a-z]/', $senha)) $forca++;
+    if (preg_match('/[0-9]/', $senha)) $forca++;
+    if (preg_match('/[^A-Za-z0-9]/', $senha)) $forca++;
 
-  if ($forca >= 5) return 'Muito forte';
-  if ($forca >= 4) return 'Forte';
-  if ($forca >= 3) return 'Moderada';
-  if ($forca >= 2) return 'Fraca';
-  return 'Muito fraca';
+    if ($forca >= 5) return 'Muito forte';
+    if ($forca >= 4) return 'Forte';
+    if ($forca >= 3) return 'Moderada';
+    if ($forca >= 2) return 'Fraca';
+    return 'Muito fraca';
 }
 
 $forca_senha = verificar_forca_senha($senha);
 
 if ($forca_senha !== 'Muito forte') {
-  http_response_code(400);
-  die("A senha não é forte o suficiente.");
+    http_response_code(400);
+    die("A senha não é forte o suficiente.");
 }
 
 $stmt = $conn->prepare("SELECT id FROM usuarios WHERE email = ?");
@@ -83,6 +82,14 @@ if (!$stmt) {
 $stmt->bind_param("sssss", $nome, $email, $telefone, $senha_hash, $token);
 
 if ($stmt->execute()) {
+    // CRIAR PERFIL AUTOMATICAMENTE
+    $id_usuario = $conn->insert_id;
+
+    $stmtPerfil = $conn->prepare("INSERT INTO perfil (id_usuario, nome, arroba, tipo) VALUES (?, ?, '', 'jogador')");
+    $stmtPerfil->bind_param("is", $id_usuario, $nome);
+    $stmtPerfil->execute();
+    $stmtPerfil->close();
+
     $link = "http://localhost/exp_trab/backend/verificar.php?token=$token";
     $mail = new PHPMailer(true);
 
@@ -125,7 +132,6 @@ if ($stmt->execute()) {
         ";
 
         $mail->send();
-
         header("Location: ../frontend/cadastro.html?sucesso=1");
         exit();
 
