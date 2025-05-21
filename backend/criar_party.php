@@ -44,3 +44,42 @@ function gerarCodigoUnico($conexao, $tamanho = 6) {
 
     return $codigo;
 }
+
+// Recebe os dados enviados via POST
+$nome      = $_POST['nome']      ?? '';
+$senha     = $_POST['senha']     ?? '';
+$idMapa    = $_POST['mapaId']    ?? null;
+$idPerfil  = $_POST['id_perfil'] ?? null;
+$limite    = $_POST['limite']    ?? 5;
+
+// Validações básicas dos dados recebidos
+if (!$nome || !$senha || !$idMapa || !$idPerfil) {
+    responder(['sucesso' => false, 'erro' => 'Dados incompletos.']);
+}
+
+if (!is_numeric($idMapa)) {
+    responder(['sucesso' => false, 'erro' => 'ID do mapa inválido.']);
+}
+
+// Verifica se o perfil já possui uma party ativa
+$stmt = $conexao->prepare("SELECT id FROM party WHERE id_mestre = ?");
+$stmt->bind_param("i", $idPerfil);
+$stmt->execute();
+$res = $stmt->get_result();
+
+if ($res->num_rows > 0) {
+    responder(['sucesso' => false, 'erro' => 'Você já possui uma party ativa. Exclua a atual para criar outra.']);
+}
+
+// Verifica se o mapa pertence ao mestre
+$stmt = $conexao->prepare("SELECT id FROM mapas WHERE id = ? AND id_perfil = ?");
+$stmt->bind_param("ii", $idMapa, $idPerfil);
+$stmt->execute();
+$res = $stmt->get_result();
+
+if ($res->num_rows === 0) {
+    responder(['sucesso' => false, 'erro' => 'Mapa inválido ou não pertence a você.']);
+}
+
+// Gera um código único para a nova party
+$codigo = gerarCodigoUnico($conexao);
