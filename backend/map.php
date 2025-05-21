@@ -85,3 +85,20 @@ if ($action === "carregarDesenhos") {
 
     json_response($desenhos);
 }
+
+// 5. Salvar desenho
+if ($action === "salvarDesenho") {
+    $dados = json_decode(file_get_contents("php://input"), true);
+    if (!isset($dados["id_mapa"], $dados["path_data"], $dados["cor"], $dados["espessura"])) {
+        json_response(["success" => false, "error" => "Dados incompletos"]);
+    }
+
+    $stmt = $conexao->prepare("INSERT INTO mapa_desenhos (id_mapa, path_data, cor, espessura) VALUES (?, ?, ?, ?)");
+    $stmt->bind_param("issd", $dados["id_mapa"], $dados["path_data"], $dados["cor"], $dados["espessura"]);
+
+    if ($stmt->execute()) {
+        json_response(["success" => true]);
+    } else {
+        json_response(["success" => false, "error" => $stmt->error]);
+    }
+}
