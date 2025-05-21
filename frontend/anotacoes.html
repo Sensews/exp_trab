@@ -27,41 +27,44 @@
 </head>
 <body>
   <div class="page-wrapper">
-    <header>
-      <h1 class="logo" onclick="location.href='main.html'">OBLIVION</h1>
-      <div class="nav-wrapper">
-        <nav>
-          <!-- Dropdown do menu Jogo -  ainda não necessarios -->
-          <!--<div class="dropdown">
-            <button class="btn">Jogo</button>
-            <div class="dropdown-content">
-              <a href="fichas.html">Fichas</a>
-              <a href="mapas.html">Mapas</a>
-            </div>
-          </div> -->
-          <button class="btn"><a href="comunidade.html">Comunidade</a></button>
-        </nav>
-
-        <a href="perfil.html" title="Perfil">
-          <div class="profile-icon">
-            <img id="iconHeader" src="https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png" alt="Perfil">
-          </div>
-        </a>
-
-        <!-- Menu hamburguer pra mobile -->
-        <button class="hamburger" id="hamburgerMenuMobile" aria-label="Abrir menu">☰</button>
+  <header>
+  <h1 class="logo" onclick="window.location.href='main.html'">OBLIVION</h1>
+  <div class="nav-wrapper">
+    <nav>
+      <button class="btn"><a href="main.html">Início</a></button>
+      <div class="dropdown">
+        <button class="btn">Jogo</button>
+        <div class="dropdown-content">
+          <a href="ficha.html">Fichas</a>
+          <a href="map.html">Mapas</a>
+          <a href="anotacoes.html">Anotações</a>
+          <a href="party.html">Party</a>
+        </div>
       </div>
-    </header>
-
-    <!-- Navegação mobile do menu hamburger -->
-    <nav class="mobile-nav">
-      <a class="btn" href="main.html">Início</a>
-      <a class="btn" href="fichas.html">Fichas</a>
-      <a class="btn" href="mapas.html">Mapas</a>
-      <a class="btn" href="anotacoes.html">Anotações</a>
-      <a class="btn" href="comunidade.html">Comunidade</a>
+      <button class="btn"><a href="comunidade.html">Comunidade</a></button>
     </nav>
 
+    <!-- Botão de perfil -->
+    <a href="perfil.html" title="Perfil">
+      <div class="profile-icon">
+        <img id="iconHeader" src="https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png" alt="Perfil">
+      </div>
+    </a>
+
+    <!-- Botão hambúrguer -->
+    <button class="hamburger" id="hamburgerMenuMobile" aria-label="Abrir menu">☰</button>
+  </div>
+</header>
+
+<!-- Menu mobile hamburguer (agora incluído!) -->
+<nav class="mobile-nav">
+  <a class="btn" href="main.html">Início</a>
+  <a class="btn" href="ficha.html">Fichas</a>
+  <a class="btn" href="map.html">Mapas</a>
+  <a class="btn" href="anotacoes.html">Anotações</a>
+  <a class="btn" href="comunidade.html">Comunidade</a>
+  <a class="btn" href="party.html">Party</a>
+</nav>
     <main>
       <div class="content-box">
         <h2>Minhas Anotações</h2>
@@ -81,20 +84,28 @@
       </div>
     </main>
   </div>
-
-  <footer>
-    <p>© 2025 Oblivion RPG - Todos os direitos reservados.</p>
-  </footer>
-
   <!-- Botão hamburger projetos -->
   <button id="hamburgerProjetos" aria-label="Abrir menu de projetos">☰</button>
 
   <!-- sidebar projetos -->
   <aside id="sidebarProjetos">
     <h3>📁 Meus Projetos</h3>
-    <div id="projetosContainer"></div>
+    <div id="projetosContainer">
+      <div class="sidebar-projeto">
+        <div class="titulo-projeto">📁</div>
+
+        <!-- Botão da nota -->
+        <button class="btn-nota"></button>
+
+        <!-- Botão para nova anotação -->
+        <button class="btn-nova-nota" onclick="criarNota()">➕ Nova Anotação</button>
+      </div>
+    </div>
+
     <button class="btn btn-novo-projeto" onclick="criarProjeto()">➕ Novo Projeto</button>
   </aside>
+  <footer>
+    <p>© 2025 Oblivion RPG - Todos os direitos reservados.</p>
+  </footer>
 </body>
 </html>
-
