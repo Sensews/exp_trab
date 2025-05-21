@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Oblivion RPG - Comunidade</title>
 
-  <!-- bibliotecas,css e js -->
+  <!-- bibliotecas, css e js -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/loaders/GLTFLoader.js"></script>
@@ -15,79 +15,49 @@
   <link rel="stylesheet" href="css/fotoperfil.css">
   <link rel="stylesheet" href="css/burg.css">
 
-  
   <script defer src="js/stars.js"></script>
   <script defer src="js/comunidade.js"></script>
   <script defer src="js/burg_perfil.js"></script>
-
-  <!-- Estilo extra para mobile-controls -->
-  <style>
-    .profile-mobile {
-      display: none;
-    }
-    
-    .mobile-controls {
-      display: none;
-    }
-
-    @media (max-width: 768px) {
-      .mobile-controls {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-left: auto;
-      }
-
-      .profile-mobile {
-        display: block;
-      }
-
-      .nav-wrapper a[title="Perfil"] {
-        display: none;
-      }
-    }
-  </style>
 </head>
 <body>
   <header>
     <h1 class="logo" onclick="location.href='main.html'">OBLIVION</h1>
 
-    <!-- menu hamb, avatar(mob) -->
-    <div class="mobile-controls">
-      <button class="hamburger" id="hamburgerMenuMobile" aria-label="Abrir menu">☰</button>
-      <a href="perfil.html" class="profile-mobile" title="Perfil">
-        <div class="profile-icon">
-          <img id="iconHeaderMobile" src="https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png" alt="Perfil">
-        </div>
-      </a>
-    </div>
-
-    <!-- menu (pc) -->
     <div class="nav-wrapper">
       <nav>
-        <!--<div class="dropdown">
+        <button class="btn"><a href="main.html">Início</a></button>
+        <div class="dropdown">
           <button class="btn">Jogo</button>
           <div class="dropdown-content">
-            <a href="fichas.html">Fichas</a>
-            <a href="mapas.html">Mapas</a>
+            <a href="ficha.html">Fichas</a>
+            <a href="map.html">Mapas</a>
             <a href="anotacoes.html">Anotações</a>
+            <a href="party.html">Party</a>
           </div>
-        </div>-->
-        <button class="btn"><a href="anotacoes.html">Anotações</a></button>
+        </div>
+        <button class="btn"><a href="comunidade.html">Comunidade</a></button>
+      </nav>
 
-        <!-- avatar(pc)-->
+      <!-- Avatar + botão hamburguer agrupados -->
+      <div class="right-controls">
         <a href="perfil.html" title="Perfil">
           <div class="profile-icon">
             <img id="iconHeader" src="https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png" alt="Perfil">
           </div>
         </a>
-      </nav>
+        <button class="hamburger" id="hamburgerMenuMobile" aria-label="Abrir menu">☰</button>
+      </div>
     </div>
   </header>
 
   <!-- Menu mobile -->
   <nav class="mobile-nav">
+    <a class="btn" href="main.html">Início</a>
+    <a class="btn" href="ficha.html">Fichas</a>
+    <a class="btn" href="map.html">Mapas</a>
     <a class="btn" href="anotacoes.html">Anotações</a>
+    <a class="btn" href="comunidade.html">Comunidade</a>
+    <a class="btn" href="party.html">Party</a>
   </nav>
 
   <!-- comunidade -->
@@ -100,9 +70,12 @@
         <button onclick="postar()">Postar</button>
       </div>
     </div>
-    <!--onde apare os post-->
     <div class="feed" id="feed"></div>
   </div>
 
+    <footer>
+    <p>© 2025 Oblivion RPG - Todos os direitos reservados.</p>
+  </footer>
+  
 </body>
 </html>
