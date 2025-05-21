@@ -48,10 +48,12 @@ document.addEventListener("DOMContentLoaded", () => {
   // Variáveis para tokens
   // Permite colocar e mover miniaturas de personagens no mapa
   let tokens = [];
+  let centerViewAfterAddingImage = true;
   let tokenLibrary = [];
   let selectedToken = null;
   let isDraggingToken = false;
   let tokenDragStartX, tokenDragStartY;
+  
 
   // Funções úteis
   // Pequenas funções usadas em vários lugares do código
@@ -115,48 +117,62 @@ document.addEventListener("DOMContentLoaded", () => {
   // Permite adicionar, mover, redimensionar e rotacionar imagens no mapa
   // ====================================================
   function addBackgroundImage(imageUrl) {
-    const img = document.createElement('div');
-    img.className = 'background-image';
-    img.style.backgroundImage = `url(${imageUrl})`;
-    img.style.backgroundSize = 'contain';
-    img.style.backgroundRepeat = 'no-repeat';
-    img.style.width = '300px';
-    img.style.height = '300px';
-    img.style.position = 'absolute';
-    
-    // Posicionar no centro do grid (em vez do centro da viewport)
-    // As coordenadas do centro do grid são sempre (gridWidth/2, gridHeight/2)
-    const centerX = gridWidth / 2;
-    const centerY = gridHeight / 2;
-    
-    img.style.left = `${centerX}px`;
-    img.style.top = `${centerY}px`;
-    img.style.transform = 'translate(-50%, -50%)';
-    img.style.zIndex = nextZIndex--;
-    
-    grid.insertBefore(img, grid.firstChild);
-    
-    addImageControls(img);
-    
-    backgroundImages.push({
-      element: img,
-      url: imageUrl,
-      width: 300,
-      height: 300,
-      x: centerX,
-      y: centerY,
-      rotation: 0,
-      zIndex: parseInt(img.style.zIndex)
-    });
-    
-    selectImage(img);
-    
-    // Opcionalmente, centralizar a visualização no grid após adicionar a imagem
-    if (centerViewAfterAddingImage) {
-      // Rola a visualização para mostrar o centro do grid
-      resetGridPosition();
-    }
+  const img = document.createElement('div');
+  img.className = 'background-image';
+  img.style.backgroundImage = `url(${imageUrl})`;
+  img.style.backgroundSize = 'contain';
+  img.style.backgroundRepeat = 'no-repeat';
+  img.style.width = '300px';
+  img.style.height = '300px';
+  img.style.position = 'absolute';
+
+  const centerX = gridWidth / 2;
+  const centerY = gridHeight / 2;
+
+  img.style.left = `${centerX}px`;
+  img.style.top = `${centerY}px`;
+  img.style.transform = 'translate(-50%, -50%)';
+  img.style.zIndex = nextZIndex--;
+
+  grid.insertBefore(img, grid.firstChild);
+
+  addImageControls(img);
+
+  backgroundImages.push({
+    element: img,
+    url: imageUrl,
+    width: 300,
+    height: 300,
+    x: centerX,
+    y: centerY,
+    rotation: 0,
+    zIndex: parseInt(img.style.zIndex)
+  });
+
+  selectImage(img);
+
+  // ✅ SALVAR AUTOMATICAMENTE NO BANCO
+  const imgData = {
+    url: imageUrl,
+    x: centerX,
+    y: centerY,
+    width: 300,
+    height: 300,
+    rotation: 0,
+    zIndex: parseInt(img.style.zIndex),
+    anchored: false
+  };
+
+  console.log("Chamando salvarImagemNoBanco:", imgData);
+
+  salvarImagemNoBanco(imgData);
+
+  // Removido o erro: centerViewAfterAddingImage indefinido
+  // Se quiser centralizar o mapa depois, descomente abaixo:
+  // resetGridPosition();
   }
+
+
   
   function addImageControls(imgElement) {
     imgElement.style.pointerEvents = 'auto';
