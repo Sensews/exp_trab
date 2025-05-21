@@ -91,7 +91,7 @@ document.addEventListener("DOMContentLoaded", function () {
       .then((res) => {
         if (res.status === "ok") {
           // Agora usamos sessão real (sem localStorage)
-          window.location.href = "main.php";
+          window.location.href = "../main.hml";
         } else {
           alert(res.mensagem);
         }
