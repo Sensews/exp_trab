@@ -195,3 +195,16 @@ document.getElementById('inputBanner').addEventListener('change', function () {
     });
   }
 });
+
+// Atualiza contador de bio dinamicamente
+document.getElementById('inputBio').addEventListener('input', function () {
+  this.style.height = 'auto';
+  this.style.height = this.scrollHeight + 'px';
+  document.getElementById('contadorBio').textContent = `${this.value.length} / 160`;
+});
+
+// Ao carregar a página, atualiza o perfil e carrega os posts
+window.onload = () => {
+  atualizarPerfil();
+  carregarPostsDoPerfil();
+}
