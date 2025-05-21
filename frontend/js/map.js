@@ -1254,6 +1254,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
+
 // ============================================
 // Integração com o PHP - Salvamento e Carregamento
 // ============================================
@@ -1281,4 +1282,94 @@ function salvarImagemNoBanco(imgData, idMapa = 1) {
   .catch(error => {
     console.error("Erro ao salvar imagem no banco:", error);
   });
+}
+
+
+function carregarDadosIniciais() {
+  // Imagens
+  fetch("../backend/map.php?action=carregarImagens&id_mapa=1")
+    .then(res => res.json())
+    .then(imagens => {
+      imagens.forEach(img => {
+        addBackgroundImage(img.url);
+        let data = backgroundImages[backgroundImages.length - 1];
+        data.x = img.posicao_x;
+        data.y = img.posicao_y;
+        data.width = img.largura;
+        data.height = img.altura;
+        data.rotation = img.rotacao;
+        data.zIndex = img.z_index;
+      });
+    });
+
+  // Desenhos
+  fetch("../backend/map.php?action=carregarDesenhos&id_mapa=1")
+    .then(res => res.json())
+    .then(desenhos => {
+      desenhos.forEach(d => {
+        const svg = document.createElementNS(svgNamespace, "svg");
+        svg.setAttribute("width", "100%");
+        svg.setAttribute("height", "100%");
+        svg.style.position = "absolute";
+        svg.style.top = "0";
+        svg.style.left = "0";
+        svg.style.pointerEvents = "none";
+        svg.classList.add("drawing-svg");
+
+        const path = document.createElementNS(svgNamespace, "path");
+        path.setAttribute("d", d.path_data);
+        path.setAttribute("stroke", d.cor);
+        path.setAttribute("stroke-width", d.espessura);
+        path.setAttribute("fill", "none");
+        path.setAttribute("stroke-linecap", "round");
+        path.setAttribute("stroke-linejoin", "round");
+
+        svg.appendChild(path);
+        grid.appendChild(svg);
+      });
+    });
+
+  // Tokens no mapa
+  fetch("../backend/map.php?action=carregarTokensMapa&id_mapa=1")
+    .then(res => res.json())
+    .then(tokens => {
+      tokens.forEach(t => {
+        addTokenToGrid(t, t.posicao_x, t.posicao_y);
+      });
+    });
+
+  // Tokens da biblioteca
+  fetch("../backend/map.php?action=carregarBibliotecaTokens")
+    .then(res => res.json())
+    .then(tokens => {
+      tokens.forEach(token => {
+        tokenLibrary.push({
+          id: token.id,
+          url: token.url,
+          size: token.tamanho
+        });
+        addTokenToLibrary(token);
+      });
+    });
+}
+
+// Adicionar chamada ao carregar tudo
+document.addEventListener("DOMContentLoaded", () => {
+  carregarDadosIniciais();
+});
+
+
+function salvarDesenho() {
+  if (pathPoints.length > 1) {
+    fetch("../backend/map.php?action=salvarDesenho", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id_mapa: 1,
+        path_data: pathPoints.join(" "),
+        cor: corSelecionada,
+        espessura: espessura
+      })
+    });
+  }
 }
