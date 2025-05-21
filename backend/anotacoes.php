@@ -158,3 +158,37 @@ if ($action === "salvarConteudo") {
     echo json_encode(["sucesso" => true]);
     exit;
 }
+
+// === Excluir anotação ===
+if ($action === "excluirAnotacao") {
+    $json = json_decode(file_get_contents("php://input"), true);
+    $projeto = $json["projeto"];
+    $titulo = $json["titulo"];
+
+    $sql = "DELETE n 
+            FROM notas n
+            JOIN projetos p ON n.id_projeto = p.id
+            WHERE n.titulo = ? AND p.nome = ? AND p.id_perfil = ?";
+    $stmt = $conexao->prepare($sql);
+    $stmt->bind_param("ssi", $titulo, $projeto, $id_perfil);
+    $stmt->execute();
+
+    echo json_encode(["sucesso" => true]);
+    exit;
+}
+
+
+// === Excluir projeto ===
+if ($action === "excluirProjeto") {
+    $json = json_decode(file_get_contents("php://input"), true);
+    $projeto = $json["projeto"];
+
+    $sql = "DELETE FROM projetos WHERE nome = ? AND id_perfil = ?";
+    $stmt = $conexao->prepare($sql);
+    $stmt->bind_param("si", $projeto, $id_perfil);
+    $stmt->execute();
+
+    echo json_encode(["sucesso" => true]);
+    exit;
+}
+?>
