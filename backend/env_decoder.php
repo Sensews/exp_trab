@@ -1,10 +1,4 @@
 <?php
-/**
- * Descodificador de valores do .env
- * 
- * Este arquivo contém funções para decodificar valores ofuscados do arquivo .env
- * Ele usa uma chave simples para ofuscar/desofuscar os valores
- */
 
 // Chave de ofuscação - NÃO ALTERE DEPOIS DE CONFIGURAR!
 define('ENV_KEY', 'oblivion2025');
