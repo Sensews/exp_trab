@@ -38,4 +38,18 @@ document.addEventListener("DOMContentLoaded", function () {
     })
     .catch(error => console.error("Erro ao carregar avatar:", error));
 
+// Dropdown do header 
+  const dropdownBtn = document.querySelector('.dropdown .btn');
+  if (dropdownBtn) {
+    dropdownBtn.addEventListener('click', function () {
+      document.querySelector('.dropdown-content').classList.toggle('show');
+    });
+
+    // Fecha dropdown ao clicar fora
+    window.addEventListener('click', function (e) {
+      if (!e.target.closest('.dropdown')) {
+        document.querySelector('.dropdown-content')?.classList.remove('show');
+      }
+    });
+  }  
 });
