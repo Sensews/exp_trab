@@ -129,3 +129,27 @@ function atualizarTipo(tipo) {
   };
   acoes.appendChild(btn);
 }
+
+// Alterna entre jogador e mestre ao clicar no botão
+document.getElementById('alternarTipoBtn').addEventListener('click', () => {
+  if (tipoUsuarioAtual === 'mestre' && !confirm("Deseja voltar a ser Jogador?\n⚠️ Sua party será excluída...")) return;
+
+  tipoUsuarioAtual = tipoUsuarioAtual === 'jogador' ? 'mestre' : 'jogador';
+  atualizarTipo(tipoUsuarioAtual);
+
+  // Salva alteração de tipo no banco
+  fetch("../backend/perfil.php?action=salvar", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      nome: document.getElementById("nome").textContent,
+      arroba: document.getElementById("arroba").textContent.replace("@", ""),
+      bio: document.getElementById("bio").textContent,
+      local: document.getElementById("local").textContent,
+      aniversario: "",
+      avatar: document.getElementById("avatar").src,
+      banner: document.getElementById("banner").style.backgroundImage.replace(/^url\(["']?/, '').replace(/["']?\)$/, ''),
+      tipo: tipoUsuarioAtual
+    })
+  });
+});
