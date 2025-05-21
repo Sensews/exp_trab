@@ -110,3 +110,22 @@ function atualizarPerfil() {
     });
 }
 
+// Altera o texto e botão conforme o tipo do usuário
+function atualizarTipo(tipo) {
+  const tipoTexto = document.getElementById('tipoUsuarioTexto');
+  const btnTrocar = document.getElementById('alternarTipoBtn');
+  const acoes = document.getElementById('acoesTipoUsuario');
+
+  tipoTexto.textContent = `Tipo: ${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`;
+  btnTrocar.textContent = tipo === 'jogador' ? 'Tornar-se Mestre' : 'Voltar a ser Jogador';
+
+  // Troca o botão de ação (Criar ou Entrar em Party)
+  acoes.innerHTML = '';
+  const btn = document.createElement('button');
+  btn.textContent = tipo === 'jogador' ? 'Entrar em Party' : 'Criar Party';
+  btn.onclick = () => {
+    const destino = tipo === 'jogador' ? 'entrar_party.html' : 'criar_party.html';
+    window.location.href = destino;
+  };
+  acoes.appendChild(btn);
+}
