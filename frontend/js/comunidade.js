@@ -94,3 +94,81 @@ function exibirPostNoFeed(post) {
   adicionarInteracoes(tweet, post.id);
   document.getElementById("feed").prepend(tweet);
 }
+
+function adicionarInteracoes(tweet, postId) {
+  const actions = document.createElement("div");
+  actions.className = "actions";
+
+  const likeButton = document.createElement("button");
+  likeButton.className = "like-btn";
+  let curtido = false;
+  let count = 0;
+
+  fetch(`../backend/teste_post.php?action=verificarCurtida&id_post=${postId}`)
+    .then(res => res.json())
+    .then(data => {
+      curtido = data.curtido;
+      count = data.total;
+      likeButton.innerHTML = `❤️ Curtir (<span>${count}</span>)`;
+    });
+
+  likeButton.onclick = () => {
+    fetch("../backend/teste_post.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: `action=${curtido ? "removerCurtida" : "curtir"}&id_post=${postId}`
+    })
+    .then(res => res.json())
+    .then(() => {
+      curtido = !curtido;
+      count += curtido ? 1 : -1;
+      likeButton.innerHTML = `❤️ Curtir (<span>${count}</span>)`;
+    });
+  };
+
+  actions.appendChild(likeButton);
+  tweet.appendChild(actions);
+
+  const chatArea = document.createElement("div");
+  chatArea.className = "chat-area";
+
+  const input = document.createElement("input");
+  input.type = "text";
+  input.placeholder = "Comentar...";
+
+  const commentBtn = document.createElement("button");
+  commentBtn.textContent = "Enviar";
+
+  const commentList = document.createElement("div");
+  commentList.className = "comments";
+
+  commentBtn.onclick = () => {
+    const commentText = input.value.trim();
+    if (commentText === "") return;
+
+    const formData = new URLSearchParams();
+    formData.append("action", "comentar");
+    formData.append("id_post", postId);
+    formData.append("comentario", commentText);
+
+    fetch("../backend/teste_post.php", {
+      method: "POST",
+      body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.sucesso) {
+        const comment = document.createElement("div");
+        comment.className = "comment";
+        comment.textContent = commentText;
+        commentList.appendChild(comment);
+        input.value = "";
+      }
+    });
+  };
+
+  chatArea.appendChild(input);
+  chatArea.appendChild(commentBtn);
+  tweet.appendChild(chatArea);
+  tweet.appendChild(commentList);
+}
