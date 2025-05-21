@@ -31,7 +31,7 @@ window.addEventListener('load', () => {
     senhaInput.parentNode.appendChild(senhaForcaOutput);
     confirmarSenhaInput.parentNode.appendChild(senhaErroOutput);
 
-    // ===== FUNÇÃO DE GERAÇÃO DE HASH (SIMPLIFICADA) =====
+    // ===== FUNÇÃO DE GERAÇÃO DE HASH =====
     const gerarHash = (senha) => {
         if (!senha || typeof CryptoJS === 'undefined') {
             return;
