@@ -140,3 +140,18 @@ if ($action === "salvarToken") {
         json_response(["success" => false, "error" => $stmt->error]);
     }
 }
+
+// 8. Carregar biblioteca de tokens
+if ($action === "carregarBibliotecaTokens") {
+    $stmt = $conexao->prepare("SELECT * FROM token_biblioteca WHERE id_perfil = ?");
+    $stmt->bind_param("i", $id_perfil);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $tokens = [];
+    while ($row = $result->fetch_assoc()) {
+        $tokens[] = $row;
+    }
+
+    json_response($tokens);
+}
