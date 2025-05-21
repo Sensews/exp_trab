@@ -201,4 +201,14 @@ document.addEventListener("DOMContentLoaded", () => {
       currentProjeto = null;
     }
   };
+
+ // Mostra/esconde a sidebar com o botão hamburguer
+  hamburgerBtn.addEventListener("click", () => {
+    sidebar.style.transform = sidebar.style.transform === "translateX(0%)"
+      ? "translateX(-100%)"
+      : "translateX(0%)";
+  });
+
+  // Carrega os dados ao iniciar a página
+  carregarProjetos();
 });   
