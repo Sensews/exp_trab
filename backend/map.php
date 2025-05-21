@@ -67,3 +67,21 @@ if ($action === "salvarImagem") {
         json_response(["success" => false, "error" => $stmt->error]);
     }
 }
+
+// 4. Carregar desenhos
+if ($action === "carregarDesenhos") {
+    $id_mapa = $_GET["id_mapa"] ?? null;
+    if (!$id_mapa) json_response(["success" => false, "error" => "id_mapa ausente"]);
+
+    $stmt = $conexao->prepare("SELECT * FROM mapa_desenhos WHERE id_mapa = ?");
+    $stmt->bind_param("i", $id_mapa);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $desenhos = [];
+    while ($row = $result->fetch_assoc()) {
+        $desenhos[] = $row;
+    }
+
+    json_response($desenhos);
+}
