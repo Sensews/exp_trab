@@ -13,7 +13,7 @@ html, body {
   box-sizing: border-box;
 }
 
-/* CONTAINER */
+/* CONTAINER CENTRALIZADO */
 .container {
   display: flex;
   flex-direction: column;
