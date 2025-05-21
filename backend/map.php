@@ -155,3 +155,20 @@ if ($action === "carregarBibliotecaTokens") {
 
     json_response($tokens);
 }
+
+// 9. Salvar token na biblioteca
+if ($action === "salvarTokenBiblioteca") {
+    $dados = json_decode(file_get_contents("php://input"), true);
+    if (!isset($dados["url"], $dados["nome"], $dados["tamanho"])) {
+        json_response(["success" => false, "error" => "Dados incompletos"]);
+    }
+
+    $stmt = $conexao->prepare("INSERT INTO token_biblioteca (id_perfil, url, nome, tamanho) VALUES (?, ?, ?, ?)");
+    $stmt->bind_param("issi", $id_perfil, $dados["url"], $dados["nome"], $dados["tamanho"]);
+
+    if ($stmt->execute()) {
+        json_response(["success" => true, "id" => $conexao->insert_id]);
+    } else {
+        json_response(["success" => false, "error" => $stmt->error]);
+    }
+}
