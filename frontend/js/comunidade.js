@@ -1,128 +1,174 @@
-let postCounter = 0; //contador para um unico ID a cada post//
+let perfilAtual = {};
 
-//publica novo post//
+document.addEventListener("DOMContentLoaded", () => {
+  // Primeiro, carrega o perfil do usuário atual
+  fetch("../backend/perfil.php?action=carregar")
+    .then(res => res.json())
+    .then(data => {
+      perfilAtual = data;
+    });
+
+  // Depois, carrega os posts existentes
+  fetch("../backend/teste_post.php?action=carregarPosts")
+    .then(res => res.json())
+    .then(posts => {
+      posts.forEach(post => {
+        exibirPostNoFeed(post);
+      });
+    });
+});
+
 function postar() {
-  const text = document.getElementById("postText").value.trim(); //remove espaçõs em branco//
-  const fileInput = document.getElementById("postImage"); //referencia o input(img)//
-  const file = fileInput.files[0]; //pega a img //
+  const text = document.getElementById("postText").value.trim();
+  const fileInput = document.getElementById("postImage");
+  const file = fileInput.files[0];
 
-  if (text === "" && !file) return; //impede de postar se n tiver nd//
+  if (text === "" && !file) return;
 
-  const tweet = document.createElement("div"); //cria um novo elemento para o post//
-  tweet.className = "tweet"; //Define a classe css//
+  const formData = new FormData();
+  formData.append("action", "criarPost");
+  formData.append("texto", text);
+  if (file) formData.append("imagem", file);
 
-  const postId = "post-" + (++postCounter); //gera um id para o post//
-  tweet.setAttribute("data-id", postId); //atribui o id ao post//
+  fetch("../backend/teste_post.php", {
+    method: "POST",
+    body: formData
+  })
+  .then(res => res.json())
+  .then(post => {
+    if (post.sucesso) {
+      // Usa o perfil real
+      post.arroba = perfilAtual.arroba || "usuario";
+      post.avatar = perfilAtual.avatar || "https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png";
+      exibirPostNoFeed(post);
+      document.getElementById("postText").value = "";
+      document.getElementById("postImage").value = "";
+    } else {
+      alert("Erro ao postar: " + (post.erro || "resposta inválida"));
+    }
+  });
+}
 
-  const textDiv = document.createElement("div"); //cria uma caix para o texto
-  textDiv.className = "text"; //define a classe css//
-  textDiv.textContent = text; //define o texto digitado/
-  tweet.appendChild(textDiv); //adc o text a o post//
+function exibirPostNoFeed(post) {
+  const tweet = document.createElement("div");
+  tweet.className = "tweet";
+  tweet.setAttribute("data-id", post.id);
 
-  if (file) { //verifica se adc uma imagem//
-    const reader = new FileReader(); //cria um leitor de arquivos//
-    reader.onload = function (e) { //quando o arquivo for lido//
-      const img = document.createElement("img"); //cria um elemento de imagem//
-      img.src = e.target.result; //define a img como base64//
-      tweet.appendChild(img); //adc img a o post//
-      adicionarInteracoes(tweet, postId); //adc like e comentario//
-    };
-    reader.readAsDataURL(file); //le a img como url base64//
-  } else {
-    adicionarInteracoes(tweet, postId); //se n tiver img adc so as interações//
+  const header = document.createElement("div");
+  header.className = "post-header";
+
+  const avatar = document.createElement("img");
+  avatar.src = post.avatar || "https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png";
+  avatar.alt = "Avatar do usuário";
+  // Aplica estilo direto para garantir que fique redondo
+  avatar.style.width = "36px";
+  avatar.style.height = "36px";
+  avatar.style.borderRadius = "50%";
+  avatar.style.objectFit = "cover";
+  avatar.style.border = "2px solid #00FFAA";
+  avatar.style.display = "block";
+  avatar.style.flexShrink = "0";
+
+  const autor = document.createElement("span");
+  autor.className = "autor";
+  autor.textContent = `@${post.arroba || "usuario"}`;
+
+  header.appendChild(avatar);
+  header.appendChild(autor);
+  tweet.appendChild(header);
+
+  const textDiv = document.createElement("div");
+  textDiv.className = "text";
+  textDiv.textContent = post.texto;
+  tweet.appendChild(textDiv);
+
+  if (post.imagem) {
+    const img = document.createElement("img");
+    img.src = "../backend/" + post.imagem;
+    img.style.maxWidth = "100%";
+    img.style.borderRadius = "8px";
+    img.style.marginTop = "8px";
+    tweet.appendChild(img);
   }
 
-  const feed = document.getElementById("feed"); //seleciona a area do feed//
-  feed.insertBefore(tweet, feed.firstChild); //coloca o post no topo do feed//
-  //limpa o campo de postagem//
-  document.getElementById("postText").value = ""; 
-  document.getElementById("postImage").value = "";
+  adicionarInteracoes(tweet, post.id);
+  document.getElementById("feed").prepend(tweet);
 }
-//função q adc curtida e comentarios//
+
 function adicionarInteracoes(tweet, postId) {
-  const actions = document.createElement("div"); //container para ações
-  actions.className = "actions";//dfine classe css//
+  const actions = document.createElement("div");
+  actions.className = "actions";
 
-  const likeButton = document.createElement("button"); //botão de curtida
-  likeButton.className = "like-btn";//define classe css//
+  const likeButton = document.createElement("button");
+  likeButton.className = "like-btn";
+  let curtido = false;
+  let count = 0;
 
-  let curtido = jaCurtiu(postId); //verifica se ja foi curtido o post
-  let count = curtido ? 1 : 0; // contagem//
-  likeButton.innerHTML = `❤️ Curtir (<span>${count}</span>)`; //html do botao//
+  fetch(`../backend/teste_post.php?action=verificarCurtida&id_post=${postId}`)
+    .then(res => res.json())
+    .then(data => {
+      curtido = data.curtido;
+      count = data.total;
+      likeButton.innerHTML = `❤️ Curtir (<span>${count}</span>)`;
+    });
 
-  likeButton.onclick = function () { //ação de clicar no botão de like
-    const countSpan = this.querySelector("span"); //referencia o contador
-
-    if (!curtido) {
-      count++; //incrementa se n tiver curtida ainda
-      salvarCurtida(postId); //salva no localstorage
-      curtido = true;
-    } else {
-      count--; //decrementa se ja tiver curtido
-      removerCurtida(postId); //remove do localstorage
-      curtido = false;
-    }
-
-    countSpan.textContent = count; //atualiza a contagem
+  likeButton.onclick = () => {
+    fetch("../backend/teste_post.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: `action=${curtido ? "removerCurtida" : "curtir"}&id_post=${postId}`
+    })
+    .then(res => res.json())
+    .then(() => {
+      curtido = !curtido;
+      count += curtido ? 1 : -1;
+      likeButton.innerHTML = `❤️ Curtir (<span>${count}</span>)`;
+    });
   };
 
-  actions.appendChild(likeButton); //adc botao de curtida a ações
-  tweet.appendChild(actions); //adc as ações a os post
-  //area de comentarios
+  actions.appendChild(likeButton);
+  tweet.appendChild(actions);
+
   const chatArea = document.createElement("div");
-  chatArea.className = "chat-area"; //define o css
+  chatArea.className = "chat-area";
 
-  const input = document.createElement("input"); //campo d entrada para comentario
+  const input = document.createElement("input");
   input.type = "text";
-  input.placeholder = "Comentar..."; //placeholder
+  input.placeholder = "Comentar...";
 
-  const commentBtn = document.createElement("button"); //botao de enviar
+  const commentBtn = document.createElement("button");
   commentBtn.textContent = "Enviar";
 
-  const commentList = document.createElement("div"); //container p listar de comentario
-  commentList.className = "comments"; //classe css
+  const commentList = document.createElement("div");
+  commentList.className = "comments";
 
   commentBtn.onclick = () => {
-    const commentText = input.value.trim();//pega o texto
-    if (commentText !== "") {
-      const comment = document.createElement("div"); //cria o comentario
-      comment.className = "comment"; //define o css
-      comment.textContent = commentText; //define o texto
-      commentList.appendChild(comment); //adc a lista e coemntario
-      input.value = ""; //limpa o campo de entrada
-    }
+    const commentText = input.value.trim();
+    if (commentText === "") return;
+
+    const formData = new URLSearchParams();
+    formData.append("action", "comentar");
+    formData.append("id_post", postId);
+    formData.append("comentario", commentText);
+
+    fetch("../backend/teste_post.php", {
+      method: "POST",
+      body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.sucesso) {
+        const comment = document.createElement("div");
+        comment.className = "comment";
+        comment.textContent = commentText;
+        commentList.appendChild(comment);
+        input.value = "";
+      }
+    });
   };
-  //faz a area de comentario do tweet
+
   chatArea.appendChild(input);
   chatArea.appendChild(commentBtn);
   tweet.appendChild(chatArea);
   tweet.appendChild(commentList);
 }
-//salva a curtida no localstorage
-function salvarCurtida(postId) {
-  let curtidas = JSON.parse(localStorage.getItem("curtidas")) || []; //pega as curtida salvas
-  if (!curtidas.includes(postId)) { // se ainda n foi curtida
-    curtidas.push(postId); //adc o id do post
-    localStorage.setItem("curtidas", JSON.stringify(curtidas)); //salva de volta
-  }
-}
-//remove a curtida do localstorage
-function removerCurtida(postId) {
-  let curtidas = JSON.parse(localStorage.getItem("curtidas")) || []; //pega a curtida
-  curtidas = curtidas.filter(id => id !== postId); //remov o do post curtido
-  localStorage.setItem("curtidas", JSON.stringify(curtidas)); //salva de volta
-}
-//verifica se o post ja foi curtido anteriormente
-function jaCurtiu(postId) {
-  let curtidas = JSON.parse(localStorage.getItem("curtidas")) || [];  //pega as curtidas salvas
-  return curtidas.includes(postId); //retorna true ou false
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  const logado = localStorage.getItem("logado") === "true";
-
-  if (!logado) {
-      // Redireciona para a página de erro se não estiver logado
-      window.location.href = "erro.html";
-  }
-});
