@@ -200,3 +200,79 @@ button:hover {
   background: #00ffaa;
   color: #121212;
 }
+
+/* Menu lateral retrátil */
+.menu-lateral {
+  position: fixed;
+  top: 80px; 
+  left: -300px;
+  width: 280px;
+  height: calc(100% - 80px);
+  background-color: #1a1a1a;
+  border-right: 2px solid #00ffaa55;
+  padding: 16px;
+  transition: left 0.3s ease;
+  overflow-y: auto;
+  z-index: 1500; /* acima do conteúdo mas abaixo do header */
+}
+
+.menu-lateral.open {
+  left: 0;
+}
+
+.menu-lateral h2,
+.menu-lateral h3 {
+  color: #00ffaa;
+  margin-top: 0;
+}
+
+.menu-lateral div {
+  margin-bottom: 16px;
+}
+
+/* Seções como sessões e logs */
+#sessoesSection,
+#logsSection {
+  padding: 12px;
+  margin: 12px;
+  border-top: 1px solid #333;
+}
+
+footer {
+  text-align: center;
+  padding: 16px;
+  background: #0a0a0a;
+  color: #888;
+  font-size: 14px;
+  height: 60px;
+  flex-shrink: 0;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .main-content {
+    flex-direction: column;
+    padding: 12px;
+  }
+
+  #fichaJogador,
+  #mapaView {
+    width: 100%;
+    height: auto;
+  }
+
+  nav {
+    display: none;
+  }
+
+  .mobile-nav {
+    display: flex;
+    flex-direction: column;
+    background-color: #1e1e1e;
+    padding: 16px;
+  }
+
+  .mobile-nav a {
+    margin: 8px 0;
+  }
+}
