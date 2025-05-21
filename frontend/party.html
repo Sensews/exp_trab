@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Party - Oblivion RPG</title>
+
+  <!-- Estilos -->
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/party.css" />
+  <link rel="stylesheet" href="css/burg.css" />
+  <link rel="stylesheet" href="css/fotoperfil.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+  <!-- Scripts -->
+  <script defer src="js/stars.js"></script>
+  <script defer src="js/burg.js"></script>
+  <script defer src="js/burg_perfil.js"></script>
+  <script defer src="js/party.js"></script>
+</head>
+<body>
+  <div class="page-wrapper">
+    <header>
+      <h1 class="logo" onclick="location.href='main.html'">OBLIVION</h1>
+      <div class="nav-wrapper">
+        <nav>
+          <button class="btn"><a href="main.html">Início</a></button>
+          <div class="dropdown">
+            <button class="btn">Jogo</button>
+            <div class="dropdown-content">
+              <a href="fichas.html">Fichas</a>
+              <a href="mapas.html">Mapas</a>
+              <a href="anotacoes.html">Anotações</a>
+            </div>
+          </div>
+          <button class="btn"><a href="comunidade.html">Comunidade</a></button>
+        </nav>
+        <a href="perfil.html" title="Perfil">
+          <div class="profile-icon">
+            <img id="iconHeader" src="https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png" alt="Perfil">
+          </div>
+        </a>
+        <button class="hamburger" id="hamburgerMenuMobile" aria-label="Abrir menu">☰</button>
+      </div>
+    </header>
+
+    <nav class="mobile-nav">
+      <a class="btn" href="main.html">Início</a>
+      <a class="btn" href="fichas.html">Fichas</a>
+      <a class="btn" href="mapas.html">Mapas</a>
+      <a class="btn" href="anotacoes.html">Anotações</a>
+      <a class="btn" href="comunidade.html">Comunidade</a>
+    </nav>
+
+    <aside id="menuLateral" class="menu-lateral">
+      <h2>Menu da Party</h2>
+      <div id="areaFichas">
+        <h3>Fichas</h3>
+        <div id="fichasContainer">Carregando...</div>
+      </div>
+      <div id="areaStatus">
+        <h3>Status dos Membros</h3>
+        <div id="statusMembros">Carregando...</div>
+      </div>
+    </aside>
+    
+    <div class="container">
+      <div class="party-header">
+        <h1 id="nomeParty">Nome da Party</h1>
+        <span class="tipo" id="tipoUsuario">Tipo: Jogador</span>
+      </div>
+
+      <!-- Botões de Sessão -->
+      <div class="sessao-btn-container">
+        <button id="btnIniciarSessao">Iniciar Sessão</button>
+        <button id="btnEncerrarSessao" style="display: none;">Encerrar Sessão</button>
+      </div>
+
+      <!-- Mapa + Chat -->
+      <div class="main-content">
+        <!-- Mapa -->
+        <div id="mapaView"></div>
+
+        <!-- Chat -->
+        <div id="fichaJogador">
+          <h2>Chat da Party</h2>
+          <div id="chatMensagens" class="chat-mensagens"></div>
+          <form id="formChat" class="chat-form">
+            <input type="text" id="mensagemInput" placeholder="Digite sua mensagem..." required />
+            <button type="submit">Enviar</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Sessões passadas -->
+      <section id="sessoesSection" style="display:none;">
+        <h2>Sessões Anteriores</h2>
+        <div id="sessoesLista"></div>
+      </section>
+
+      <!-- Logs -->
+      <section id="logsSection" style="display:none;">
+        <h2>Logs da Party</h2>
+        <div id="logsLista"></div>
+      </section>
+
+      <footer>
+        <p>© 2025 Oblivion RPG - Todos os direitos reservados.</p>
+      </footer>
+    </div>
+  </div>
+</body>
+</html>
