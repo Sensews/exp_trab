@@ -49,3 +49,48 @@ function postar() {
   });
 }
 
+function exibirPostNoFeed(post) {
+  const tweet = document.createElement("div");
+  tweet.className = "tweet";
+  tweet.setAttribute("data-id", post.id);
+
+  const header = document.createElement("div");
+  header.className = "post-header";
+
+  const avatar = document.createElement("img");
+  avatar.src = post.avatar || "https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png";
+  avatar.alt = "Avatar do usuário";
+  // Aplica estilo direto para garantir que fique redondo
+  avatar.style.width = "36px";
+  avatar.style.height = "36px";
+  avatar.style.borderRadius = "50%";
+  avatar.style.objectFit = "cover";
+  avatar.style.border = "2px solid #00FFAA";
+  avatar.style.display = "block";
+  avatar.style.flexShrink = "0";
+
+  const autor = document.createElement("span");
+  autor.className = "autor";
+  autor.textContent = `@${post.arroba || "usuario"}`;
+
+  header.appendChild(avatar);
+  header.appendChild(autor);
+  tweet.appendChild(header);
+
+  const textDiv = document.createElement("div");
+  textDiv.className = "text";
+  textDiv.textContent = post.texto;
+  tweet.appendChild(textDiv);
+
+  if (post.imagem) {
+    const img = document.createElement("img");
+    img.src = "../backend/" + post.imagem;
+    img.style.maxWidth = "100%";
+    img.style.borderRadius = "8px";
+    img.style.marginTop = "8px";
+    tweet.appendChild(img);
+  }
+
+  adicionarInteracoes(tweet, post.id);
+  document.getElementById("feed").prepend(tweet);
+}
