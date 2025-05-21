@@ -88,18 +88,57 @@ document.addEventListener("DOMContentLoaded", () => {
         if (loginBtn) loginBtn.style.display = "none";
         if (cadastroBtn) cadastroBtn.style.display = "none";
 
-        // Cria botão "Anotações"
-        const btnAnotacoes = document.createElement("a");
-        btnAnotacoes.classList.add("btn");
-        btnAnotacoes.href = "anotacoes.html";
-        btnAnotacoes.innerText = "Anotações";
-        nav.appendChild(btnAnotacoes);
+        // Cria dropdown de Jogo com submenu
+        const dropdownJogo = document.createElement("div");
+        dropdownJogo.classList.add("dropdown");
+        
+        // Botão principal do dropdown
+        const btnJogo = document.createElement("button");
+        btnJogo.classList.add("btn");
+        btnJogo.innerText = "Jogo";
+        dropdownJogo.appendChild(btnJogo);
+        
+        // Conteúdo do dropdown
+        const dropdownContent = document.createElement("div");
+        dropdownContent.classList.add("dropdown-content");
+        
+        // Opções do dropdown
+        const options = [
+            { text: "Fichas", href: "ficha.html" },
+            { text: "Mapas", href: "map.html" },
+            { text: "Party", href: "party.html" },
+            { text: "Anotações", href: "anotacoes.html" }
+        ];
+        
+        options.forEach(option => {
+            const link = document.createElement("a");
+            link.href = option.href;
+            link.innerText = option.text;
+            dropdownContent.appendChild(link);
+        });
+        
+        dropdownJogo.appendChild(dropdownContent);
+        nav.appendChild(dropdownJogo);
+        
+        // Adiciona eventos para hover e click no dropdown
+        btnJogo.addEventListener('click', function(e) {
+            e.preventDefault();
+            dropdownContent.classList.toggle('show');
+        });
+
+        // Adicionar eventos de hover
+        dropdownJogo.addEventListener('mouseenter', function() {
+            dropdownContent.classList.add('show');
+        });
+
+        dropdownJogo.addEventListener('mouseleave', function() {
+            dropdownContent.classList.remove('show');
+        });
 
         // Cria botão "Comunidade"
-        const btnComunidade = document.createElement("a");
+        const btnComunidade = document.createElement("button");
         btnComunidade.classList.add("btn");
-        btnComunidade.href = "comunidade.html";
-        btnComunidade.innerText = "Comunidade";
+        btnComunidade.innerHTML = "<a href='comunidade.html'>Comunidade</a>";
         nav.appendChild(btnComunidade);
 
         // Cria botão "Sair"
@@ -122,8 +161,51 @@ document.addEventListener("DOMContentLoaded", () => {
           </div>
         `;
         nav.appendChild(btnPerfil);
+        
+        // Fecha dropdown ao clicar fora
+        window.addEventListener('click', function(e) {
+            if (!e.target.matches('.btn') && !e.target.closest('.dropdown')) {
+                dropdownContent.classList.remove('show');
+            }
+        });
     }
 
-
+    // Cria ou atualiza o menu mobile para corresponder
+    const mobileNav = document.querySelector(".mobile-nav");
+    if (mobileNav && logado) {
+        // Limpa o menu mobile existente
+        mobileNav.innerHTML = '';
+        
+        // Adiciona os links ao menu mobile
+        const mobileBtnInicio = document.createElement("a");
+        mobileBtnInicio.classList.add("btn");
+        mobileBtnInicio.href = "main.html";
+        mobileBtnInicio.textContent = "Início";
+        mobileNav.appendChild(mobileBtnInicio);
+        
+        // Adiciona os links do dropdown diretamente
+        const mobileBtnFicha = document.createElement("a");
+        mobileBtnFicha.classList.add("btn");
+        mobileBtnFicha.href = "ficha.html";
+        mobileBtnFicha.textContent = "Fichas";
+        mobileNav.appendChild(mobileBtnFicha);
+        
+        const mobileBtnMapas = document.createElement("a");
+        mobileBtnMapas.classList.add("btn");
+        mobileBtnMapas.href = "map.html";
+        mobileBtnMapas.textContent = "Mapas";
+        mobileNav.appendChild(mobileBtnMapas);
+        
+        const mobileBtnParty = document.createElement("a");
+        mobileBtnParty.classList.add("btn");
+        mobileBtnParty.href = "party.html";
+        mobileBtnParty.textContent = "Party";
+        mobileNav.appendChild(mobileBtnParty);
+        
+        const mobileBtnComunidade = document.createElement("a");
+        mobileBtnComunidade.classList.add("btn");
+        mobileBtnComunidade.href = "comunidade.html";
+        mobileBtnComunidade.textContent = "Comunidade";
+        mobileNav.appendChild(mobileBtnComunidade);
+    }
 });
-  
