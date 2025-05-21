@@ -7,20 +7,53 @@
 
   <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="css/map.css" />
+  <link rel="stylesheet" href="css/burg.css">
+  <link rel="stylesheet" href="css/fotoperfil.css"S/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
 
   <script defer src="js/stars.js"></script>
   <script defer src="js/map.js"></script>
+  <script src="js/burg_perfil.js" defer></script>
 </head>
 <body>
-  <header>
-    <h1 class="logo" onclick="window.location.href='main.html'">OBLIVION</h1>
+<header>
+  <h1 class="logo" onclick="window.location.href='main.html'">OBLIVION</h1>
+
+  <div class="nav-wrapper">
     <nav>
       <button class="btn"><a href="main.html">Início</a></button>
-      <button class="btn"><a href="anotacoes.html">Anotações</a></button>
-      <button class="btn"><a href="perfil.html">Perfil</a></button>
+      <div class="dropdown">
+        <button class="btn">Jogo</button>
+        <div class="dropdown-content">
+          <a href="ficha.html">Fichas</a>
+          <a href="map.html">Mapas</a>
+          <a href="anotacoes.html">Anotações</a>
+        </div>
+      </div>
+      <button class="btn"><a href="comunidade.html">Comunidade</a></button>
     </nav>
-  </header>
+
+    <!-- Botão de perfil -->
+    <a href="perfil.html" title="Perfil">
+      <div class="profile-icon">
+        <img id="iconHeader" src="https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png" alt="Perfil">
+      </div>
+    </a>
+
+    <!-- Botão hambúrguer -->
+    <button class="hamburger" id="hamburgerMenuMobile" aria-label="Abrir menu">☰</button>
+  </div>
+</header>
+
+<!-- Menu mobile hamburguer (agora incluído!) -->
+<nav class="mobile-nav">
+  <a class="btn" href="main.html">Início</a>
+  <a class="btn" href="ficha.html">Fichas</a>
+  <a class="btn" href="map.html">Mapas</a>
+  <a class="btn" href="anotacoes.html">Anotações</a>
+  <a class="btn" href="comunidade.html">Comunidade</a>
+</nav>
+
 
   <main>
     <div id="map-container">
