@@ -40,11 +40,7 @@ window.addEventListener('load', () => {
     confirmarSenhaInput.parentNode.appendChild(senhaErroOutput);
 
     // ===== FUNÇÃO DE GERAÇÃO DE HASH =====
-<<<<<<< Updated upstream
     const gerarHashVisual = (senha) => {
-=======
-    const gerarHash = (senha) => {
->>>>>>> Stashed changes
         if (!senha || typeof CryptoJS === 'undefined') {
             senhaHashVisual.innerHTML = '';
             return;
