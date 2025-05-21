@@ -1,92 +1,160 @@
+// Seleciona o modal de edição de perfil
 const modal = document.getElementById('modal');
 
-// Abre o modal e preenche os campos
+// Variável para armazenar o tipo atual de usuário
+let tipoUsuarioAtual = 'jogador';
+
+// Abre o modal e preenche os campos com os dados do perfil
 function abrirModal() {
   modal.classList.add('open');
 
-  document.getElementById('inputNome').value = localStorage.getItem('nome') || '';
-  document.getElementById('inputArroba').value = (localStorage.getItem('arroba') || '@seuarroba').replace('@', '');
-  document.getElementById('inputBio').value = localStorage.getItem('bio') || '';
-  document.getElementById('inputLocal').value = localStorage.getItem('local') || '';
-  document.getElementById('inputAniversario').value = localStorage.getItem('aniversario') || '';
+  fetch("../backend/perfil.php?action=carregar")
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById('inputNome').value = data.nome || '';
+      document.getElementById('inputArroba').value = (data.arroba || '').replace('@', '');
+      document.getElementById('inputBio').value = data.bio || '';
+      document.getElementById('inputLocal').value = data.local || '';
+      document.getElementById('inputAniversario').value = data.aniversario || '';
+      document.getElementById('contadorBio').textContent = `${data.bio?.length || 0} / 160`;
 
-  document.getElementById('contadorBio').textContent = `${document.getElementById('inputBio').value.length} / 160`;
+      // Define a imagem do banner
+      if (data.banner) {
+        const banner = document.getElementById('modalBanner');
+        banner.style.backgroundImage = `url('${data.banner}')`;
+        banner.style.backgroundSize = 'cover';
+        banner.style.backgroundPosition = 'center';
+      }
 
-  const bannerUrl = localStorage.getItem('banner');
-  if (bannerUrl) {
-    const banner = document.getElementById('modalBanner');
-    banner.style.backgroundImage = `url('${bannerUrl}')`;
-    banner.style.backgroundSize = 'cover';
-    banner.style.backgroundPosition = 'center';
-  }
+      // Define o tipo do usuário (jogador ou mestre)
+      if (data.tipo) {
+        tipoUsuarioAtual = data.tipo;
+        atualizarTipo(data.tipo);
+      }
+    });
 }
 
-// Salva os dados no localStorage
 function salvarPerfil() {
   const nome = document.getElementById('inputNome').value.trim();
   const arroba = document.getElementById('inputArroba').value.trim();
   const bio = document.getElementById('inputBio').value;
   const local = document.getElementById('inputLocal').value;
   const aniversario = document.getElementById('inputAniversario').value;
+  const avatar = document.getElementById('modalAvatar').src;
+  const banner = document.getElementById('modalBanner').style.backgroundImage.replace(/^url\(["']?/, '').replace(/["']?\)$/, '');
 
-  if (nome === '' || arroba === '') {
-    alert('Nome e usuário são obrigatórios!');
-    return;
-  }
+  // Validações básicas
+  if (!nome || !arroba) return alert("Nome e usuário são obrigatórios!");
+  if (nome.length > 30) return alert("O nome não pode ter mais que 30 caracteres.");
+  if (arroba.length > 15) return alert("O nome de usuário não pode ter mais que 15 caracteres.");
 
-  if (nome.length > 30) {
-    alert('O nome não pode ter mais que 30 caracteres.');
-    return;
-  }
+  // Prepara os dados
+  const dados = {
+    nome,
+    arroba,
+    bio,
+    local,
+    aniversario,
+    avatar,
+    banner,
+    tipo: tipoUsuarioAtual
+  };
 
-  if (arroba.length > 15) {
-    alert('O nome de usuário não pode ter mais que 15 caracteres.');
-    return;
-  }
-
-  localStorage.setItem('nome', nome);
-  localStorage.setItem('arroba', '@' + arroba);
-  localStorage.setItem('bio', bio);
-  localStorage.setItem('local', local);
-  localStorage.setItem('aniversario', aniversario);
-
-  atualizarPerfil();
-  modal.classList.remove('open');
+  // Envia os dados via POST para o backend
+  fetch("../backend/perfil.php?action=salvar", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(dados)
+  })
+    .then(res => res.json())
+    .then(res => {
+      if (res.status === "ok") {
+        alert("Perfil atualizado!");
+        atualizarPerfil();
+        modal.classList.remove("open");
+      } else {
+        alert("Erro ao salvar: " + res.msg);
+      }
+    });
 }
 
-// Atualiza os elementos do perfil
+
+// Atualiza o conteúdo da tela com os dados do perfil do banco
 function atualizarPerfil() {
-  document.getElementById('nome').textContent = localStorage.getItem('nome') || 'Seu nome';
-  const arroba = localStorage.getItem('arroba') || '@seuarroba';
-  document.getElementById('arroba').textContent = arroba;
-  document.getElementById('arrobaPost').textContent = arroba;
-  document.getElementById('bio').textContent = localStorage.getItem('bio') || 'Sua bio aqui';
-  document.getElementById('local').textContent = localStorage.getItem('local') || 'Sua cidade';
+  fetch("../backend/perfil.php?action=carregar")
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById('nome').textContent = data.nome || 'Seu nome';
+      document.getElementById('arroba').textContent = '@' + (data.arroba || 'seuarroba');
+      document.getElementById('arrobaPost').textContent = '@' + (data.arroba || 'seuarroba');
+      document.getElementById('bio').textContent = data.bio || 'Sua bio aqui';
+      document.getElementById('local').textContent = data.local || 'Sua cidade';
+      document.getElementById('aniversario').textContent = data.aniversario
+        ? `Aniversário: ${data.aniversario.split('-').reverse().join('/')}`
+        : 'Aniversário: DD/MM/AAAA';
 
-  const avatar = localStorage.getItem('avatar');
-  const defaultAvatar = 'https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png';
+      const avatar = data.avatar || 'https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png';
+      document.getElementById('avatar').src = avatar;
+      document.getElementById('modalAvatar').src = avatar;
+      document.getElementById("iconHeader").src = avatar;
 
-  const avatarEl = document.getElementById('avatar');
-  const modalAvatarEl = document.getElementById('modalAvatar');
-  if (avatarEl) avatarEl.src = avatar || defaultAvatar;
-  if (modalAvatarEl) modalAvatarEl.src = avatar || defaultAvatar;
+      if (data.banner) {
+        const banner = document.getElementById('banner');
+        banner.style.backgroundImage = `url('${data.banner}')`;
+        banner.style.backgroundSize = 'cover';
+        banner.style.backgroundPosition = 'center';
+      }
 
-  const bannerUrl = localStorage.getItem('banner');
-  if (bannerUrl) {
-    const banner = document.getElementById('banner');
-    banner.style.backgroundImage = `url('${bannerUrl}')`;
-    banner.style.backgroundSize = 'cover';
-    banner.style.backgroundPosition = 'center';
-  }
-
-  const aniversario = localStorage.getItem('aniversario');
-  if (aniversario) {
-    const [ano, mes, dia] = aniversario.split('-');
-    document.getElementById('aniversario').textContent = `Aniversário: ${dia}/${mes}/${ano}`;
-  }
+      tipoUsuarioAtual = data.tipo || 'jogador';
+      atualizarTipo(tipoUsuarioAtual);
+    });
 }
 
-// Redimensiona uma imagem 
+// Altera o texto e botão conforme o tipo do usuário
+function atualizarTipo(tipo) {
+  const tipoTexto = document.getElementById('tipoUsuarioTexto');
+  const btnTrocar = document.getElementById('alternarTipoBtn');
+  const acoes = document.getElementById('acoesTipoUsuario');
+
+  tipoTexto.textContent = `Tipo: ${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`;
+  btnTrocar.textContent = tipo === 'jogador' ? 'Tornar-se Mestre' : 'Voltar a ser Jogador';
+
+  // Troca o botão de ação (Criar ou Entrar em Party)
+  acoes.innerHTML = '';
+  const btn = document.createElement('button');
+  btn.textContent = tipo === 'jogador' ? 'Entrar em Party' : 'Criar Party';
+  btn.onclick = () => {
+    const destino = tipo === 'jogador' ? 'entrar_party.html' : 'criar_party.html';
+    window.location.href = destino;
+  };
+  acoes.appendChild(btn);
+}
+
+// Alterna entre jogador e mestre ao clicar no botão
+document.getElementById('alternarTipoBtn').addEventListener('click', () => {
+  if (tipoUsuarioAtual === 'mestre' && !confirm("Deseja voltar a ser Jogador?\n⚠️ Sua party será excluída...")) return;
+
+  tipoUsuarioAtual = tipoUsuarioAtual === 'jogador' ? 'mestre' : 'jogador';
+  atualizarTipo(tipoUsuarioAtual);
+
+  // Salva alteração de tipo no banco
+  fetch("../backend/perfil.php?action=salvar", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      nome: document.getElementById("nome").textContent,
+      arroba: document.getElementById("arroba").textContent.replace("@", ""),
+      bio: document.getElementById("bio").textContent,
+      local: document.getElementById("local").textContent,
+      aniversario: "",
+      avatar: document.getElementById("avatar").src,
+      banner: document.getElementById("banner").style.backgroundImage.replace(/^url\(["']?/, '').replace(/["']?\)$/, ''),
+      tipo: tipoUsuarioAtual
+    })
+  });
+});
+
+// Redimensiona imagem antes de salvar (para avatar/banner)
 function resizeAndStoreImage(file, width, height, callback) {
   const reader = new FileReader();
   reader.onload = (event) => {
@@ -105,55 +173,60 @@ function resizeAndStoreImage(file, width, height, callback) {
   reader.readAsDataURL(file);
 }
 
-// Atualiza imagem do perfil
+// Ao selecionar uma nova imagem de avatar, redimensiona
 document.getElementById('inputAvatar').addEventListener('change', function () {
   const file = this.files[0];
   if (file) {
     resizeAndStoreImage(file, 130, 130, (resizedUrl) => {
-      localStorage.setItem('avatar', resizedUrl);
-      atualizarPerfil();
-
-      // Atualiza o avatar do header
-      const iconHeader = document.getElementById("iconHeader");
-      if (iconHeader) {
-        iconHeader.src = resizedUrl;
-      }
+      document.getElementById('modalAvatar').src = resizedUrl;
     });
   }
 });
 
-// Atualiza imagem do banner
+// Ao selecionar nova imagem de banner
 document.getElementById('inputBanner').addEventListener('change', function () {
   const file = this.files[0];
   if (file) {
     resizeAndStoreImage(file, 800, 200, (resizedUrl) => {
-      localStorage.setItem('banner', resizedUrl);
       const modalBanner = document.getElementById('modalBanner');
       modalBanner.style.backgroundImage = `url('${resizedUrl}')`;
       modalBanner.style.backgroundSize = 'cover';
       modalBanner.style.backgroundPosition = 'center';
-      atualizarPerfil();
     });
   }
 });
 
-// Atualiza contador da bio
+// Atualiza contador de bio dinamicamente
 document.getElementById('inputBio').addEventListener('input', function () {
   this.style.height = 'auto';
   this.style.height = this.scrollHeight + 'px';
   document.getElementById('contadorBio').textContent = `${this.value.length} / 160`;
 });
 
-// Inicializa o perfil ao carregar a página
+// Ao carregar a página, atualiza o perfil e carrega os posts
 window.onload = () => {
   atualizarPerfil();
-};
+  carregarPostsDoPerfil();
+}
 
-document.addEventListener("DOMContentLoaded", () => {
-  const logado = localStorage.getItem("logado") === "true";
+// Busca e exibe os posts do usuário na página de perfil
+function carregarPostsDoPerfil() {
+  fetch("../backend/perfil.php?action=postsUsuario")
+    .then(res => res.json())
+    .then(posts => {
+      const container = document.getElementById("postsPerfil");
+      if (!container) return;
 
-  if (!logado) {
-      // Redireciona para a página de erro se não estiver logado
-      window.location.href = "erro.html";
-  }
-});
+      container.innerHTML = "";
+      posts.forEach(post => {
+        const div = document.createElement("div");
+        div.className = "post-perfil";
+        div.innerHTML = `
+          <p>${post.texto}</p>
+          ${post.imagem ? `<img src="../backend/${post.imagem}" alt="Imagem do post" style="max-width:100%; border-radius:8px;" />` : ""}
+          <small>${new Date(post.criado_em).toLocaleString()}</small>
+        `;
+        container.appendChild(div);
+      });
+    });
+}
