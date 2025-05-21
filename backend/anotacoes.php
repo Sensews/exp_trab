@@ -102,3 +102,59 @@ if ($action === "criarAnotacao") {
     echo json_encode(["sucesso" => true]);
     exit;
 }
+
+// === Carregar conteúdo de uma anotação ===
+if ($action === "carregarConteudo") {
+    $projeto = $_GET["projeto"];
+    $titulo = $_GET["titulo"];
+
+    $sql = "SELECT n.conteudo 
+            FROM notas n 
+            JOIN projetos p ON n.id_projeto = p.id 
+            WHERE p.nome = ? AND p.id_perfil = ? AND n.titulo = ?";
+    $stmt = $conexao->prepare($sql);
+    $stmt->bind_param("sis", $projeto, $id_perfil, $titulo);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    $row = $res->fetch_assoc();
+
+    echo json_encode(["conteudo" => $row["conteudo"] ?? ""]);
+    exit;
+}
+
+
+// === Salvar conteúdo de uma anotação ===
+if ($action === "salvarConteudo") {
+    $json = json_decode(file_get_contents("php://input"), true);
+    $projeto = $json["projeto"];
+    $titulo = $json["titulo"];
+    $conteudo = $json["conteudo"];
+
+    // Encontra a anotação correspondente
+    $sql = "SELECT n.id 
+            FROM notas n 
+            JOIN projetos p ON n.id_projeto = p.id 
+            WHERE p.nome = ? AND p.id_perfil = ? AND n.titulo = ?";
+    $stmt = $conexao->prepare($sql);
+    $stmt->bind_param("sis", $projeto, $id_perfil, $titulo);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    $row = $res->fetch_assoc();
+
+    if (!$row) {
+        http_response_code(400);
+        echo json_encode(["erro" => "Nota não encontrada"]);
+        exit;
+    }
+
+    $id_nota = $row["id"];
+
+    // Atualiza conteúdo e data
+    $sql = "UPDATE notas SET conteudo = ?, atualizado_em = CURRENT_TIMESTAMP WHERE id = ?";
+    $stmt = $conexao->prepare($sql);
+    $stmt->bind_param("si", $conteudo, $id_nota);
+    $stmt->execute();
+
+    echo json_encode(["sucesso" => true]);
+    exit;
+}
