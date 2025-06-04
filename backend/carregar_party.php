@@ -5,12 +5,14 @@ header('Content-Type: application/json; charset=utf-8');
 // Configura o MySQLi para lançar exceções em caso de erro
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
+// Inicia a sessão antes de usar time.php
+session_start();
+
 // Inclui arquivos de conexão e verificação de sessão
 require_once("conexao.php");
 require_once("time.php");
 
-// Inicia a sessão e verifica se o usuário está autenticado
-session_start();
+// Verifica se o usuário está autenticado
 $id_perfil = $_SESSION['id_perfil'] ?? null;
 
 if (!$id_perfil) {
@@ -42,7 +44,7 @@ try {
         exit;
     }
     
-  // Recupera os dados da party criada pelo mestre
+    // Recupera os dados da party criada pelo mestre
     $party = $res->fetch_assoc();
 
     // 👥 Busca todos os membros que pertencem à party do mestre

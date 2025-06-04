@@ -1,12 +1,13 @@
 <?php
+// Inicia a sessão primeiro
+session_start();
+
 // Define o tipo de retorno como JSON
 header('Content-Type: application/json');
 
-// Inicia a sessão e inclui os arquivos necessários
+// Inclui os arquivos necessários
 require_once("conexao.php");
 require_once("time.php"); // Protege com expiração de sessão
-
-session_start();
 
 // Obtém o ID do perfil salvo na sessão
 $id_perfil = $_SESSION['id_perfil'] ?? null;
@@ -19,7 +20,6 @@ if (!$id_perfil) {
 
 // Ação recebida via GET
 $action = $_GET["action"] ?? "";
-
 
 // === Carregar projetos e notas ===
 if ($action === "carregarProjetos") {
@@ -69,7 +69,6 @@ if ($action === "criarProjeto") {
     echo json_encode(["sucesso" => true]);
     exit;
 }
-
 
 // === Criar nova anotação ===
 if ($action === "criarAnotacao") {
@@ -121,7 +120,6 @@ if ($action === "carregarConteudo") {
     echo json_encode(["conteudo" => $row["conteudo"] ?? ""]);
     exit;
 }
-
 
 // === Salvar conteúdo de uma anotação ===
 if ($action === "salvarConteudo") {
@@ -176,7 +174,6 @@ if ($action === "excluirAnotacao") {
     echo json_encode(["sucesso" => true]);
     exit;
 }
-
 
 // === Excluir projeto ===
 if ($action === "excluirProjeto") {

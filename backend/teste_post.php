@@ -1,14 +1,16 @@
 <?php
-// Carrega conexão com o banco e verificação de sessão
-require_once("conexao.php");
+// Inicia sessão e depois carrega time.php (ordem correta!)
+session_start();
 require_once("time.php");
+
+// Carrega conexão com o banco
+require_once("conexao.php");
 
 // Exibe erros para debug (em produção, remova)
 ini_set("display_errors", 1);
 error_reporting(E_ALL);
 
-// Inicia sessão e verifica autenticação
-session_start();
+// Verifica autenticação
 $id_perfil = $_SESSION['id_perfil'] ?? null;
 
 if (!$id_perfil) {
@@ -18,8 +20,9 @@ if (!$id_perfil) {
 
 // 🔁 Verificação redundante: consulta novamente o id_perfil a partir de id_usuario
 $sqlPerfil = "SELECT id_perfil FROM perfil WHERE id_usuario = ?";
+$id_usuario = $_SESSION['id_usuario'] ?? null; // ✅ essa variável não estava definida antes!
 $stmt = $conexao->prepare($sqlPerfil);
-$stmt->bind_param("i", $id_usuario); // ⚠️ $id_usuario não foi definido na sessão
+$stmt->bind_param("i", $id_usuario);
 $stmt->execute();
 $res = $stmt->get_result();
 $row = $res->fetch_assoc();
@@ -33,7 +36,6 @@ $id_perfil = $row["id_perfil"];
 
 // Ação recebida via GET ou POST
 $action = $_REQUEST["action"] ?? "";
-
 
 // === 1. Criar post ===
 if ($action === "criarPost") {
@@ -69,8 +71,7 @@ if ($action === "criarPost") {
     exit;
 }
 
-
-// === 2. Carregar posts (com arroba e avatar do autor) ===
+// === 2. Carregar posts ===
 if ($action === "carregarPosts") {
     $sql = "SELECT posts.id, posts.texto, posts.imagem, posts.criado_em, perfil.arroba, perfil.avatar 
             FROM posts 
@@ -87,8 +88,7 @@ if ($action === "carregarPosts") {
     exit;
 }
 
-
-// === 3. Comentar em um post ===
+// === 3. Comentar ===
 if ($action === "comentar") {
     $id_post = intval($_POST["id_post"]);
     $comentario = $_POST["comentario"] ?? "";
@@ -102,8 +102,7 @@ if ($action === "comentar") {
     exit;
 }
 
-
-// === 4. Curtir um post ===
+// === 4. Curtir ===
 if ($action === "curtir") {
     $id_post = intval($_POST["id_post"]);
 
@@ -116,8 +115,7 @@ if ($action === "curtir") {
     exit;
 }
 
-
-// === 5. Remover curtida de um post ===
+// === 5. Remover curtida ===
 if ($action === "removerCurtida") {
     $id_post = intval($_POST["id_post"]);
 
@@ -130,8 +128,7 @@ if ($action === "removerCurtida") {
     exit;
 }
 
-
-// === 6. Verificar curtida de um post ===
+// === 6. Verificar curtida ===
 if ($action === "verificarCurtida") {
     $id_post = intval($_GET["id_post"]);
 
@@ -158,5 +155,5 @@ if ($action === "verificarCurtida") {
     exit;
 }
 
-// === Ação não reconhecida ===
+// === Ação inválida ===
 echo json_encode(["erro" => "Ação inválida."]);

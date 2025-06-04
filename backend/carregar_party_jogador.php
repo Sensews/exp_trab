@@ -3,11 +3,12 @@
 header('Content-Type: application/json; charset=utf-8');
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
+// Inicia a sessão antes de qualquer require que a use
+session_start();
+
 // Inclui conexão com banco e controle de sessão
 require_once("conexao.php");
 require_once("time.php");
-
-session_start();
 
 // Obtém o ID do perfil da sessão
 $id_perfil = $_SESSION['id_perfil'] ?? null;
@@ -43,7 +44,7 @@ try {
         exit;
     }
 
-  // Dados da party do usuário
+    // Dados da party do usuário
     $party = $res->fetch_assoc();
 
     // 👥 Busca todos os membros da mesma party

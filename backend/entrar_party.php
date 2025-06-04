@@ -5,12 +5,14 @@ header('Content-Type: application/json; charset=utf-8');
 // Ativa exceções para erros MySQLi
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
+// Inicia a sessão antes de incluir o time.php
+session_start();
+
 // Inclui conexão com banco e verificação de sessão
 require_once("conexao.php");
 require_once("time.php");
 
-// Inicia a sessão e verifica autenticação
-session_start();
+// Verifica autenticação
 $id_perfil = $_SESSION['id_perfil'] ?? null;
 
 if (!$id_perfil) {
@@ -103,4 +105,3 @@ try {
         'erro' => 'Erro no servidor: ' . $e->getMessage()
     ]);
 }
-?>

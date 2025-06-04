@@ -5,12 +5,14 @@ header('Content-Type: application/json');
 // Ativa exceções para erros do MySQLi
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
+// Inicia a sessão ANTES de incluir time.php
+session_start();
+
 // Inclui arquivos essenciais
 require_once("conexao.php");
 include_once 'time.php';
 
-// Inicia a sessão e valida se o usuário está autenticado
-session_start();
+// Valida se o usuário está autenticado
 $id_perfil = $_SESSION['id_perfil'] ?? null;
 
 if (!$id_perfil) {

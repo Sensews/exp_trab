@@ -1,6 +1,8 @@
 <?php
 // Inicia sessão e define header antes de qualquer saída
 session_start();
+require_once("time.php"); // ✅ controle de sessão com expiração
+
 header('Content-Type: application/json'); 
 
 // Configurações de erro para debug
@@ -9,7 +11,6 @@ error_reporting(E_ALL);
 
 try {
     require_once("conexao.php");
-    // Removido require de time.php pois já iniciamos a sessão
 
     // Obtém o ID do usuário da sessão
     $id_usuario = $_SESSION["id_usuario"] ?? null;

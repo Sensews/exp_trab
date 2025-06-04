@@ -1,4 +1,7 @@
 <?php
+// ✅ Inicia a sessão antes de incluir time.php
+session_start();
+
 require_once("conexao.php");
 include_once 'time.php';
 

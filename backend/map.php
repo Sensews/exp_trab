@@ -1,19 +1,25 @@
 <?php
+// Inicia a sessão ANTES de incluir o time.php
+session_start();
+
 require_once("conexao.php");
 include_once 'time.php';
+
 header('Content-Type: application/json');
-session_start();
+
 $id_perfil = $_SESSION['id_perfil'] ?? null;
 if (!$id_perfil) {
     echo json_encode(['success' => false, 'erro' => 'Perfil não autenticado.']);
     exit;
 }
 
-
 function json_response($data) {
     echo json_encode($data);
     exit;
 }
+
+// Ação recebida via GET ou POST
+$action = $_GET["action"] ?? $_POST["action"] ?? null;
 
 // 1. Criar novo mapa
 if ($action === "criarMapa") {
@@ -187,7 +193,6 @@ if ($action === "carregar") {
 
     json_response($mapas);
 }
-
 
 // Se nenhuma ação válida for chamada
 json_response(["success" => false, "error" => "Ação inválida ou não especificada."]);
