@@ -1260,28 +1260,26 @@ document.addEventListener("DOMContentLoaded", () => {
 // ============================================
 
 function salvarImagemNoBanco(imgData, idMapa = 1) {
-  fetch("../backend/map.php?action=salvarImagem", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      id_mapa: idMapa,
-      url: imgData.url,
-      x: imgData.x,
-      y: imgData.y,
-      largura: imgData.width,
-      altura: imgData.height,
-      rotacao: imgData.rotation,
-      z_index: imgData.zIndex,
-      trancada: imgData.anchored ? 1 : 0
+  const dados = {
+    action: "salvarImagem",
+    id_mapa: idMapa,
+    url: imgData.url,
+    x: imgData.x,
+    y: imgData.y,
+    largura: imgData.width,
+    altura: imgData.height,
+    rotacao: imgData.rotation,
+    z_index: imgData.zIndex,
+    trancada: imgData.anchored ? 1 : 0
+  };
+
+  window.secureFetch.securePost("../backend/map-seguro.php", dados)
+    .then(data => {
+      console.log("Resposta do PHP ao salvar imagem:", data);
     })
-  })
-  .then(res => res.json())
-  .then(data => {
-    console.log("Resposta do PHP ao salvar imagem:", data);
-  })
-  .catch(error => {
-    console.error("Erro ao salvar imagem no banco:", error);
-  });
+    .catch(error => {
+      console.error("Erro ao salvar imagem:", error);
+    });
 }
 
 

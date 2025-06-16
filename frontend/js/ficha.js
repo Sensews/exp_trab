@@ -546,11 +546,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const characterData = collectCharacterData();
         const characterName = characterData.name || 'personagem';
         
-        // Duas opções:
-        // 1. Salvar no localStorage
+        // 1. Salvar no localStorage (mantém como estava)
         localStorage.setItem(`character_${characterName}`, JSON.stringify(characterData));
         
-        // 2. Salvar como arquivo JSON para download
+        // 2. Salvar como arquivo JSON para download (mantém como estava)
         const dataStr = JSON.stringify(characterData, null, 2);
         const dataBlob = new Blob([dataStr], {type: 'application/json'});
         
@@ -559,25 +558,18 @@ document.addEventListener('DOMContentLoaded', function() {
         downloadLink.download = `${characterName.replace(/\s+/g, '_')}.json`;
         downloadLink.click();
         
-        // 3. Opcionalmente, enviar para o servidor via fetch
-        fetch('../backend/ficha.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: dataStr
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Ficha salva com sucesso no servidor!');
-            } else {
-                console.error('Erro ao salvar no servidor:', data.error);
-            }
-        })
-        .catch(error => {
-            console.error('Erro ao enviar dados para o servidor:', error);
-        });
+        // 3. Enviar para o servidor COM CRIPTOGRAFIA
+        window.secureFetch.securePost('../backend/ficha-segura.php', characterData)
+            .then(response => {
+                if (response.success) {
+                    alert('Ficha salva com sucesso no servidor!');
+                } else {
+                    console.error('Erro ao salvar no servidor:', response.error);
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao enviar dados para o servidor:', error);
+            });
     }
 
     // Função para carregar personagem

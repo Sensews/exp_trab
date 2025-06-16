@@ -32,7 +32,7 @@ function abrirModal() {
     });
 }
 
-// Salva os dados do perfil
+// Salva os dados do perfil COM CRIPTOGRAFIA
 function salvarPerfil() {
   const nome = document.getElementById('inputNome').value.trim();
   const arroba = document.getElementById('inputArroba').value.trim();
@@ -57,84 +57,60 @@ function salvarPerfil() {
     tipo: tipoUsuarioAtual
   };
 
-  // Mostrar feedback visual que está processando
+  // Mostrar feedback visual
   const btnSalvar = document.getElementById("btnSalvar");
   const textoOriginal = btnSalvar.textContent;
   btnSalvar.textContent = "Salvando...";
   btnSalvar.disabled = true;
 
-  fetch("../backend/perfil.php?action=salvar", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(dados)
-  })
-    .then(res => {
-      // Verificar se a resposta é um redirecionamento
-      if (res.redirected) {
-        throw new Error("Redirecionado para: " + res.url);
-      }
-      
-      // Verificar se é uma resposta bem-sucedida
-      if (!res.ok) {
-        throw new Error("Erro no servidor: " + res.status);
-      }
-      
-      // Verificar tipo de conteúdo
-      const contentType = res.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        throw new Error("Resposta não-JSON recebida");
-      }
-      
-      return res.json();
-    })
-    .then(res => {
-      if (res.status === "ok") {
-        alert("Perfil atualizado!");
+  // Usando fetch seguro COM CRIPTOGRAFIA
+  window.secureFetch.securePost("../backend/perfil-seguro.php?action=salvar", dados)
+    .then(response => {
+      if (response.status === "ok") {
         atualizarPerfil();
         modal.classList.remove("open");
       } else {
-        alert("Erro ao salvar: " + res.msg);
+        alert("Erro ao salvar: " + response.msg);
       }
     })
     .catch(err => {
       console.error("Erro ao salvar perfil:", err);
-      alert("Ocorreu um erro ao salvar o perfil. Por favor, tente novamente.");
+      alert("Erro na comunicação com o servidor");
     })
     .finally(() => {
-      // Restaurar estado do botão
       btnSalvar.textContent = textoOriginal;
       btnSalvar.disabled = false;
     });
 }
 
-// Atualiza os dados do perfil na tela
+// Atualiza os dados do perfil COM CRIPTOGRAFIA
 function atualizarPerfil() {
-  fetch("../backend/perfil.php?action=carregar")
-    .then(res => res.json())
+  window.secureFetch.secureGet("../backend/perfil-seguro.php?action=carregar")
     .then(data => {
       document.getElementById('nome').textContent = data.nome || 'Seu nome';
       document.getElementById('arroba').textContent = '@' + (data.arroba || 'seuarroba');
-      document.getElementById('arrobaPost').textContent = '@' + (data.arroba || 'seuarroba');
       document.getElementById('bio').textContent = data.bio || 'Sua bio aqui';
       document.getElementById('local').textContent = data.local || 'Sua cidade';
-      document.getElementById('aniversario').textContent = data.aniversario
-        ? `Aniversário: ${data.aniversario.split('-').reverse().join('/')}`
-        : 'Aniversário: DD/MM/AAAA';
+      document.getElementById('aniversario').textContent = data.aniversario ? 
+        'Aniversário: ' + new Date(data.aniversario).toLocaleDateString('pt-BR') : 
+        'Aniversário: DD/MM/AAAA';
 
-      const avatar = data.avatar || 'https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png';
-      document.getElementById('avatar').src = avatar;
-      document.getElementById('modalAvatar').src = avatar;
-      document.getElementById("iconHeader").src = avatar;
-
-      if (data.banner) {
-        const banner = document.getElementById('banner');
-        banner.style.backgroundImage = `url('${data.banner}')`;
-        banner.style.backgroundSize = 'cover';
-        banner.style.backgroundPosition = 'center';
+      if (data.avatar) {
+        document.getElementById('avatar').src = data.avatar;
+        document.getElementById('iconHeader').src = data.avatar;
       }
 
-      tipoUsuarioAtual = data.tipo || 'jogador';
-      atualizarTipo(tipoUsuarioAtual);
+      if (data.banner) {
+        document.getElementById('banner').style.backgroundImage = `url('${data.banner}')`;
+      }
+
+      if (data.tipo) {
+        tipoUsuarioAtual = data.tipo;
+        atualizarTipo(data.tipo);
+      }
+    })
+    .catch(err => {
+      console.error("Erro ao carregar perfil:", err);
     });
 }
 

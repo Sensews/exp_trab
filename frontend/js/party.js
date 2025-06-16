@@ -78,4 +78,97 @@ document.addEventListener('DOMContentLoaded', () => {
     if (areaJogador) areaJogador.style.display = 'block';
     if (areaMestre) areaMestre.style.display = 'none';
   }
+
+  // Função para enviar mensagem do chat COM CRIPTOGRAFIA
+  function enviarMensagemChat(mensagem) {
+    const dados = {
+      action: 'enviarMensagem',
+      mensagem: mensagem,
+      party_id: localStorage.getItem('party_id') || null
+    };
+
+    window.secureFetch.securePost('../backend/party-chat-seguro.php', dados)
+      .then(response => {
+        if (response.success) {
+          // Adiciona mensagem ao chat local
+          adicionarMensagemChat(response.mensagem);
+        } else {
+          console.error('Erro ao enviar mensagem:', response.error);
+        }
+      })
+      .catch(error => {
+        console.error('Erro na comunicação segura do chat:', error);
+      });
+  }
+
+  // Função para carregar mensagens do chat COM CRIPTOGRAFIA
+  function carregarMensagensChat() {
+    const dados = {
+      action: 'carregarMensagens',
+      party_id: localStorage.getItem('party_id') || null
+    };
+
+    window.secureFetch.securePost('../backend/party-chat-seguro.php', dados)
+      .then(response => {
+        if (response.success) {
+          const chatContainer = document.getElementById('chatMensagens');
+          if (chatContainer) {
+            chatContainer.innerHTML = '';
+            response.mensagens.forEach(msg => {
+              adicionarMensagemChat(msg);
+            });
+          }
+        }
+      })
+      .catch(error => {
+        console.error('Erro ao carregar mensagens:', error);
+      });
+  }
+
+  // Função para adicionar mensagem ao chat
+  function adicionarMensagemChat(mensagem) {
+    const chatContainer = document.getElementById('chatMensagens');
+    if (!chatContainer) return;
+
+    const msgElement = document.createElement('div');
+    msgElement.className = 'mensagem-chat';
+    msgElement.innerHTML = `
+      <span class="autor-mensagem">${mensagem.autor}:</span>
+      <span class="texto-mensagem">${mensagem.texto}</span>
+      <span class="hora-mensagem">${mensagem.hora}</span>
+    `;
+    
+    chatContainer.appendChild(msgElement);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  }
+
+  // Event listener para envio de mensagem
+  const chatInput = document.getElementById('chatInput');
+  const btnEnviarChat = document.getElementById('btnEnviarChat');
+
+  if (btnEnviarChat && chatInput) {
+    btnEnviarChat.addEventListener('click', () => {
+      const mensagem = chatInput.value.trim();
+      if (mensagem) {
+        enviarMensagemChat(mensagem);
+        chatInput.value = '';
+      }
+    });
+
+    chatInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        const mensagem = chatInput.value.trim();
+        if (mensagem) {
+          enviarMensagemChat(mensagem);
+          chatInput.value = '';
+        }
+      }
+    });
+  }
+
+  // Carrega mensagens ao inicializar
+  carregarMensagensChat();
+
+  // Atualiza mensagens a cada 5 segundos
+  setInterval(carregarMensagensChat, 5000);
 });

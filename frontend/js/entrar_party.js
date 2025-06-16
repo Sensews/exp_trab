@@ -79,19 +79,15 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    const formData = new FormData();
-    formData.append('codigo', codigo);
-    formData.append('senha', senha);
-    formData.append('id_ficha', fichaId);
-    formData.append('id_perfil', id_perfil);
+    const dados = {
+      codigo: codigo,
+      senha: senha,
+      id_ficha: fichaId,
+      id_perfil: id_perfil
+    };
 
     try {
-      const response = await fetch('../backend/entrar_party.php', {
-        method: 'POST',
-        body: formData
-      });
-
-      const result = await response.json();
+      const result = await window.secureFetch.securePost('../backend/entrar_party-seguro.php', dados);
 
       if (result.sucesso) {
         // Redireciona para a página da party
