@@ -25,45 +25,6 @@ function postar() {
 
   if (text === "" && !file) return;
 
-  const dados = {
-    action: "criarPost",
-    texto: text
-  };
-
-  // Se tiver imagem, converte para base64
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = function() {
-      dados.imagem = reader.result;
-      enviarPost(dados);
-    };
-    reader.readAsDataURL(file);
-  } else {
-    enviarPost(dados);
-  }
-}
-
-async function enviarPost(dados) {
-  try {
-    const response = await window.secureFetch.securePost(
-      "../backend/teste_post-seguro.php", 
-      dados
-    );
-
-    if (response.sucesso) {
-      response.arroba = perfilAtual.arroba || "usuario";
-      response.avatar = perfilAtual.avatar || "https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png";
-      exibirPostNoFeed(response);
-      document.getElementById("postText").value = "";
-      document.getElementById("postImage").value = "";
-    } else {
-      alert("Erro ao postar: " + (response.erro || "resposta inválida"));
-    }
-  } catch (error) {
-    console.error("Erro no post seguro:", error);
-    alert("Erro na comunicação segura");
-  }return;
-
   const formData = new FormData();
   formData.append("action", "criarPost");
   formData.append("texto", text);

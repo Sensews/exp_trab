@@ -29,19 +29,19 @@ document.addEventListener("DOMContentLoaded", () => {
       ]
     }
   });
+
   // Salva automaticamente ao digitar
   quill.on('text-change', () => {
     if (!currentProjeto || !currentNota) return;
-    
-    const dados = {
-      action: "salvarConteudo",
-      projeto: currentProjeto,
-      titulo: currentNota,
-      conteudo: quill.root.innerHTML
-    };
-
-    window.secureFetch.securePost("../backend/anotacoes-seguras.php", dados)
-      .catch(error => console.error("Erro ao salvar anotação:", error));
+    fetch("../backend/anotacoes.php?action=salvarConteudo", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        projeto: currentProjeto,
+        titulo: currentNota,
+        conteudo: quill.root.innerHTML
+      })
+    });
   });
 
 // Monta a sidebar com os projetos e suas anotações

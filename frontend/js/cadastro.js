@@ -1,4 +1,9 @@
 window.addEventListener('load', () => {
+    // Adiciona o script do CryptoJS à página
+    const cryptoScript = document.createElement('script');
+    cryptoScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js';
+    document.head.appendChild(cryptoScript);
+    
     // ===== INICIALIZAÇÃO DOS ELEMENTOS =====
     const telefoneInput = document.querySelector('#telefone');
     const senhaInput = document.getElementById('senha');
@@ -81,41 +86,10 @@ window.addEventListener('load', () => {
         validarFormulario();
     });
 
-    // ===== INTERCEPTAR ENVIO DO FORMULÁRIO =====
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault(); // Impede envio normal do formulário
-
+    form.addEventListener('submit', (e) => {
         if (senhaInput.value !== confirmarSenhaInput.value) {
+            e.preventDefault();
             senhaErroOutput.textContent = 'As senhas não coincidem.';
-            return;
-        }
-
-        try {
-            // Coleta dados do formulário
-            const dadosFormulario = {
-                nome: document.getElementById('nome').value,
-                email: document.getElementById('email').value,
-                telefone: document.getElementById('telefone').value,
-                senha: senhaInput.value,
-                'confirmar-senha': confirmarSenhaInput.value
-            };
-
-            // Envia dados criptografados
-            const response = await window.secureFetch.securePost(
-                '../backend/cadastro-seguro.php',
-                dadosFormulario
-            );
-
-            if (response.success) {
-                // Redireciona para página de sucesso
-                window.location.href = 'cadastro.html?sucesso=1';
-            } else {
-                alert(response.message || 'Erro no cadastro');
-            }
-
-        } catch (error) {
-            console.error('Erro no cadastro seguro:', error);
-            alert('Erro na comunicação segura com o servidor');
         }
     });
 

@@ -63,6 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
       select.appendChild(opt);
     }
   }
+
   // Evento de submissão do formulário de criação da party
   form.addEventListener('submit', async (e) => {
     e.preventDefault(); // Evita recarregamento da página
@@ -79,18 +80,23 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Monta os dados para envio seguro
-    const dados = {
-      nome: nome,
-      senha: senha,
-      mapaId: mapaId,
-      limite: limite,
-      id_perfil: id_perfil
-    };
+    // Monta o FormData com os dados para enviar via POST
+    const formData = new FormData();
+    formData.append('nome', nome);
+    formData.append('senha', senha);
+    formData.append('mapaId', mapaId);
+    formData.append('limite', limite);
+    formData.append('id_perfil', id_perfil);
 
     try {
-      // Envia a requisição para criar a party COM CRIPTOGRAFIA
-      const resultado = await window.secureFetch.securePost('../backend/criar_party-seguro.php', dados);
+      // Envia a requisição para criar a party
+      const response = await fetch('../backend/criar_party.php', {
+        method: 'POST',
+        body: formData
+      });
+
+      const text = await response.text();
+      let resultado;
 
       // Tenta converter para JSON
       try {
