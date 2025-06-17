@@ -3,7 +3,7 @@
 body {
   margin: 0;
   font-family: 'Courier New', monospace;
-  background-color: #121212;
+  background: #121212;
   color: #f1f1f1;
   overflow: hidden;
 }
@@ -19,145 +19,124 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding-top: 90px; 
-  overflow-y: auto;
+  padding-top: 90px;
+  gap: 20px;
+  overflow: hidden;
 }
 
-header {
-  height: 80px;
-  background: rgba(0, 0, 0, 0.85);
+.party-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0 20px;
-  position: fixed;
-  top: 0;
-  width: 100%;
-  z-index: 2000; /* garante que o header fique sobre todos os outros elementos */
-}
-
-/* Estilo da logo */
-.logo {
-  font-size: 28px;
-  font-weight: bold;
-  text-transform: uppercase;
-  cursor: pointer;
-}
-
-/* Agrupamento dos itens do header */
-.nav-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-nav {
-  display: flex;
-  gap: 14px;
-}
-
-.btn a {
-  color: inherit;
-  text-decoration: none;
-}
-
-/* Informações da party no topo */
-.party-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin: 0 20px;
-}
-
-.party-header .titulo-area {
-  flex-grow: 1;
-  text-align: center;
 }
 
 .party-header h1 {
-  font-size: 24px;
+  font-size: 22px;
   margin: 0;
+  color: #00ffaa;
 }
 
 .party-header .tipo {
-  font-size: 14px;
+  font-size: 13px;
   color: #ccc;
-  margin-top: 2px;
-  text-align: center;
 }
 
-/* Botões para iniciar sessão */
-.sessao-btn-container {
+.main-party {
+  flex: 1;
   display: flex;
-  justify-content: flex-start;
-  margin: 12px 20px;
-  gap: 10px;
-}
-
-/* Área principal da tela com mapa e chat */
-.main-content {
-  display: flex;
-  flex-direction: row;
-  gap: 12px;
-  padding: 0 12px;
-  align-items: flex-start;
+  gap: 20px;
+  padding: 0 20px;
   box-sizing: border-box;
-}
-
-/* Mapa exibido à esquerda */
-#mapaView {
-  flex-grow: 1;
-  height: 500px;
-  background: #333 center/contain no-repeat;
-  border: 2px solid #00ffaa55;
-  border-radius: 6px;
-  box-sizing: border-box;
-}
-
-/* Chat ou ficha do jogador à direita */
-#fichaJogador {
-  width: 300px;
-  background: #1a1a1a;
-  border: 2px solid #00ffaa55;
-  border-radius: 6px;
-  padding: 16px;
-  height: 500px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  box-sizing: border-box;
+  min-height: 0;
   overflow: hidden;
 }
 
-#fichaJogador h2 {
-  font-size: 18px;
-  margin-bottom: 12px;
-  color: #00ffaa;
+.chat-area {
+  flex: 1;
+  background: #1a1a1a;
+  border: 1px solid #00ffaa55;
+  border-radius: 6px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.chat-area h2 {
+  font-size: 16px;
   text-align: center;
+  color: #00ffaa;
+  margin-bottom: 8px;
 }
 
-#fichaJogador p {
-  font-size: 14px;
-  margin-bottom: 6px;
-}
-
-/* Área de mensagens com rolagem */
 .chat-mensagens {
   flex: 1;
   overflow-y: auto;
-  background: #1a1a1a;
   border: 1px solid #444;
   padding: 10px;
-  margin-bottom: 10px;
-  scrollbar-width: thin;
-  scrollbar-color: #888 #222;
-  min-height: 0;
+  border-radius: 4px;
+  background-color: #121212;
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-/* Campo para envio de mensagem */
+/* Caixa de mensagem */
+.mensagem {
+  background-color: #1f1f1f;
+  border: 1px solid #333;
+  border-radius: 6px;
+  padding: 10px 14px;
+  max-width: 100%;
+  width: 100%;
+  box-shadow: 0 1px 3px rgba(0, 255, 170, 0.1);
+  display: flex;
+  flex-direction: column;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Linha com nome + texto */
+.linha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: #eee;
+}
+
+/* Nome do autor */
+.autor {
+  color: #00ffaa;
+  white-space: nowrap;
+  font-weight: bold;
+}
+
+/* Conteúdo da mensagem */
+.conteudo {
+  color: #eee;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  flex: 1;
+}
+
+/* Horário */
+.hora {
+  font-size: 11px;
+  color: #999;
+  margin-top: 4px;
+  text-align: right;
+  width: 100%;
+}
+
 .chat-form {
   display: flex;
   gap: 8px;
+  margin-top: 10px;
 }
 
 .chat-form input {
@@ -165,19 +144,22 @@ nav {
   padding: 8px;
   background: #fff;
   color: #000;
-  border: none;
   border-radius: 4px;
+  border: none;
+  font-size: 13px;
 }
 
 /* Botão de envio do chat */
 .chat-form button {
-  padding: 8px 12px;
+  padding: 8px 14px;
   font-weight: bold;
   border: 2px solid #00ffaa;
   background: transparent;
   color: #00ffaa;
   border-radius: 4px;
   cursor: pointer;
+  font-size: 13px;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .chat-form button:hover {
@@ -185,94 +167,79 @@ nav {
   color: #121212;
 }
 
-button {
-  padding: 6px 16px;
-  font-weight: bold;
-  border: 2px solid #00ffaa;
-  background: transparent;
-  color: #00ffaa;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-button:hover {
-  background: #00ffaa;
-  color: #121212;
-}
-
-/* Menu lateral retrátil */
-.menu-lateral {
-  position: fixed;
-  top: 80px; 
-  left: -300px;
-  width: 280px;
-  height: calc(100% - 80px);
-  background-color: #1a1a1a;
-  border-right: 2px solid #00ffaa55;
-  padding: 16px;
-  transition: left 0.3s ease;
-  overflow-y: auto;
-  z-index: 1500; /* acima do conteúdo mas abaixo do header */
-}
-
-.menu-lateral.open {
-  left: 0;
-}
-
-.menu-lateral h2,
-.menu-lateral h3 {
-  color: #00ffaa;
-  margin-top: 0;
-}
-
-.menu-lateral div {
-  margin-bottom: 16px;
-}
-
-/* Seções como sessões e logs */
-#sessoesSection,
-#logsSection {
+.sidebar-membros {
+  width: 230px;
+  background: #1a1a1a;
+  border: 1px solid #00ffaa55;
+  border-radius: 6px;
   padding: 12px;
-  margin: 12px;
-  border-top: 1px solid #333;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.sidebar-membros h3 {
+  font-size: 14px;
+  margin-bottom: 10px;
+  color: #00ffaa;
+  text-align: center;
+}
+
+.lista-membros {
+  flex: 1;
+  overflow-y: auto;
+  font-size: 13px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.lista-membros li {
+  padding: 6px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #333;
+  color: #f1f1f1;
+}
+
+.lista-membros .btn-remover {
+  color: #ff4444;
+  font-size: 12px;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.lista-membros .btn-remover:hover {
+  text-decoration: underline;
 }
 
 footer {
-  text-align: center;
+  background: rgba(0, 0, 0, 0.85);
   padding: 16px;
-  background: #0a0a0a;
-  color: #888;
   font-size: 14px;
-  height: 60px;
+  text-align: center;
   flex-shrink: 0;
+  position: relative;
+  z-index: 10;
 }
 
 /* Responsividade */
 @media (max-width: 768px) {
-  .main-content {
+  .main-party {
     flex-direction: column;
-    padding: 12px;
   }
 
-  #fichaJogador,
-  #mapaView {
+  .chat-area,
+  .sidebar-membros {
     width: 100%;
     height: auto;
   }
 
-  nav {
-    display: none;
-  }
-
-  .mobile-nav {
-    display: flex;
-    flex-direction: column;
-    background-color: #1e1e1e;
-    padding: 16px;
-  }
-
-  .mobile-nav a {
-    margin: 8px 0;
+  .chat-mensagens {
+    height: 200px;
   }
 }

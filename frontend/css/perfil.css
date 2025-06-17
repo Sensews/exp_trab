@@ -138,11 +138,11 @@ nav {
   font-weight: bold;
 }
 
-/* Botões padrão do perfil */
+/* Estilo geral dos botões */
 .edit-btn,
 #alternarTipoBtn,
 #acoesTipoUsuario button {
-  padding: 6px 14px;
+  padding: 8px 12px;
   border: 2px solid #00FFAA;
   color: #00FFAA;
   background: transparent;
@@ -159,13 +159,15 @@ nav {
   color: #121212;
 }
 
-/* Bloco de tipo de usuário */
+/* BOTÕES DE TIPO USUÁRIO - AGRUPADOS */
 .tipo-usuario {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
   margin-top: 16px;
-  flex-wrap: wrap;
+  width: 100%;
+  max-width: 600px;
 }
 
 .tipo-usuario p {
@@ -354,7 +356,22 @@ footer {
   padding: 12px;
 }
 
-/* Responsividade */
+#banner {
+  height: 200px;
+  width: 100%;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+}
+
+#avatar {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* RESPONSIVO */
 @media (max-width: 768px) {
   nav {
     display: none;
@@ -377,22 +394,20 @@ footer {
     padding: 100px 8px 16px !important;
   }
 
-  .edit-btn, #alternarTipoBtn, #acoesTipoUsuario button {
+  .edit-btn,
+  #alternarTipoBtn,
+  #acoesTipoUsuario button {
     font-size: 13px;
     padding: 5px 10px;
   }
 
-  .tipo-usuario {
-    display: flex;
+  .botoes-tipo-usuario {
     flex-direction: column;
-    align-items: flex-start;
     gap: 6px;
   }
 
-  #acoesTipoUsuario {
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 6px;
+  .botoes-tipo-usuario button {
+    width: 100%;
   }
 }
 
@@ -414,7 +429,8 @@ footer {
     font-size: 12px;
   }
 
-  .modal-form input, .modal-form textarea {
+  .modal-form input,
+  .modal-form textarea {
     font-size: 13px;
   }
 
@@ -424,7 +440,9 @@ footer {
     justify-content: space-between;
   }
 
-  .edit-btn, #alternarTipoBtn, #acoesTipoUsuario button {
+  .edit-btn,
+  #alternarTipoBtn,
+  #acoesTipoUsuario button {
     font-size: 12px;
     padding: 4px 8px;
   }
