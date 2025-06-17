@@ -4,7 +4,7 @@ header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE');
 header('Access-Control-Allow-Headers: Content-Type');
 header('Content-Type: application/json; charset=UTF-8');
 
-// ✅ Inicia a sessão ANTES de incluir o time.php
+// Inicia a sessão ANTES de incluir o time.php
 session_start();
 
 require_once("time.php");
@@ -14,11 +14,13 @@ $dbname = 'oblivion';
 $username = 'root';
 $password = '';
 
-$id_perfil = $_SESSION['id_perfil'] ?? null;
-if (!$id_perfil) {
-    echo json_encode(["success" => false, "error" => "Perfil não autenticado"]);
+// Verificação padronizada de login
+if (!isset($_SESSION['id_perfil'])) {
+    echo json_encode(["logado" => false]);
     exit;
 }
+
+$id_perfil = $_SESSION['id_perfil'];
 
 function conectarDB() {
     global $host, $dbname, $username, $password;
