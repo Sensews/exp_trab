@@ -2,49 +2,83 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <title>Acesso Negado!</title>
+  <title>Acesso Negado</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Estilos e ícones -->
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <link rel="stylesheet" href="css/style.css"> 
+  <script src="js/stars.js" defer></script>     
+
   <style>
     body {
-      background-color: #121212;
-      color: #f1f1f1;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       display: flex;
       flex-direction: column;
-      align-items: center;
       justify-content: center;
-      height: 100vh;
-      margin: 0;
+      align-items: center;
       text-align: center;
+      min-height: 100vh;
+      padding: 20px;
+      background-color: rgba(18, 18, 18, 0.95);
     }
 
     h1 {
-      font-size: 2em;
-      margin-bottom: 10px;
+      font-size: 2.4em;
+      color: #FF5E5E;
+      margin-bottom: 15px;
+      z-index: 1;
     }
 
     p {
-      font-size: 1.2em;
-      margin-bottom: 30px;
+      font-size: 1.1em;
+      color: #CCCCCC;
+      margin-bottom: 25px;
+      max-width: 90%;
+      z-index: 1;
     }
 
-    a {
-      background-color: #1f1f1f;
-      color: #ffffff;
+    .btn-voltar {
+      background: transparent;
+      border: 2px solid #00FFAA;
+      color: #00FFAA;
+      font-size: 16px;
       padding: 12px 24px;
-      border: 1px solid #444;
-      border-radius: 6px;
+      cursor: pointer;
       text-decoration: none;
-      transition: background-color 0.3s;
+      border-radius: 6px;
+      transition: all 0.3s ease-in-out;
+      z-index: 1;
     }
 
-    a:hover {
-      background-color: #333;
+    .btn-voltar:hover {
+      background-color: #00FFAA;
+      color: #121212;
+      transform: scale(1.05);
+    }
+    .stars {
+      z-index: 0;
+    }
+
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 1.8em;
+      }
+
+      p {
+        font-size: 1em;
+      }
+
+      .btn-voltar {
+        font-size: 14px;
+        padding: 10px 20px;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>⚠️ Acesso Negado</h1>
+  <h1>⚠️ Acesso Negado!</h1>
   <p>Você precisa estar logado para acessar esta página.</p>
-  <a href="login.html">Ir para o Login</a>
+  <a class="btn-voltar" href="login.html">Ir para o Login</a>
 </body>
 </html>
