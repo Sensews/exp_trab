@@ -7,9 +7,10 @@ include_once 'time.php';
 
 header('Content-Type: application/json');
 
+// Verificação padronizada
 $id_perfil = $_SESSION['id_perfil'] ?? null;
 if (!$id_perfil) {
-    echo json_encode(['success' => false, 'erro' => 'Perfil não autenticado.']);
+    echo json_encode(["logado" => false]);
     exit;
 }
 

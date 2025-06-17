@@ -1,35 +1,34 @@
 <?php
-// Inicia sessão e define header antes de qualquer saída
-session_start();
-require_once("time.php"); // ✅ controle de sessão com expiração
+// Inicia a sessão se ainda não estiver iniciada
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-header('Content-Type: application/json'); 
+// Importa script de controle de tempo (para expiração da sessão)
+require_once("time.php");
 
-// Configurações de erro para debug
-ini_set('display_errors', 0);
-error_reporting(E_ALL);
+// Define o tipo da resposta como JSON
+header('Content-Type: application/json');
+
+// Verifica se o usuário está logado
+if (!isset($_SESSION["id_usuario"])) {
+    echo json_encode(["logado" => false]);
+    exit;
+}
 
 try {
+    // Conexão com o banco de dados
     require_once("conexao.php");
 
-    // Obtém o ID do usuário da sessão
-    $id_usuario = $_SESSION["id_usuario"] ?? null;
+    // Recupera o ID do usuário logado
+    $id_usuario = $_SESSION["id_usuario"];
+
+    // Define a ação recebida via GET (?action=carregar, salvar, postsUsuario)
     $action = $_GET["action"] ?? '';
 
-    // Grava log para debug
-    file_put_contents('debug_log.txt', date('Y-m-d H:i:s') . " - ID usuário: " . ($id_usuario ?? 'null') . " - Ação: $action\n", FILE_APPEND);
-
-    // Se o usuário não estiver autenticado
-    if (!$id_usuario) {
-        echo json_encode([
-            "status" => "erro",
-            "msg" => "Usuário não autenticado"
-        ]);
-        exit;
-    }
-
-    // === AÇÃO: carregar dados do perfil ===
+    // === CARREGAR PERFIL ===
     if ($action === "carregar") {
+        // Busca o perfil vinculado ao usuário
         $sql = "SELECT * FROM perfil WHERE id_usuario = ?";
         $stmt = $conexao->prepare($sql);
         $stmt->bind_param("i", $id_usuario);
@@ -37,43 +36,52 @@ try {
         $res = $stmt->get_result();
         $perfil = $res->fetch_assoc();
 
-        echo json_encode($perfil ?: []);
+        if ($perfil) {
+            // Armazena o ID do perfil na sessão
+            $_SESSION["id_perfil"] = $perfil["id_perfil"];
+            $response = json_encode($perfil);
+        } else {
+            // Retorna array vazio se não encontrar perfil
+            $response = json_encode([]);
+        }
+
+        // Define o tamanho da resposta para evitar truncamento
+        header("Content-Length: " . strlen($response));
+        echo $response;
         exit;
     }
 
-    // === AÇÃO: salvar alterações do perfil ===
+    // === SALVAR PERFIL ===
     if ($action === "salvar") {
-        // Recebe os dados enviados em JSON
+        // Lê o corpo da requisição JSON
         $input = file_get_contents("php://input");
         $data = json_decode($input, true);
 
+        // Verifica se o JSON é válido
         if (!$data) {
-            echo json_encode([
-                "status" => "erro", 
-                "msg" => "Dados inválidos",
+            $response = json_encode([
+                "status" => "erro",
+                "msg" => "Dados JSON inválidos",
                 "debug" => json_last_error_msg()
             ]);
+            header("Content-Length: " . strlen($response));
+            echo $response;
             exit;
         }
 
-        // Verifica se o perfil já existe
+        // Verifica se o perfil do usuário já existe
         $stmt = $conexao->prepare("SELECT id_perfil FROM perfil WHERE id_usuario = ?");
         $stmt->bind_param("i", $id_usuario);
         $stmt->execute();
         $result = $stmt->get_result();
-        
+
         if ($result->num_rows > 0) {
-            // UPDATE - perfil já existe
+            // UPDATE: perfil já existe, atualiza dados
             $sql = "UPDATE perfil 
-                   SET nome = ?, arroba = ?, bio = ?, local = ?, 
-                       aniversario = ?, avatar = ?, banner = ?, tipo = ? 
-                   WHERE id_usuario = ?";
-            
+                    SET nome = ?, arroba = ?, bio = ?, local = ?, 
+                        aniversario = ?, avatar = ?, banner = ?, tipo = ? 
+                    WHERE id_usuario = ?";
             $stmt = $conexao->prepare($sql);
-            if (!$stmt) {
-                throw new Exception("Erro ao preparar query: " . $conexao->error);
-            }
-            
             $stmt->bind_param(
                 "ssssssssi",
                 $data["nome"],
@@ -87,16 +95,11 @@ try {
                 $id_usuario
             );
         } else {
-            // INSERT - criar novo perfil
+            // INSERT: perfil ainda não existe, cria novo
             $sql = "INSERT INTO perfil 
-                   (id_usuario, nome, arroba, bio, local, aniversario, avatar, banner, tipo) 
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            
+                    (id_usuario, nome, arroba, bio, local, aniversario, avatar, banner, tipo) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $stmt = $conexao->prepare($sql);
-            if (!$stmt) {
-                throw new Exception("Erro ao preparar query: " . $conexao->error);
-            }
-            
             $stmt->bind_param(
                 "issssssss",
                 $id_usuario,
@@ -111,29 +114,44 @@ try {
             );
         }
 
+        // Executa a query e retorna sucesso ou erro
         if ($stmt->execute()) {
-            echo json_encode(["status" => "ok"]);
+            $response = json_encode(["status" => "ok", "msg" => "Perfil salvo com sucesso"]);
         } else {
-            echo json_encode([
-                "status" => "erro", 
-                "msg" => "Erro ao executar query: " . $stmt->error
-            ]);
+            $response = json_encode(["status" => "erro", "msg" => "Erro ao salvar dados: " . $stmt->error]);
         }
 
+        header("Content-Length: " . strlen($response));
+        echo $response;
         exit;
     }
 
-    // === AÇÃO: carregar posts do usuário ===
+    // === CARREGAR POSTS DO USUÁRIO ===
     if ($action === "postsUsuario") {
+        // Busca o ID do perfil do usuário logado
+        $sub = $conexao->prepare("SELECT id_perfil FROM perfil WHERE id_usuario = ?");
+        $sub->bind_param("i", $id_usuario);
+        $sub->execute();
+        $resSub = $sub->get_result();
+        $perfil = $resSub->fetch_assoc();
+
+        // Se não tiver perfil ainda, retorna erro
+        if (!$perfil) {
+            $response = json_encode(["status" => "erro", "msg" => "Nenhum perfil encontrado."]);
+            header("Content-Length: " . strlen($response));
+            echo $response;
+            exit;
+        }
+
+        $id_perfil = $perfil['id_perfil'];
+
+        // Busca todos os posts do perfil em ordem cronológica reversa
         $sql = "SELECT texto, imagem, criado_em 
                 FROM posts 
-                WHERE id_perfil = (
-                    SELECT id_perfil FROM perfil WHERE id_usuario = ?
-                )
+                WHERE id_perfil = ?
                 ORDER BY criado_em DESC";
-
         $stmt = $conexao->prepare($sql);
-        $stmt->bind_param("i", $id_usuario);
+        $stmt->bind_param("i", $id_perfil);
         $stmt->execute();
         $res = $stmt->get_result();
 
@@ -142,20 +160,23 @@ try {
             $posts[] = $row;
         }
 
-        echo json_encode($posts);
+        // Retorna todos os posts encontrados
+        $response = json_encode($posts);
+        header("Content-Length: " . strlen($response));
+        echo $response;
         exit;
     }
 
-    // === AÇÃO não reconhecida ===
-    echo json_encode(["status" => "erro", "msg" => "Ação inválida"]);
-    
+    // Se nenhuma das ações for reconhecida
+    $response = json_encode(["status" => "erro", "msg" => "Ação inválida"]);
+    header("Content-Length: " . strlen($response));
+    echo $response;
+    exit;
+
 } catch (Exception $e) {
-    // Log do erro
-    error_log("Erro no perfil.php: " . $e->getMessage());
-    
-    // Retorna erro em formato JSON
-    echo json_encode([
-        "status" => "erro",
-        "msg" => "Ocorreu um erro no servidor: " . $e->getMessage()
-    ]);
+    // Em caso de erro no servidor (ex: falha de conexão)
+    $response = json_encode(["status" => "erro", "msg" => "Erro no servidor: " . $e->getMessage()]);
+    header("Content-Length: " . strlen($response));
+    echo $response;
+    exit;
 }
