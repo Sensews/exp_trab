@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-// Atualização da imagem de perfil via banco de dados
+  // Atualização da imagem de perfil via banco de dados
   fetch("../backend/perfil.php?action=carregar")
     .then(response => response.json())
     .then(data => {
@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", function () {
     })
     .catch(error => console.error("Erro ao carregar avatar:", error));
 
-// Dropdown do header 
+  // Dropdown do header 
   const dropdownBtn = document.querySelector('.dropdown .btn');
   if (dropdownBtn) {
     dropdownBtn.addEventListener('click', function () {
