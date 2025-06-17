@@ -10,6 +10,12 @@ require_once("conexao.php");
 ini_set("display_errors", 1);
 error_reporting(E_ALL);
 
+// Verificação padronizada de sessão
+if (!isset($_SESSION["id_usuario"])) {
+    echo json_encode(["logado" => false]);
+    exit;
+}
+
 // Verifica autenticação
 $id_perfil = $_SESSION['id_perfil'] ?? null;
 
@@ -18,9 +24,9 @@ if (!$id_perfil) {
     exit;
 }
 
-// 🔁 Verificação redundante: consulta novamente o id_perfil a partir de id_usuario
+// Verificação redundante: consulta novamente o id_perfil a partir de id_usuario
 $sqlPerfil = "SELECT id_perfil FROM perfil WHERE id_usuario = ?";
-$id_usuario = $_SESSION['id_usuario'] ?? null; // ✅ essa variável não estava definida antes!
+$id_usuario = $_SESSION['id_usuario'] ?? null; 
 $stmt = $conexao->prepare($sqlPerfil);
 $stmt->bind_param("i", $id_usuario);
 $stmt->execute();

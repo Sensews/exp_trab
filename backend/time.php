@@ -1,5 +1,7 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Redireciona se a sessão não existir
 if (!isset($_SESSION['id_perfil']) || !isset($_SESSION['momento_login'])) {
@@ -13,7 +15,6 @@ $tempo_desde_login = time() - $_SESSION['momento_login'];
 
 // Sessão expirada
 if ($tempo_desde_login > $tempo_maximo) {
-    // Opcional: registrar logout no banco
     $conn = new mysqli("localhost", "root", "", "oblivion");
     if (!$conn->connect_error) {
         $id_usuario = $_SESSION['id_usuario'] ?? null;
@@ -33,7 +34,7 @@ if ($tempo_desde_login > $tempo_maximo) {
     session_unset();
     session_destroy();
 
-    // Alerta de sessão expirada e redirecionamento
+    // Redireciona com aviso
     echo "
     <script>
         alert('Sua sessão expirou. Por favor, faça login novamente.');
