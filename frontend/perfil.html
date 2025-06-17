@@ -6,10 +6,10 @@
   <title>Perfil</title>
 
   <!-- Estilos -->
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/burg.css"> 
-  <link rel="stylesheet" href="css/perfil.css"> 
-  <link rel="stylesheet" href="css/fotoperfil.css"> 
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/burg.css" />
+  <link rel="stylesheet" href="css/perfil.css" />
+  <link rel="stylesheet" href="css/fotoperfil.css" />
 
   <!-- Ícones -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
@@ -19,9 +19,12 @@
   <script defer src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/loaders/GLTFLoader.js"></script>
 
   <!-- Scripts -->
-  <script defer src="js/stars.js"></script> 
-  <script defer src="js/perfil.js"></script> 
-  <script defer src="js/burg_perfil.js"></script> 
+  <script defer src="js/stars.js"></script>
+  <script defer src="js/perfil.js"></script>
+  <script defer src="js/burg_perfil.js"></script>
+
+  <!-- Oculta o body até validar sessão -->
+  <style>body { display: none; }</style>
 </head>
 
 <body>
@@ -31,10 +34,10 @@
 
       <div class="nav-wrapper">
         <nav>
-          <!-- Navegação principal -->
+         <!-- Navegação principal -->
           <button class="btn"><a href="main.html">Início</a></button>
 
-          <!-- Dropdown jogo -->
+         <!-- Dropdown jogo --> 
           <div class="dropdown">
             <button class="btn">Jogo</button>
             <div class="dropdown-content">
@@ -51,16 +54,16 @@
         <!-- Ícone do perfil -->
         <a href="perfil.html" title="Perfil">
           <div class="profile-icon">
-            <img id="iconHeader" src="https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png" alt="Perfil">
+            <img id="iconHeader" src="https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png" alt="Perfil" />
           </div>
         </a>
 
-        <!-- Menu burg-->
+         <!-- Menu burg-->  
         <button class="hamburger" id="hamburgerMenuMobile" aria-label="Abrir menu">☰</button>
       </div>
     </header>
 
-    <!-- Menu mobile -->
+    <!-- Menu mobile -->  
     <nav class="mobile-nav">
       <a class="btn" href="main.html">Início</a>
       <a class="btn" href="fichas.html">Fichas</a>
@@ -70,15 +73,15 @@
       <a class="btn" href="party.html">Party</a>
     </nav>
 
-    <!-- Conteúdo principal do perfil -->
+    <!-- Conteúdo principal do perfil -->  
     <div class="container">
       <div class="profile">
-        <!-- Banner do perfil -->
+         <!-- Banner do perfil -->
         <div class="banner" id="banner"></div>
 
-        <!-- Avatar do usuario -->
+        <!-- Banner do perfil -->
         <div class="avatar-wrapper">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png" id="avatar" class="avatar">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png" id="avatar" class="avatar" />
         </div>
 
         <!-- Informações principais do perfil -->
@@ -97,12 +100,13 @@
           <span class="info-date" id="aniversario">Aniversário: DD/MM/AAAA</span>
         </div>
 
-        <!-- Tipo de usuario -->
+        <!-- Tipo de usuario e ações -->
         <div class="tipo-usuario">
           <p id="tipoUsuarioTexto">Tipo: Jogador</p>
-          <button id="alternarTipoBtn">Tornar-se Mestre</button>
-          <div id="acoesTipoUsuario"></div> 
         </div>
+
+        <!-- Container para botões dinâmicos (Tornar-se Mestre, Entrar em Party, Criar Party) -->
+        <div id="acoesTipoUsuario" class="botoes-tipo-usuario"></div>
 
         <div class="post">
           <div class="arroba" id="arrobaPost">@seuarroba</div>
@@ -116,33 +120,33 @@
       <div class="modal-content">
         <div class="modal-header">
           <h2>Editar perfil</h2>
-          <button type="button" id="btnSalvar">Salvar</button> <!-- ID ADICIONADO AQUI -->
+          <button type="button" id="btnSalvar">Salvar</button>
         </div>
 
         <!-- Banner dentro do modal -->
         <div class="modal-banner" id="modalBanner">
           <label for="inputBanner" class="banner-btn">📷</label>
-          <input type="file" id="inputBanner" accept="image/*">
+          <input type="file" id="inputBanner" accept="image/*" />
         </div>
 
         <!-- Avatar dentro do modal -->
         <div class="modal-avatar-wrapper">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png" id="modalAvatar">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png" id="modalAvatar" />
           <label for="inputAvatar" class="avatar-btn">📷</label>
-          <input type="file" id="inputAvatar" accept="image/*">
+          <input type="file" id="inputAvatar" accept="image/*" />
         </div>
 
         <!-- Formulário de edição -->
         <form class="modal-form">
-          <label>Nome <input type="text" id="inputNome" maxlength="30"></label>
-          <label>Usuário <input type="text" id="inputArroba" maxlength="20"></label>
+          <label>Nome <input type="text" id="inputNome" maxlength="30" /></label>
+          <label>Usuário <input type="text" id="inputArroba" maxlength="20" /></label>
 
           <label for="inputBio">Bio</label>
           <textarea id="inputBio" maxlength="160"></textarea>
           <div class="contador-wrapper"><small id="contadorBio">0 / 160</small></div>
 
-          <label>Localização <input type="text" id="inputLocal"></label>
-          <label>Aniversário <input type="date" id="inputAniversario"></label>
+          <label>Localização <input type="text" id="inputLocal" /></label>
+          <label>Aniversário <input type="date" id="inputAniversario" /></label>
         </form>
       </div>
     </div>
