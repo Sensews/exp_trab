@@ -1,5 +1,21 @@
-// Inicia tudo quando a página termina de carregar
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  // Verifica se a sessão está ativa
+  try {
+    const res = await fetch("../backend/verificar_sessao.php");
+    const dados = await res.json();
+
+    if (!dados.logado) {
+      window.location.href = "../frontend/erro.html";
+      return;
+    }
+
+    // Sessão válida, exibe a página
+    document.body.style.display = "block";
+  } catch (e) {
+    window.location.href = "../frontend/erro.html";
+    return;
+  }
+
   // Configurações básicas
   // Define o tamanho do grid e das variáveis principais
   // ====================================================
