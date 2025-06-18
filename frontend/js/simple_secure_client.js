@@ -1,16 +1,16 @@
 /**
- * Cliente de Criptografia Híbrida para Oblivion RPG
- * Implementa RSA + AES para segurança máxima
+ * Cliente de Criptografia Simplificada para Oblivion RPG
+ * Usa AES-256-GCM para compatibilidade total
  */
 
-class SecureClient {
+class SimpleSecureClient {
     constructor() {
-        this.publicKey = null;
+        this.clientKey = null;
         this.initialized = false;
     }
 
     /**
-     * Inicializa o cliente com a chave pública do servidor
+     * Inicializa o cliente com a chave do servidor
      */
     async initialize() {
         if (this.initialized) return true;
@@ -18,18 +18,18 @@ class SecureClient {
         try {
             console.log('Inicializando cliente de criptografia...');
             
-            // Buscar chave pública do servidor
-            const response = await fetch('../backend/crypto_handler.php?action=getPublicKey');
+            // Buscar chave do servidor
+            const response = await fetch('../backend/simple_crypto.php?action=getClientKey');
             if (!response.ok) {
-                throw new Error('Erro ao obter chave pública do servidor');
+                throw new Error('Erro ao obter chave do servidor');
             }
             
             const data = await response.json();
             if (!data.success) {
-                throw new Error(data.error || 'Erro ao obter chave pública');
+                throw new Error(data.error || 'Erro ao obter chave');
             }
 
-            this.publicKey = data.publicKey;
+            this.clientKey = data.clientKey;
             this.initialized = true;
             console.log('Cliente de criptografia inicializado com sucesso');
             return true;
@@ -39,24 +39,23 @@ class SecureClient {
             throw error;
         }
     }    /**
-     * Gera uma chave AES-256 aleatória
+     * Criptografa dados usando AES-256-CBC
      */
-    generateAESKey() {
-        // Gerar 32 bytes (256 bits) para AES-256
-        return CryptoJS.lib.WordArray.random(32).toString(CryptoJS.enc.Hex);
-    }/**
-     * Criptografa dados usando AES-256-CBC (compatível com PHP)
-     */
-    encryptAES(data, key) {
+    encrypt(data) {
         try {
-            // Converter chave para WordArray se necessário
-            const keyWordArray = typeof key === 'string' ? CryptoJS.enc.Utf8.parse(key) : key;
+            if (!this.clientKey) {
+                throw new Error('Cliente não inicializado');
+            }
+
+            // Adicionar timestamp
+            data.timestamp = Date.now();
             
-            // Gerar IV aleatório
-            const iv = CryptoJS.lib.WordArray.random(16);
+            // Usar CryptoJS para criptografia simétrica
+            const key = CryptoJS.enc.Base64.parse(this.clientKey);
+            const iv = CryptoJS.lib.WordArray.random(16); // 128 bits para CBC
             
-            // Criptografar dados
-            const encrypted = CryptoJS.AES.encrypt(JSON.stringify(data), keyWordArray, {
+            // Usar AES-256-CBC
+            const encrypted = CryptoJS.AES.encrypt(JSON.stringify(data), key, {
                 iv: iv,
                 mode: CryptoJS.mode.CBC,
                 padding: CryptoJS.pad.Pkcs7
@@ -68,49 +67,7 @@ class SecureClient {
             return CryptoJS.enc.Base64.stringify(combined);
             
         } catch (error) {
-            console.error('Erro na criptografia AES:', error);
-            throw error;
-        }
-    }
-
-    /**
-     * Criptografa a chave AES usando RSA
-     */
-    encryptRSA(data) {
-        if (!this.publicKey) {
-            throw new Error('Chave pública não foi carregada');
-        }
-
-        const encrypt = new JSEncrypt();
-        encrypt.setPublicKey(this.publicKey);
-        return encrypt.encrypt(data);
-    }
-
-    /**
-     * Criptografa dados usando criptografia híbrida (RSA + AES)
-     */
-    hybridEncrypt(data) {
-        try {
-            // 1. Gerar chave AES aleatória
-            const aesKey = this.generateAESKey();
-            
-            // 2. Criptografar dados com AES
-            const encryptedData = this.encryptAES(data, aesKey);
-            
-            // 3. Criptografar chave AES com RSA
-            const encryptedKey = this.encryptRSA(aesKey);
-            
-            if (!encryptedKey) {
-                throw new Error('Erro ao criptografar chave AES com RSA');
-            }
-
-            return {
-                encryptedData: encryptedData,
-                encryptedKey: encryptedKey
-            };
-
-        } catch (error) {
-            console.error('Erro na criptografia híbrida:', error);
+            console.error('Erro na criptografia:', error);
             throw error;
         }
     }
@@ -124,11 +81,10 @@ class SecureClient {
         }
 
         try {
-            const encrypted = this.hybridEncrypt(data);
+            const encrypted = this.encrypt(data);
             
             const formData = new FormData();
-            formData.append('encrypted_data', encrypted.encryptedData);
-            formData.append('encrypted_key', encrypted.encryptedKey);
+            formData.append('encrypted_data', encrypted);
             formData.append('action', 'decrypt');
 
             const response = await fetch(endpoint, {
@@ -163,12 +119,9 @@ class SecureClient {
      * Registra um novo usuário com criptografia
      */
     async registerUser(userData) {
-        console.log('Iniciando cadastro com criptografia híbrida...');
+        console.log('Iniciando cadastro com criptografia...');
         
         try {
-            // Adicionar timestamp para evitar replay attacks
-            userData.timestamp = Date.now();
-            
             const result = await this.sendEncryptedData('../backend/cadastro.php', userData);
             console.log('Cadastro realizado com sucesso:', result);
             return result;
@@ -183,12 +136,9 @@ class SecureClient {
      * Faz login com criptografia
      */
     async loginUser(credentials) {
-        console.log('Iniciando login com criptografia híbrida...');
+        console.log('Iniciando login com criptografia...');
         
         try {
-            // Adicionar timestamp para evitar replay attacks
-            credentials.timestamp = Date.now();
-            
             const result = await this.sendEncryptedData('../backend/login.php', credentials);
             console.log('Login realizado com sucesso:', result);
             return result;
@@ -201,18 +151,18 @@ class SecureClient {
 }
 
 // Criar instância global
-window.secureClient = new SecureClient();
+window.simpleSecureClient = new SimpleSecureClient();
 
 // Auto-inicializar quando as bibliotecas estiverem carregadas
 document.addEventListener('DOMContentLoaded', () => {
     // Aguardar um pouco para garantir que as bibliotecas de crypto estão carregadas
     setTimeout(async () => {
-        if (typeof CryptoJS !== 'undefined' && typeof JSEncrypt !== 'undefined') {
+        if (typeof CryptoJS !== 'undefined') {
             try {
-                await window.secureClient.initialize();
-                console.log('SecureClient pronto para uso');
+                await window.simpleSecureClient.initialize();
+                console.log('SimpleSecureClient pronto para uso');
             } catch (error) {
-                console.warn('Erro ao auto-inicializar SecureClient:', error);
+                console.warn('Erro ao auto-inicializar SimpleSecureClient:', error);
             }
         }
     }, 1500);

@@ -4,15 +4,11 @@ window.addEventListener('load', () => {
     cryptoScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js';
     document.head.appendChild(cryptoScript);
     
-    const jsEncryptScript = document.createElement('script');
-    jsEncryptScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/3.3.0/jsencrypt.min.js';
-    document.head.appendChild(jsEncryptScript);
-    
     // Aguardar carregamento das bibliotecas e do cliente seguro
     setTimeout(async () => {
-        // Carregar cliente de criptografia
+        // Carregar cliente de criptografia simplificado
         const secureClientScript = document.createElement('script');
-        secureClientScript.src = 'js/secure_client.js';
+        secureClientScript.src = 'js/simple_secure_client.js';
         document.head.appendChild(secureClientScript);
         
         setTimeout(() => {
@@ -122,13 +118,11 @@ function initializeCadastroSecure() {
                 telefone: telefoneInput.value,
                 senha: senhaInput.value,
                 'confirmar-senha': confirmarSenhaInput.value
-            };
-
-            // Tentar envio criptografado primeiro
+            };            // Tentar envio criptografado primeiro
             let response;
             try {
-                response = await secureClient.registerUser(formData);
-                console.log('Cadastro com criptografia híbrida realizado com sucesso');
+                response = await simpleSecureClient.registerUser(formData);
+                console.log('Cadastro com criptografia realizado com sucesso');
             } catch (cryptoError) {
                 console.warn('Erro na criptografia, tentando método tradicional:', cryptoError);
                 
