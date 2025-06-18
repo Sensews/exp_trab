@@ -1,25 +1,28 @@
-// Espera o carregamento do DOM
+// Sistema de chat da party com criptografia híbrida
 document.addEventListener("DOMContentLoaded", async () => {
-  // Verifica se a sessão está ativa
+  console.log("Iniciando sistema de party...");
+  
+  // Verificar sessão
   try {
-    const res = await fetch("../backend/verificar_sessao.php"); // Faz requisição para verificar sessão
-    const dados = await res.json(); // Converte resposta em JSON
-
-    if (!dados.logado) {
-      // Redireciona para página de erro se não estiver logado
+    console.log("Verificando sessão...");
+    const sessaoRes = await fetch("../backend/verificar_sessao.php");
+    const sessaoData = await sessaoRes.json();
+    
+    if (!sessaoData.logado) {
+      console.log("Usuário não logado");
       window.location.href = "../frontend/erro.html";
       return;
     }
-
-    // Mostra o conteúdo da página
+    
+    console.log("Sessão válida, mostrando página...");
     document.body.style.display = "block";
-  } catch (e) {
-    // Em caso de erro na verificação, redireciona para erro
+  } catch (error) {
+    console.error("Erro na verificação de sessão:", error);
     window.location.href = "../frontend/erro.html";
     return;
   }
 
-  // Referências aos elementos do DOM
+  // Elementos DOM
   const nomePartyElem = document.getElementById('nomeParty');
   const tipoUsuarioElem = document.getElementById('tipoUsuario');
   const listaMembrosElem = document.getElementById('listaMembros');
@@ -27,54 +30,78 @@ document.addEventListener("DOMContentLoaded", async () => {
   const formChat = document.getElementById('formChat');
   const inputMensagem = document.getElementById('mensagemInput');
 
-  // Variáveis auxiliares
-  let id_party = null;
-  let tipo_usuario = null;
-  let nome_usuario = null;
+  // Verificar se elementos existem
+  if (!nomePartyElem || !tipoUsuarioElem || !listaMembrosElem || !chatMensagensElem || !formChat || !inputMensagem) {
+    console.error("Elementos DOM não encontrados!");
+    alert("Erro: Elementos da página não encontrados!");
+    return;
+  }
+  console.log("Elementos DOM encontrados");
+  // Aguardar inicialização da criptografia
+  console.log("Aguardando inicialização da criptografia...");
+  if (window.simpleSecureClient) {
+    await window.simpleSecureClient.initialize();
+    console.log("Criptografia inicializada:", window.simpleSecureClient.initialized);
+  } else {
+    console.warn("SimpleSecureClient não encontrado - funcionará sem criptografia");
+  }
 
-  // Função que carrega dados da party
+  // Variáveis globais
+  let currentParty = null;
+  let refreshInterval = null;
+
+  // Obter ID da party da URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const partyIdFromUrl = urlParams.get('id');
+
+  // Carregar dados da party
   async function carregarParty() {
     try {
-      const res = await fetch('../backend/chat_party.php?action=carregar');
-      const data = await res.json();
+      console.log("Carregando dados da party...");
+      
+      let url = '../backend/chat_party.php?action=carregar';
+      if (partyIdFromUrl) {
+        url += `&id=${partyIdFromUrl}`;
+      }
+      
+      const response = await fetch(url);
+      const data = await response.json();
 
       if (!data.success) {
+        console.error("Erro ao carregar party:", data.erro);
         alert(data.erro || "Erro ao carregar party.");
-        return;
+        return false;
       }
 
-      // Extrai informações
-      const party = data.party;
-      const membros = data.membros;
+      // Salvar dados da party
+      currentParty = data.party;
+      
+      // Atualizar interface
+      nomePartyElem.textContent = currentParty.nome || "Party";
+      tipoUsuarioElem.textContent = `Tipo: ${currentParty.tipo_usuario}`;
 
-      // Salva dados localmente
-      id_party = party.id;
-      tipo_usuario = party.tipo_usuario;
-      nome_usuario = party.nome_usuario;
-
-      // Exibe nome da party e tipo do usuário
-      nomePartyElem.textContent = party.nome || "Party";
-      tipoUsuarioElem.textContent = `Tipo: ${tipo_usuario}`;
-
-      // Atualiza lista de membros na tela
-      atualizarMembros(membros);
-    } catch (err) {
-      console.error("Erro ao buscar dados da party:", err);
-      alert("Erro ao buscar dados da party.");
+      // Atualizar membros
+      atualizarMembros(data.membros);
+      
+      console.log("Party carregada:", currentParty);
+      return true;
+    } catch (error) {
+      console.error("Erro ao carregar party:", error);
+      alert("Erro ao carregar dados da party.");
+      return false;
     }
   }
 
-  // Renderiza os membros na tela
+  // Atualizar lista de membros
   function atualizarMembros(membros) {
-    listaMembrosElem.innerHTML = ''; // Limpa lista atual
-
+    listaMembrosElem.innerHTML = '';
+    
     membros.forEach(membro => {
       const li = document.createElement('li');
       li.style.display = 'flex';
       li.style.alignItems = 'center';
       li.style.marginBottom = '8px';
 
-      // Avatar do membro
       const img = document.createElement('img');
       img.src = membro.avatar || "https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png";
       img.alt = membro.arroba;
@@ -83,134 +110,216 @@ document.addEventListener("DOMContentLoaded", async () => {
       img.style.borderRadius = "50%";
       img.style.marginRight = "10px";
 
-      // @arroba do membro
       const span = document.createElement('span');
       span.textContent = `@${membro.arroba}`;
 
       li.appendChild(img);
       li.appendChild(span);
 
-      // Botão de remover (aparece só para mestres, exceto o próprio)
-      if (tipo_usuario === 'mestre' && membro.arroba !== nome_usuario) {
-        const btn = document.createElement('button');
-        btn.textContent = 'Remover';
-        btn.classList.add('btn-remover');
-        btn.style.marginLeft = '10px';
-        btn.onclick = () => removerMembro(membro.arroba);
-        li.appendChild(btn);
+      // Botão de remover (só para mestres)
+      if (currentParty && currentParty.tipo_usuario === 'mestre' && membro.arroba !== currentParty.nome_usuario) {
+        const btnRemover = document.createElement('button');
+        btnRemover.textContent = '×';
+        btnRemover.style.marginLeft = 'auto';
+        btnRemover.style.background = '#dc3545';
+        btnRemover.style.color = 'white';
+        btnRemover.style.border = 'none';
+        btnRemover.style.borderRadius = '50%';
+        btnRemover.style.width = '20px';
+        btnRemover.style.height = '20px';
+        btnRemover.style.cursor = 'pointer';
+        btnRemover.title = 'Remover membro';
+        
+        btnRemover.addEventListener('click', () => removerMembro(membro.arroba));
+        li.appendChild(btnRemover);
       }
 
       listaMembrosElem.appendChild(li);
     });
   }
 
-  // Remove membro da party (usado apenas por mestre)
-  async function removerMembro(arroba) {
-    const confirmacao = confirm(`Deseja remover @${arroba} da party?`);
-    if (!confirmacao) return;
-
-    try {
-      const res = await fetch('../backend/chat_party.php?action=remover', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ arroba }) // Envia arroba para backend
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        carregarParty(); // Atualiza lista após remoção
-      } else {
-        alert(data.erro || "Erro ao remover membro.");
-      }
-    } catch (error) {
-      console.error("Erro ao remover membro:", error);
-      alert("Erro ao comunicar com o servidor.");
-    }
-  }
-
-  // Carrega mensagens do chat da party
+  // Carregar mensagens do chat
   async function carregarMensagens() {
     try {
-      const res = await fetch('../backend/chat_party.php?action=mensagens');
-      const data = await res.json();
-
-      if (!Array.isArray(data)) {
-        console.warn("Resposta inesperada ao carregar mensagens:", data);
-        return;
+      let url = '../backend/chat_party.php?action=mensagens';
+      if (partyIdFromUrl) {
+        url += `&id=${partyIdFromUrl}`;
       }
+      
+      const response = await fetch(url);
+      const mensagens = await response.json();
 
-      // Limpa área de mensagens
       chatMensagensElem.innerHTML = '';
 
-      // Cria elementos HTML para cada mensagem
-      data.forEach(msg => {
-        const div = document.createElement('div');
-        div.classList.add("mensagem");
-
-        const linha = document.createElement('div');
-        linha.classList.add("linha");
-
-        const autor = document.createElement('span');
-        autor.classList.add("autor");
-        autor.textContent = `@${msg.arroba || msg.autor || 'Anônimo'}: `;
-
-        const conteudo = document.createElement('span');
-        conteudo.classList.add("conteudo");
-        conteudo.textContent = msg.mensagem;
-
-        linha.appendChild(autor);
-        linha.appendChild(conteudo);
-
-        const hora = document.createElement('div');
-        hora.classList.add("hora");
-        hora.textContent = new Date(msg.criado_em).toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit',
+      if (Array.isArray(mensagens)) {
+        mensagens.forEach(msg => {
+          const div = document.createElement('div');
+          div.className = 'mensagem';
+          div.innerHTML = `
+            <div class="mensagem-header">
+              <strong>@${msg.arroba}</strong>
+              <span class="mensagem-tempo">${new Date(msg.criado_em).toLocaleTimeString()}</span>
+            </div>
+            <div class="mensagem-conteudo">${msg.mensagem}</div>
+          `;
+          chatMensagensElem.appendChild(div);
+        });
+        
+        // Scroll para o final
+        chatMensagensElem.scrollTop = chatMensagensElem.scrollHeight;
+      }
+    } catch (error) {
+      console.error("Erro ao carregar mensagens:", error);
+    }
+  }  // Enviar mensagem
+  async function enviarMensagem(mensagem) {
+    try {
+      console.log("=== ENVIANDO MENSAGEM ===");
+      console.log("Mensagem:", mensagem);
+      console.log("SimpleSecureClient disponível:", !!window.simpleSecureClient);
+      console.log("SimpleSecureClient inicializado:", window.simpleSecureClient?.initialized);
+      
+      let url = '../backend/chat_party.php?action=enviar';
+      if (partyIdFromUrl) {
+        url += `&id=${partyIdFromUrl}`;
+      }
+      console.log("URL:", url);
+        // Usar criptografia híbrida se disponível
+      if (window.simpleSecureClient && window.simpleSecureClient.initialized) {
+        console.log("Usando criptografia híbrida");
+        const messageData = { mensagem };
+        console.log("Dados a serem criptografados:", messageData);
+        
+        // Criptografar manualmente
+        const encryptedData = window.simpleSecureClient.encrypt(messageData);
+        console.log("Dados criptografados:", encryptedData);
+        
+        const requestBody = {
+          encrypted_data: encryptedData
+        };
+        
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(requestBody)
         });
 
-        div.appendChild(linha);
-        div.appendChild(hora);
-        chatMensagensElem.appendChild(div);
-      });
-
-      // Rola o chat automaticamente para o fim
-      chatMensagensElem.scrollTop = chatMensagensElem.scrollHeight;
-
-    } catch (err) {
-      console.error("Erro ao carregar mensagens:", err);
-    }
-  }
-
-  // Envio de mensagem no formulário do chat
-  formChat.addEventListener('submit', async (e) => {
-    e.preventDefault(); // Impede recarregamento da página
-    const texto = inputMensagem.value.trim(); // Pega texto digitado
-    if (!texto) return; // Ignora mensagens vazias
-
-    try {
-      const res = await fetch('../backend/chat_party.php?action=enviar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mensagem: texto }) // Envia mensagem
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        inputMensagem.value = ''; // Limpa input
-        carregarMensagens(); // Atualiza chat
+        const result = await response.json();
+        console.log("Resultado da criptografia:", result);
+        
+        if (result.success) {
+          inputMensagem.value = '';
+          carregarMensagens(); // Recarregar mensagens
+        } else {
+          console.error("Erro no resultado:", result);
+          alert(result.erro || 'Erro ao enviar mensagem');
+        }
       } else {
-        alert(data.erro || "Erro ao enviar mensagem.");
+        console.log("Fallback: enviando sem criptografia");
+        // Fallback sem criptografia
+        const requestData = { mensagem };
+        console.log("Dados fallback:", requestData);
+        
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(requestData)
+        });
+
+        const result = await response.json();
+        console.log("Resultado fallback:", result);
+
+        if (result.success) {
+          inputMensagem.value = '';
+          carregarMensagens(); // Recarregar mensagens
+        } else {
+          alert(result.erro || 'Erro ao enviar mensagem');
+        }
       }
     } catch (error) {
       console.error("Erro ao enviar mensagem:", error);
-      alert("Erro ao enviar a mensagem.");
+      alert("Erro ao enviar mensagem: " + error.message);
+    }
+  }
+
+  // Remover membro
+  async function removerMembro(arroba) {
+    if (!confirm(`Deseja remover @${arroba} da party?`)) return;
+
+    try {
+      // Preparar dados para criptografia
+      const dataToEncrypt = { arroba };
+      
+      // Criptografar usando a biblioteca de criptografia
+      let requestBody;
+      if (typeof window.SimpleSecureClient !== 'undefined') {
+        requestBody = JSON.stringify({
+          encrypted_data: await window.SimpleSecureClient.encrypt(JSON.stringify(dataToEncrypt))
+        });
+      } else {
+        // Fallback sem criptografia
+        requestBody = JSON.stringify(dataToEncrypt);
+      }
+
+      let url = '../backend/chat_party.php?action=remover';
+      if (partyIdFromUrl) {
+        url += `&id=${partyIdFromUrl}`;
+      }
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: requestBody
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        alert('Membro removido com sucesso!');
+        carregarParty(); // Recarregar dados da party
+      } else {
+        alert(result.erro || 'Erro ao remover membro');
+      }
+    } catch (error) {
+      console.error("Erro ao remover membro:", error);
+      alert("Erro ao remover membro: " + error.message);
+    }
+  }
+
+  // Event listener para o formulário de chat
+  formChat.addEventListener('submit', (e) => {
+    e.preventDefault();
+    
+    const mensagem = inputMensagem.value.trim();
+    if (mensagem) {
+      enviarMensagem(mensagem);
     }
   });
 
-  // Inicia carregamento inicial da party e das mensagens
-  carregarParty();
-  carregarMensagens();
+  // Inicialização
+  async function inicializar() {
+    console.log("Inicializando sistema...");
+    
+    const partyCarregada = await carregarParty();
+    if (partyCarregada) {
+      await carregarMensagens();
+      
+      // Atualizar mensagens a cada 3 segundos
+      refreshInterval = setInterval(carregarMensagens, 3000);
+      
+      console.log("Sistema inicializado com sucesso!");
+    } else {
+      console.error("Falha ao inicializar sistema");
+    }
+  }
 
-  // Atualiza mensagens a cada 5 segundos
-  setInterval(carregarMensagens, 5000);
+  // Cleanup ao sair da página
+  window.addEventListener('beforeunload', () => {
+    if (refreshInterval) {
+      clearInterval(refreshInterval);
+    }
+  });
+
+  // Inicializar o sistema
+  inicializar();
 });

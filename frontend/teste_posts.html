@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste - Posts com Criptografia</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #E0E0E0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #00ffaa;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            background-color: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 5px;
+            color: #E0E0E0;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #00ffaa;
+            color: #000;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #00cc88;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #2a2a2a;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Teste de Posts com Criptografia</h1>
+        
+        <div class="form-group">
+            <label for="texto">Texto do Post:</label>
+            <textarea id="texto" placeholder="Digite o texto do seu post...">Teste de post com criptografia!</textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="imagem">Imagem (opcional):</label>
+            <input type="file" id="imagem" accept="image/*">
+        </div>
+        
+        <button onclick="testarPost()">Criar Post (Criptografado)</button>
+        <button onclick="testarPostSemCripto()">Criar Post (Sem Criptografia)</button>
+        
+        <div id="resultado" class="result"></div>
+    </div>
+
+    <!-- Bibliotecas de criptografia -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="js/simple_secure_client.js"></script>
+
+    <script>
+        async function testarPost() {
+            const resultado = document.getElementById('resultado');
+            resultado.innerHTML = 'Testando criação de post com criptografia...';
+            
+            try {
+                // Aguardar inicialização do cliente
+                if (!window.simpleSecureClient.initialized) {
+                    await window.simpleSecureClient.initialize();
+                }
+                
+                const texto = document.getElementById('texto').value;
+                const imagemInput = document.getElementById('imagem');
+                const imagemFile = imagemInput.files[0] || null;
+                
+                const postData = { texto: texto };
+                
+                const response = await window.simpleSecureClient.createPost(postData, imagemFile);
+                
+                resultado.innerHTML = `
+                    <h3>✅ Post criado com sucesso!</h3>
+                    <pre>${JSON.stringify(response, null, 2)}</pre>
+                `;
+                
+            } catch (error) {
+                resultado.innerHTML = `
+                    <h3>❌ Erro ao criar post:</h3>
+                    <p style="color: #ff6b6b;">${error.message}</p>
+                `;
+                console.error('Erro completo:', error);
+            }
+        }
+        
+        async function testarPostSemCripto() {
+            const resultado = document.getElementById('resultado');
+            resultado.innerHTML = 'Testando criação de post sem criptografia...';
+            
+            try {
+                const texto = document.getElementById('texto').value;
+                const imagemInput = document.getElementById('imagem');
+                const imagemFile = imagemInput.files[0] || null;
+                
+                const formData = new FormData();
+                formData.append('action', 'criarPost');
+                formData.append('texto', texto);
+                if (imagemFile) {
+                    formData.append('imagem', imagemFile);
+                }
+                
+                const response = await fetch('../backend/teste_post.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                resultado.innerHTML = `
+                    <h3>✅ Post criado sem criptografia!</h3>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+                
+            } catch (error) {
+                resultado.innerHTML = `
+                    <h3>❌ Erro ao criar post:</h3>
+                    <p style="color: #ff6b6b;">${error.message}</p>
+                `;
+                console.error('Erro completo:', error);
+            }
+        }
+        
+        // Auto-inicializar quando a página carregar
+        window.addEventListener('load', async () => {
+            setTimeout(async () => {
+                if (typeof CryptoJS !== 'undefined' && window.simpleSecureClient) {
+                    try {
+                        await window.simpleSecureClient.initialize();
+                        console.log('Cliente de criptografia inicializado com sucesso');
+                    } catch (error) {
+                        console.error('Erro ao inicializar cliente:', error);
+                    }
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

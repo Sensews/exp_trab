@@ -1,6 +1,10 @@
 <?php
 header('Content-Type: application/json; charset=utf-8');
 
+// Desabilita a saída de erros para manter JSON limpo
+error_reporting(0);
+ini_set('display_errors', 0);
+
 // Ativa relatórios de erro no estilo de exceções para o MySQLi
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
@@ -9,6 +13,7 @@ session_start();
 
 require_once("conexao.php");
 require_once("time.php");
+require_once("simple_crypto.php");
 
 // Verifica se o usuário está autenticado
 if (!isset($_SESSION['id_perfil'])) {
@@ -20,9 +25,43 @@ if (!isset($_SESSION['id_perfil'])) {
 // Recupera o ID do perfil da sessão
 $id_perfil = $_SESSION['id_perfil'];
 
-// Captura os dados enviados via POST
-$codigo = $_POST['codigo'] ?? null;
-$senha = $_POST['senha'] ?? null;
+// Capturar dados de entrada
+$input_data = file_get_contents("php://input");
+$json = json_decode($input_data, true);
+
+// Debug temporário
+error_log("ENTRAR PARTY DEBUG - Input raw: " . $input_data);
+error_log("ENTRAR PARTY DEBUG - JSON decoded: " . json_encode($json));
+
+// Verifica se há dados criptografados
+if (isset($json['encrypted_data'])) {
+    error_log("ENTRAR PARTY DEBUG - Encrypted data found");
+    // Descriptografar dados
+    try {
+        $crypto = new SimpleCrypto();
+        $decrypted_data = $crypto->decrypt($json['encrypted_data']);
+        error_log("ENTRAR PARTY DEBUG - Decrypted data: " . json_encode($decrypted_data));
+        
+        if (!$decrypted_data) {
+            throw new Exception("Dados inválidos após descriptografia");
+        }
+        
+        $codigo = $decrypted_data['codigo'] ?? null;
+        $senha = $decrypted_data['senha'] ?? null;
+        error_log("ENTRAR PARTY DEBUG - Codigo: '$codigo', Senha: '$senha'");
+        
+    } catch (Exception $e) {
+        error_log("ENTRAR PARTY DEBUG - Decrypt error: " . $e->getMessage());
+        echo json_encode(["sucesso" => false, "erro" => "Erro na descriptografia: " . $e->getMessage()]);
+        exit;
+    }
+} else {
+    error_log("ENTRAR PARTY DEBUG - No encrypted data, using fallback");
+    // Fallback: dados não criptografados
+    $codigo = $json['codigo'] ?? null;
+    $senha = $json['senha'] ?? null;
+    error_log("ENTRAR PARTY DEBUG - Fallback - Codigo: '$codigo', Senha: '$senha'");
+}
 
 // Validação básica dos campos obrigatórios
 if (!$codigo || !$senha) {

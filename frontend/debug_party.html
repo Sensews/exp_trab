@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Party - Debug</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px;
+            background: #1a1a1a;
+            color: white;
+        }
+        .debug { 
+            background: #333; 
+            padding: 10px; 
+            margin: 10px 0; 
+            border-radius: 5px;
+        }
+        .error { background: #cc3333; }
+        .success { background: #33cc33; }
+    </style>
+</head>
+<body>
+    <h1>Debug Party System</h1>
+    <div id="logs"></div>
+
+    <script>
+        const logs = document.getElementById('logs');
+        
+        function addLog(msg, type = 'debug') {
+            const div = document.createElement('div');
+            div.className = `debug ${type}`;
+            div.innerHTML = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            logs.appendChild(div);
+            console.log(msg);
+        }
+
+        async function testSystem() {
+            addLog('Iniciando testes...');
+
+            // 1. Testar verificação de sessão
+            try {
+                addLog('Testando verificação de sessão...');
+                const sessaoRes = await fetch('../backend/verificar_sessao.php');
+                const sessaoData = await sessaoRes.json();
+                addLog(`Sessão: ${JSON.stringify(sessaoData)}`, sessaoData.logado ? 'success' : 'error');
+                
+                if (!sessaoData.logado) {
+                    addLog('Usuário não está logado!', 'error');
+                    return;
+                }
+            } catch (error) {
+                addLog(`Erro na verificação de sessão: ${error.message}`, 'error');
+                return;
+            }
+
+            // 2. Testar carregamento da party
+            try {
+                addLog('Testando carregamento da party...');
+                const partyRes = await fetch('../backend/chat_party.php?action=carregar');
+                const partyData = await partyRes.json();
+                addLog(`Party: ${JSON.stringify(partyData)}`, partyData.success ? 'success' : 'error');
+            } catch (error) {
+                addLog(`Erro no carregamento da party: ${error.message}`, 'error');
+            }
+
+            // 3. Testar carregamento de mensagens
+            try {
+                addLog('Testando carregamento de mensagens...');
+                const msgRes = await fetch('../backend/chat_party.php?action=mensagens');
+                const msgData = await msgRes.json();
+                addLog(`Mensagens: ${Array.isArray(msgData) ? msgData.length + ' mensagens' : JSON.stringify(msgData)}`, 'success');
+            } catch (error) {
+                addLog(`Erro no carregamento de mensagens: ${error.message}`, 'error');
+            }
+
+            addLog('Testes concluídos!', 'success');
+        }
+
+        // Executar testes ao carregar a página
+        testSystem();
+    </script>
+</body>
+</html>

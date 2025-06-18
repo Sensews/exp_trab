@@ -46,38 +46,66 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const nome = document.getElementById('nomeParty').value.trim();
     const senha = document.getElementById('senhaParty').value.trim();
-    const limite = document.getElementById('limiteParty')?.value ?? 5;
-
-    if (!nome || !senha) {
+    const limite = document.getElementById('limiteParty')?.value ?? 5;    if (!nome || !senha) {
       alert('Preencha todos os campos obrigatórios.');
       return;
-    }
+    }    try {
+        let resultado;
+        
+        // Tentar usar criptografia primeiro
+        if (window.simpleSecureClient && window.simpleSecureClient.initialized) {
+            const partyData = {
+                nome: nome,
+                senha: senha,
+                limite: limite
+            };
+            
+            // Criptografar manualmente
+            const encryptedData = window.simpleSecureClient.encrypt(partyData);
+            
+            const requestBody = {
+                encrypted_data: encryptedData
+            };
+            
+            const response = await fetch('../backend/criar_party.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody)
+            });
 
-    const formData = new FormData();
-    formData.append('nome', nome);
-    formData.append('senha', senha);
-    formData.append('limite', limite);
-    formData.append('id_perfil', id_perfil);
+            const text = await response.text();
+            try {
+                resultado = JSON.parse(text);
+            } catch (e) {
+                console.error('Erro ao parsear JSON:', text);
+                throw new Error('Resposta inválida do servidor');
+            }
+        } else {
+            // Fallback: método não criptografado
+            const requestData = {
+                nome: nome,
+                senha: senha,
+                limite: limite
+            };
 
-    try {
-      const response = await fetch('../backend/criar_party.php', {
-        method: 'POST',
-        body: formData
-      });
+            const response = await fetch('../backend/criar_party.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestData)
+            });
 
-      const text = await response.text();
-      let resultado;
+            const text = await response.text();
+            try {
+                resultado = JSON.parse(text);
+            } catch (err) {
+                console.error('Resposta inválida do servidor:', text);
+                alert('Erro: resposta inválida do servidor.');
+                return;
+            }
+        }
 
-      try {
-        resultado = JSON.parse(text);
-      } catch (err) {
-        console.error('Resposta inválida do servidor:', text);
-        alert('Erro: resposta inválida do servidor.');
-        return;
-      }
-
-      if (resultado.sucesso) {
-        idPartyCriada = resultado.id_party;
+        if (resultado.sucesso) {
+            idPartyCriada = resultado.id_party;
         btnIrParaParty.style.display = 'inline-block';
         btnIrParaParty.dataset.partyId = idPartyCriada;
 
