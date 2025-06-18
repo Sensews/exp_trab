@@ -7,11 +7,14 @@ if (session_status() === PHP_SESSION_NONE) {
 // Importa script de controle de tempo (para expiração da sessão)
 require_once("time.php");
 
+// Importa o handler de criptografia
+require_once("simple_crypto.php");
+
 // Define o tipo da resposta como JSON
 header('Content-Type: application/json');
 
-// Verifica se o usuário está logado
-if (!isset($_SESSION["id_usuario"])) {
+// Verifica se o usuário está logado (verificação compatível com time.php)
+if (!isset($_SESSION["id_perfil"]) || !isset($_SESSION["id_usuario"])) {
     echo json_encode(["logado" => false]);
     exit;
 }
@@ -49,15 +52,43 @@ try {
         header("Content-Length: " . strlen($response));
         echo $response;
         exit;
-    }
-
-    // === SALVAR PERFIL ===
+    }    // === SALVAR PERFIL ===
     if ($action === "salvar") {
-        // Lê o corpo da requisição JSON
+        // Criar instância do SimpleCrypto
+        $crypto = new SimpleCrypto();
+        
+        // Lê o corpo da requisição
         $input = file_get_contents("php://input");
-        $data = json_decode($input, true);
+        $data = null;
+        
+        // Primeiro, tentar descriptografar dados (se criptografados)
+        if (isset($_POST['encrypted_data'])) {
+            // Dados criptografados via FormData
+            try {
+                $data = $crypto->decrypt($_POST['encrypted_data']);
+                
+                // Validar timestamp se presente
+                if (isset($data['timestamp'])) {
+                    if (!$crypto->validateTimestamp($data['timestamp'])) {
+                        throw new Exception('Timestamp inválido ou expirado');
+                    }
+                    unset($data['timestamp']); // Remove timestamp dos dados
+                }
+            } catch (Exception $e) {
+                $response = json_encode([
+                    "status" => "erro",
+                    "msg" => "Erro na descriptografia: " . $e->getMessage()
+                ]);
+                header("Content-Length: " . strlen($response));
+                echo $response;
+                exit;
+            }
+        } else {
+            // Dados não criptografados (fallback) - JSON direto
+            $data = json_decode($input, true);
+        }
 
-        // Verifica se o JSON é válido
+        // Verifica se os dados são válidos
         if (!$data) {
             $response = json_encode([
                 "status" => "erro",

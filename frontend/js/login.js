@@ -15,6 +15,13 @@ campoUsuario?.addEventListener("input", function () {
 });
 
 document.addEventListener("DOMContentLoaded", function () {
+  // Aguardar carregamento das bibliotecas
+  setTimeout(() => {
+    initializeLogin();
+  }, 500);
+});
+
+function initializeLogin() {
   const form = document.getElementById("form-login");
 
   if (!form) {
@@ -22,44 +29,98 @@ document.addEventListener("DOMContentLoaded", function () {
     return;
   }
 
-  form.addEventListener("submit", function (e) {
+  form.addEventListener("submit", async function (e) {
     e.preventDefault();
-    const dados = new FormData(form);
+    
+    const submitButton = form.querySelector('button[type="submit"]');
+    const originalText = submitButton.textContent;
+    
+    // Desabilitar botão durante o envio
+    submitButton.disabled = true;
+    submitButton.textContent = 'Entrando...';
 
-    console.log("Enviando login:", {
-      usuario: dados.get("usuario"),
-      senha: dados.get("senha")
-    });
+    try {
+      const dados = new FormData(form);
+      const loginData = {
+        usuario: dados.get("usuario"),
+        senha: dados.get("senha")
+      };
 
-    fetch("../backend/login.php", {
-      method: "POST",
-      body: dados,
-    })
-      .then(async (response) => {
-        const contentType = response.headers.get("content-type");
-        const text = await response.text();
+      let response;
+      let encryptedMode = false;
 
-        // Se a resposta não for JSON, loga o conteúdo bruto e lança erro
+      // Verificar se o cliente de criptografia está disponível
+      if (typeof window.simpleSecureClient !== 'undefined') {
+        try {
+          // Tentar login criptografado
+          const encryptedData = window.simpleSecureClient.encrypt(loginData);
+          
+          const formData = new FormData();
+          formData.append('encrypted_data', encryptedData);
+          
+          const loginResponse = await fetch("../backend/login.php", {
+            method: "POST",
+            body: formData,
+          });
+
+          const contentType = loginResponse.headers.get("content-type");
+          const text = await loginResponse.text();
+
+          if (!contentType || !contentType.includes("application/json")) {
+            throw new Error("Resposta inválida do servidor");
+          }
+
+          response = JSON.parse(text);
+          encryptedMode = true;
+          
+        } catch (cryptoError) {
+          console.warn('Erro na criptografia, tentando método tradicional:', cryptoError);
+          encryptedMode = false;
+        }
+      }
+
+      // Fallback para método tradicional se criptografia falhou
+      if (!encryptedMode) {
+        const traditionalResponse = await fetch("../backend/login.php", {
+          method: "POST",
+          body: dados,
+        });
+
+        const contentType = traditionalResponse.headers.get("content-type");
+        const text = await traditionalResponse.text();
+
         if (!contentType || !contentType.includes("application/json")) {
-          console.error("🛑 Conteúdo retornado pelo servidor (não é JSON):\n" + text);
           throw new Error("Resposta inválida do servidor");
         }
 
-        // Se tudo certo, parseia o JSON
-        return JSON.parse(text);
-      })
-      .then((data) => {
-        if (data.status === "ok") {
-          localStorage.setItem("nome", data.nome);
-          localStorage.setItem("email", data.email);
-          localStorage.setItem("logado", "true");
-          window.location.href = "main.html";
-        } else {
-          alert(data.mensagem);
-        }
-      })
-      .catch((error) => {
-        console.error("Erro no login:", error.message);
-      });
+        response = JSON.parse(text);
+      }
+
+      if (response.status === "ok") {
+        // Redirecionar para página principal
+        window.location.href = "main.html";
+      } else {
+        throw new Error(response.mensagem || "Erro no login");
+      }
+
+    } catch (error) {
+      console.error("❌ Erro no login:", error);
+      
+      // Mostrar erro mais amigável ao usuário
+      let errorMessage = "Erro no login. Tente novamente.";
+      if (error.message.includes("Usuário não encontrado")) {
+        errorMessage = "Usuário não encontrado.";
+      } else if (error.message.includes("Senha incorreta")) {
+        errorMessage = "Senha incorreta.";
+      } else if (error.message.includes("Preencha todos os campos")) {
+        errorMessage = "Preencha todos os campos.";
+      }
+      
+      alert(errorMessage);
+    } finally {
+      // Reabilitar botão
+      submitButton.disabled = false;
+      submitButton.textContent = originalText;
+    }
   });
-});
+}

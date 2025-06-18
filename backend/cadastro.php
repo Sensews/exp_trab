@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/vendor/autoload.php';
 include_once __DIR__ . '/limpar_pendentes.php';
+require_once 'simple_crypto.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
@@ -10,6 +11,41 @@ $dotenv->load();
 
 require_once 'env_decoder.php';
 
+// Definir header JSON para requisições criptografadas
+if (isset($_POST['encrypted_data'])) {
+    header('Content-Type: application/json');
+}
+
+// Função para processar dados (criptografados ou não)
+function processarDados() {
+    // Verificar se é uma requisição criptografada
+    if (isset($_POST['encrypted_data']) && isset($_POST['action']) && $_POST['action'] === 'decrypt') {
+        try {
+            error_log('Processando dados criptografados...');
+            error_log('Dados recebidos: ' . substr($_POST['encrypted_data'], 0, 50) . '...');
+            
+            $cryptoHandler = new SimpleCryptoHandler();
+            $decryptedData = $cryptoHandler->decrypt($_POST['encrypted_data']);
+            
+            // Validar timestamp
+            if (isset($decryptedData['timestamp'])) {
+                if (!$cryptoHandler->validateTimestamp($decryptedData['timestamp'])) {
+                    throw new Exception('Timestamp inválido - possível replay attack');
+                }
+            }
+            
+            error_log('Dados descriptografados com sucesso: ' . json_encode(array_keys($decryptedData)));
+            return $decryptedData;
+        } catch (Exception $e) {
+            error_log('Erro na descriptografia do cadastro: ' . $e->getMessage());
+            // Fallback para dados não criptografados
+            return $_POST;
+        }
+    }
+    
+    // Dados não criptografados (método tradicional)
+    return $_POST;
+}
 
 $conn = new mysqli("localhost", "root", "", "oblivion");
 if ($conn->connect_error) {
@@ -17,15 +53,39 @@ if ($conn->connect_error) {
     die("Erro na conexão com o banco de dados.");
 }
 
-$nome = trim($_POST['nome'] ?? '');
-$email = trim($_POST['email'] ?? '');
-$telefone = trim($_POST['telefone'] ?? '');
-$senha = $_POST['senha'] ?? '';
-$confirma = $_POST['confirmar-senha'] ?? '';
+// Processar dados (criptografados ou não)
+$dados = processarDados();
+
+// Log para debug
+error_log("Cadastro iniciado - Método: " . (isset($_POST['encrypted_data']) ? 'Criptografado' : 'Tradicional'));
+
+$nome = trim($dados['nome'] ?? '');
+$email = trim($dados['email'] ?? '');
+$telefone = trim($dados['telefone'] ?? '');
+$senha = $dados['senha'] ?? '';
+$confirma = $dados['confirmar-senha'] ?? '';
+
+// Validações básicas
+if (empty($nome) || empty($email) || empty($telefone) || empty($senha)) {
+    $erro = "Todos os campos são obrigatórios.";
+    if (isset($_POST['encrypted_data'])) {
+        echo json_encode(['success' => false, 'error' => $erro]);
+    } else {
+        http_response_code(400);
+        die($erro);
+    }
+    exit;
+}
 
 if ($senha !== $confirma) {
-    http_response_code(400);
-    die("As senhas não coincidem.");
+    $erro = "As senhas não coincidem.";
+    if (isset($_POST['encrypted_data'])) {
+        echo json_encode(['success' => false, 'error' => $erro]);
+    } else {
+        http_response_code(400);
+        die($erro);
+    }
+    exit;
 }
 
 function verificar_forca_senha($senha) {
@@ -46,8 +106,14 @@ function verificar_forca_senha($senha) {
 $forca_senha = verificar_forca_senha($senha);
 
 if ($forca_senha !== 'Muito forte') {
-    http_response_code(400);
-    die("A senha não é forte o suficiente.");
+    $erro = "A senha não é forte o suficiente.";
+    if (isset($_POST['encrypted_data'])) {
+        echo json_encode(['success' => false, 'error' => $erro]);
+    } else {
+        http_response_code(400);
+        die($erro);
+    }
+    exit;
 }
 
 $stmt = $conn->prepare("SELECT id FROM usuarios WHERE email = ?");
@@ -55,8 +121,14 @@ $stmt->bind_param("s", $email);
 $stmt->execute();
 $stmt->store_result();
 if ($stmt->num_rows > 0) {
-    http_response_code(400);
-    die("E-mail já cadastrado.");
+    $erro = "E-mail já cadastrado.";
+    if (isset($_POST['encrypted_data'])) {
+        echo json_encode(['success' => false, 'error' => $erro]);
+    } else {
+        http_response_code(400);
+        die($erro);
+    }
+    exit;
 }
 $stmt->close();
 
@@ -65,8 +137,14 @@ $stmt->bind_param("s", $telefone);
 $stmt->execute();
 $stmt->store_result();
 if ($stmt->num_rows > 0) {
-    http_response_code(400);
-    die("Telefone já cadastrado.");
+    $erro = "Telefone já cadastrado.";
+    if (isset($_POST['encrypted_data'])) {
+        echo json_encode(['success' => false, 'error' => $erro]);
+    } else {
+        http_response_code(400);
+        die($erro);
+    }
+    exit;
 }
 $stmt->close();
 
@@ -139,20 +217,49 @@ if ($stmt->execute()) {
           </div>
         </body>
         </html>
-        ";
-
-        $mail->send();
-        header("Location: ../frontend/cadastro.html?sucesso=1");
-        exit();
-
-    } catch (Exception $e) {
-        http_response_code(500);
-        die("Erro ao enviar o e-mail de verificação: {$mail->ErrorInfo}");
+        ";        $mail->send();
+        
+        // Log de sucesso
+        error_log("Cadastro realizado com sucesso para: $email");        // Verificar se é uma requisição criptografada
+        if (isset($_POST['encrypted_data'])) {
+            // Resposta JSON para requisições criptografadas
+            echo json_encode([
+                'success' => true,
+                'message' => 'Cadastro realizado com sucesso! Verifique seu e-mail.'
+            ]);
+            exit();
+        } else {
+            // Redirecionamento para requisições tradicionais
+            header("Location: ../frontend/cadastro.html?sucesso=1");
+            exit();
+        }    } catch (Exception $e) {
+        error_log("Erro no envio de email: " . $e->getMessage());
+        
+        if (isset($_POST['encrypted_data'])) {
+            echo json_encode([
+                'success' => false,
+                'error' => "Erro ao enviar o e-mail de verificação: {$mail->ErrorInfo}"
+            ]);
+            exit();
+        } else {
+            http_response_code(500);
+            die("Erro ao enviar o e-mail de verificação: {$mail->ErrorInfo}");
+        }
     }
 
 } else {
-    http_response_code(500);
-    die("Erro ao cadastrar. Tente novamente.");
+    error_log("Erro ao cadastrar usuário no banco de dados");
+    
+    if (isset($_POST['encrypted_data'])) {
+        echo json_encode([
+            'success' => false,
+            'error' => 'Erro ao cadastrar. Tente novamente.'
+        ]);
+        exit();
+    } else {
+        http_response_code(500);
+        die("Erro ao cadastrar. Tente novamente.");
+    }
 }
 
 $conn->close();
