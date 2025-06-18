@@ -36,8 +36,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     alert("Erro: Elementos da página não encontrados!");
     return;
   }
-
   console.log("Elementos DOM encontrados");
+  // Aguardar inicialização da criptografia
+  console.log("Aguardando inicialização da criptografia...");
+  if (window.simpleSecureClient) {
+    await window.simpleSecureClient.initialize();
+    console.log("Criptografia inicializada:", window.simpleSecureClient.initialized);
+  } else {
+    console.warn("SimpleSecureClient não encontrado - funcionará sem criptografia");
+  }
 
   // Variáveis globais
   let currentParty = null;
@@ -165,42 +172,45 @@ document.addEventListener("DOMContentLoaded", async () => {
       console.error("Erro ao carregar mensagens:", error);
     }
   }
-
   // Enviar mensagem
   async function enviarMensagem(mensagem) {
     try {
-      // Preparar dados para criptografia
-      const dataToEncrypt = { mensagem };
+      console.log("Enviando mensagem:", mensagem);
       
-      // Criptografar usando a biblioteca de criptografia
-      let requestBody;
-      if (typeof window.SimpleSecureClient !== 'undefined') {
-        requestBody = JSON.stringify({
-          encrypted_data: await window.SimpleSecureClient.encrypt(JSON.stringify(dataToEncrypt))
-        });
-      } else {
-        // Fallback sem criptografia
-        requestBody = JSON.stringify(dataToEncrypt);
-      }
-
       let url = '../backend/chat_party.php?action=enviar';
       if (partyIdFromUrl) {
         url += `&id=${partyIdFromUrl}`;
       }
-
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: requestBody
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        inputMensagem.value = '';
-        carregarMensagens(); // Recarregar mensagens
+      
+      // Usar criptografia híbrida se disponível
+      if (window.simpleSecureClient && window.simpleSecureClient.initialized) {
+        console.log("Usando criptografia híbrida");
+        const messageData = { mensagem };
+        const result = await window.simpleSecureClient.sendEncryptedData(url, messageData);
+        
+        if (result.success) {
+          inputMensagem.value = '';
+          carregarMensagens(); // Recarregar mensagens
+        } else {
+          alert(result.erro || 'Erro ao enviar mensagem');
+        }
       } else {
-        alert(result.erro || 'Erro ao enviar mensagem');
+        console.log("Fallback: enviando sem criptografia");
+        // Fallback sem criptografia
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mensagem })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          inputMensagem.value = '';
+          carregarMensagens(); // Recarregar mensagens
+        } else {
+          alert(result.erro || 'Erro ao enviar mensagem');
+        }
       }
     } catch (error) {
       console.error("Erro ao enviar mensagem:", error);
