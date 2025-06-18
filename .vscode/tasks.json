@@ -1,0 +1,12 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Testar Sistema de Criptografia",
+			"type": "shell",
+			"command": "php -l backend/anotacoes.php && php -l backend/perfil.php && php -l backend/ficha.php",
+			"group": "test",
+			"isBackground": false
+		}
+	]
+}
