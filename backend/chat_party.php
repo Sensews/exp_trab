@@ -159,7 +159,31 @@ if ($action === "mensagens") {
     $stmt = $conexao->prepare($sql);
     $stmt->bind_param("i", $id_party_atual);
     $stmt->execute();
-    $mensagens = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $mensagens_raw = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+
+    // Descriptografar mensagens
+    $crypto = new SimpleCrypto();
+    $mensagens = [];
+    
+    foreach ($mensagens_raw as $msg) {
+        try {
+            // Tentar descriptografar a mensagem
+            $mensagem_descriptografada = $crypto->decrypt($msg['mensagem']);
+            
+            $mensagens[] = [
+                'arroba' => $msg['arroba'],
+                'mensagem' => $mensagem_descriptografada,
+                'criado_em' => $msg['criado_em']
+            ];
+        } catch (Exception $e) {
+            // Se não conseguir descriptografar, pode ser uma mensagem legado
+            $mensagens[] = [
+                'arroba' => $msg['arroba'],
+                'mensagem' => $msg['mensagem'], // Mantém a mensagem original
+                'criado_em' => $msg['criado_em']
+            ];
+        }
+    }
 
     // Retorna mensagens ordenadas por data
     echo json_encode($mensagens);
@@ -243,18 +267,25 @@ if ($action === "enviar") {
         if ($res->num_rows > 0) {
             $id_party_envio = $res->fetch_assoc()["id"];
         }
-    }
-
-    // Se não conseguiu determinar a party
+    }    // Se não conseguiu determinar a party
     if (!$id_party_envio) {
         echo json_encode(["success" => false, "erro" => "Você não tem acesso a esta party."]);
         exit;
     }
 
-    // Insere a nova mensagem no chat
+    // Criptografar a mensagem antes de salvar no banco
+    try {
+        $crypto = new SimpleCrypto();
+        $mensagem_criptografada = $crypto->encrypt($mensagem);
+    } catch (Exception $e) {
+        echo json_encode(["success" => false, "erro" => "Erro ao criptografar mensagem: " . $e->getMessage()]);
+        exit;
+    }
+
+    // Insere a nova mensagem criptografada no chat
     $sql = "INSERT INTO party_chat (id_party, id_perfil, mensagem) VALUES (?, ?, ?)";
     $stmt = $conexao->prepare($sql);
-    $stmt->bind_param("iis", $id_party_envio, $id_perfil, $mensagem);
+    $stmt->bind_param("iis", $id_party_envio, $id_perfil, $mensagem_criptografada);
     $stmt->execute();
 
     // Retorna sucesso

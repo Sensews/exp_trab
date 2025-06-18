@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Party Simple - Oblivion RPG</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            background: #1a1a1a; 
+            color: white; 
+            padding: 20px;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        .party-info { background: #333; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .chat-area { background: #2a2a2a; padding: 15px; border-radius: 5px; }
+        .mensagem { padding: 8px; margin: 5px 0; background: #444; border-radius: 3px; }
+        input, button { padding: 8px; margin: 5px; border: none; border-radius: 3px; }
+        input { background: #555; color: white; flex: 1; }
+        button { background: #007bff; color: white; cursor: pointer; }
+        .chat-form { display: flex; margin-top: 10px; }
+        .loading { color: #ccc; font-style: italic; }
+        .error { color: #ff6b6b; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Party System - Teste Simples</h1>
+        
+        <div id="status" class="loading">Verificando sessão...</div>
+        
+        <div id="partyInfo" class="party-info" style="display: none;">
+            <h2 id="nomeParty">Party</h2>
+            <p>Tipo: <span id="tipoUsuario"></span></p>
+        </div>
+
+        <div id="chatArea" class="chat-area" style="display: none;">
+            <h3>Chat</h3>
+            <div id="mensagens"></div>
+            <form id="formChat" class="chat-form">
+                <input type="text" id="inputMsg" placeholder="Digite sua mensagem..." required>
+                <button type="submit">Enviar</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const status = document.getElementById('status');
+        const partyInfo = document.getElementById('partyInfo');
+        const chatArea = document.getElementById('chatArea');
+        const nomeParty = document.getElementById('nomeParty');
+        const tipoUsuario = document.getElementById('tipoUsuario');
+        const mensagens = document.getElementById('mensagens');
+        const formChat = document.getElementById('formChat');
+        const inputMsg = document.getElementById('inputMsg');
+
+        let currentParty = null;
+
+        function log(msg, isError = false) {
+            console.log(msg);
+            if (isError) {
+                status.className = 'error';
+                status.textContent = `Erro: ${msg}`;
+            } else {
+                status.textContent = msg;
+            }
+        }
+
+        async function init() {
+            try {
+                // 1. Verificar sessão
+                log('Verificando sessão...');
+                const sessaoRes = await fetch('../backend/verificar_sessao.php');
+                const sessaoData = await sessaoRes.json();
+                
+                if (!sessaoData.logado) {
+                    log('Usuário não está logado', true);
+                    return;
+                }
+
+                // 2. Carregar party
+                log('Carregando party...');
+                const partyRes = await fetch('../backend/chat_party.php?action=carregar');
+                const partyData = await partyRes.json();
+
+                if (!partyData.success) {
+                    log(partyData.erro || 'Erro ao carregar party', true);
+                    return;
+                }
+
+                // 3. Exibir dados da party
+                currentParty = partyData.party;
+                nomeParty.textContent = currentParty.nome || 'Party';
+                tipoUsuario.textContent = currentParty.tipo_usuario || 'Desconhecido';
+                
+                partyInfo.style.display = 'block';
+                chatArea.style.display = 'block';
+                
+                log('Party carregada com sucesso!');
+
+                // 4. Carregar mensagens
+                await carregarMensagens();
+
+            } catch (error) {
+                log(`Erro inesperado: ${error.message}`, true);
+            }
+        }
+
+        async function carregarMensagens() {
+            try {
+                const res = await fetch('../backend/chat_party.php?action=mensagens');
+                const msgs = await res.json();
+                
+                mensagens.innerHTML = '';
+                
+                if (Array.isArray(msgs)) {
+                    msgs.forEach(msg => {
+                        const div = document.createElement('div');
+                        div.className = 'mensagem';
+                        div.innerHTML = `<strong>@${msg.arroba}:</strong> ${msg.mensagem}`;
+                        mensagens.appendChild(div);
+                    });
+                    log(`${msgs.length} mensagens carregadas`);
+                } else {
+                    log('Nenhuma mensagem encontrada');
+                }
+            } catch (error) {
+                log(`Erro ao carregar mensagens: ${error.message}`, true);
+            }
+        }
+
+        // Enviar mensagem
+        formChat.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const mensagem = inputMsg.value.trim();
+            if (!mensagem) return;
+
+            try {
+                // Preparar dados para criptografia
+                const dataToEncrypt = { mensagem };
+                
+                // Aqui você pode adicionar a criptografia se necessário
+                // Por enquanto, vamos enviar direto
+                const response = await fetch('../backend/chat_party.php?action=enviar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dataToEncrypt)
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    inputMsg.value = '';
+                    await carregarMensagens(); // Recarregar mensagens
+                } else {
+                    alert(result.erro || 'Erro ao enviar mensagem');
+                }
+            } catch (error) {
+                alert(`Erro: ${error.message}`);
+            }
+        });
+
+        // Inicializar quando a página carregar
+        init();
+    </script>
+</body>
+</html>

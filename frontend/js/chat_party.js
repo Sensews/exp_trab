@@ -1,24 +1,34 @@
 // Espera o carregamento do DOM
 document.addEventListener("DOMContentLoaded", async () => {
+  console.log("Iniciando carregamento da página party...");
+  
   // Verifica se a sessão está ativa
   try {
+    console.log("Verificando sessão...");
     const res = await fetch("../backend/verificar_sessao.php"); // Faz requisição para verificar sessão
     const dados = await res.json(); // Converte resposta em JSON
+    
+    console.log("Resposta da sessão:", dados);
 
     if (!dados.logado) {
+      console.log("Usuário não logado, redirecionando...");
       // Redireciona para página de erro se não estiver logado
       window.location.href = "../frontend/erro.html";
       return;
     }
 
+    console.log("Sessão válida, mostrando página...");
     // Mostra o conteúdo da página
     document.body.style.display = "block";
   } catch (e) {
+    console.error("Erro na verificação de sessão:", e);
     // Em caso de erro na verificação, redireciona para erro
     window.location.href = "../frontend/erro.html";
     return;
   }
 
+  console.log("Buscando elementos do DOM...");
+  
   // Referências aos elementos do DOM
   const nomePartyElem = document.getElementById('nomeParty');
   const tipoUsuarioElem = document.getElementById('tipoUsuario');
@@ -26,6 +36,21 @@ document.addEventListener("DOMContentLoaded", async () => {
   const chatMensagensElem = document.getElementById('chatMensagens');
   const formChat = document.getElementById('formChat');
   const inputMensagem = document.getElementById('mensagemInput');
+  
+  // Verificar se todos os elementos existem
+  if (!nomePartyElem || !tipoUsuarioElem || !listaMembrosElem || !chatMensagensElem || !formChat || !inputMensagem) {
+    console.error("Elementos do DOM não encontrados!");
+    console.log("nomeParty:", nomePartyElem);
+    console.log("tipoUsuario:", tipoUsuarioElem);
+    console.log("listaMembros:", listaMembrosElem);
+    console.log("chatMensagens:", chatMensagensElem);
+    console.log("formChat:", formChat);
+    console.log("inputMensagem:", inputMensagem);
+    alert("Erro: Elementos da página não encontrados!");
+    return;
+  }
+  
+  console.log("Todos os elementos encontrados, continuando...");
   // Variáveis auxiliares
   let id_party = null;
   let tipo_usuario = null;

@@ -8,6 +8,7 @@ header('Content-Type: application/json');
 // Inclui arquivos de conexão e controle de tempo
 require_once("conexao.php");
 require_once("time.php");
+require_once("simple_crypto.php");
 
 // Verifica se o usuário está logado
 if (!isset($_SESSION['id_perfil'])) {
