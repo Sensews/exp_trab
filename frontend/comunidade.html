@@ -16,9 +16,9 @@
   <link rel="stylesheet" href="css/comunidade.css">
   <link rel="stylesheet" href="css/fotoperfil.css">
   <link rel="stylesheet" href="css/burg.css">
-
   <script defer src="js/stars.js"></script>
   <script defer src="js/simple_secure_client.js"></script>
+  <script defer src="js/image_compressor.js"></script>
   <script defer src="js/comunidade.js"></script>
   <script defer src="js/burg_perfil.js"></script>
 
@@ -69,11 +69,10 @@
   <!-- comunidade -->
   <div class="container">
     <div class="post-area">
-      <textarea id="postText" placeholder="O que está acontecendo?"></textarea>
-      <div class="actions-post">
+      <textarea id="postText" placeholder="O que está acontecendo?"></textarea>      <div class="actions-post">
         <label for="postImage" class="custom-file-upload">📷 Adicionar imagem</label>
         <input type="file" id="postImage" accept="image/*">
-        <button onclick="postar()">Postar</button>
+        <button onclick="postar()" id="postButton">Postar</button>
       </div>
     </div>
     <div class="feed" id="feed"></div>

@@ -68,17 +68,22 @@ if ($action === "criarPost") {
         } else {
             // Fallback: dados não criptografados
             $texto = $_POST["texto"] ?? "";
-        }
-
-        // Verifica se uma imagem foi enviada
+        }        // Verificar se uma imagem foi enviada
         if (isset($_FILES["imagem"]) && $_FILES["imagem"]["tmp_name"]) {
-            $extensao = pathinfo($_FILES["imagem"]["name"], PATHINFO_EXTENSION);
-            $nomeArquivo = uniqid("img_") . "." . $extensao;
-            $caminhoFinal = "uploads/" . $nomeArquivo;
-
-            // Move o arquivo para a pasta final
-            if (move_uploaded_file($_FILES["imagem"]["tmp_name"], $caminhoFinal)) {
-                $imagem = $caminhoFinal;
+            $tipoImagem = $_FILES["imagem"]["type"];
+            
+            // Verificar se é um tipo de imagem válido
+            $tiposPermitidos = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            if (in_array($tipoImagem, $tiposPermitidos)) {
+                // Ler o arquivo e converter para base64
+                $imagemConteudo = file_get_contents($_FILES["imagem"]["tmp_name"]);
+                $imagemBase64 = base64_encode($imagemConteudo);
+                $imagem = "data:" . $tipoImagem . ";base64," . $imagemBase64;
+            } else {
+                echo json_encode([
+                    "erro" => "Tipo de arquivo não suportado. Use JPEG, PNG, GIF ou WebP."
+                ]);
+                exit;
             }
         }
 

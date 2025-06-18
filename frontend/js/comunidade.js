@@ -34,47 +34,59 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 });
 
-function postar() {
+async function postar() {
   const text = document.getElementById("postText").value.trim();
   const fileInput = document.getElementById("postImage");
   const file = fileInput.files[0];
 
   if (text === "" && !file) return;
 
-  // Tentar usar criptografia primeiro
-  if (window.simpleSecureClient && window.simpleSecureClient.initialized) {
-    // Usar criptografia
-    const postData = { texto: text };
+  try {
+    let processedFile = null;
     
-    window.simpleSecureClient.createPost(postData, file)
-      .then(post => {
-        if (post.sucesso) {
-          post.arroba = perfilAtual.arroba || "usuario";
-          post.avatar = perfilAtual.avatar || "https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png";
-          exibirPostNoFeed(post);
-          document.getElementById("postText").value = "";
-          document.getElementById("postImage").value = "";
-        } else {
-          alert("Erro ao postar: " + (post.erro || "resposta inválida"));
-        }
-      })
-      .catch(error => {
-        console.error('Erro ao postar com criptografia:', error);
-        alert("Erro ao postar. Tente novamente.");
-      });
-  } else {
-    // Fallback: método não criptografado
-    const formData = new FormData();
-    formData.append("action", "criarPost");
-    formData.append("texto", text);
-    if (file) formData.append("imagem", file);
+    // Se há uma imagem, comprimir antes de enviar
+    if (file) {
+      // Validar imagem
+      const validation = ImageCompressor.validateImage(file, 5); // 5MB máximo
+      if (!validation.valid) {
+        alert(validation.error);
+        return;
+      }      // Mostrar indicador de processamento
+      const postButton = document.getElementById('postButton');
+      const originalText = postButton.textContent;
+      postButton.textContent = 'Processando imagem...';
+      postButton.disabled = true;
 
-    fetch("../backend/teste_post.php", {
-      method: "POST",
-      body: formData
-    })
-    .then(res => res.json())
-    .then(post => {
+      try {
+        // Comprimir imagem (máximo 800x600, qualidade 0.8)
+        const compressedBase64 = await ImageCompressor.compressImage(file, 800, 600, 0.8);
+        
+        // Criar objeto File simulado com o base64
+        processedFile = {
+          name: file.name,
+          type: 'image/jpeg',
+          base64: compressedBase64
+        };
+
+        console.log(`Imagem comprimida: ${Math.round(compressedBase64.length * 0.75 / 1024)} KB`);
+        
+      } catch (error) {
+        console.error('Erro ao comprimir imagem:', error);
+        alert('Erro ao processar imagem. Tente novamente.');
+        return;
+      } finally {
+        // Restaurar botão
+        postButton.textContent = originalText;
+        postButton.disabled = false;
+      }
+    }
+
+    // Tentar usar criptografia primeiro
+    if (window.simpleSecureClient && window.simpleSecureClient.initialized) {
+      // Usar criptografia
+      const postData = { texto: text };
+      
+      const post = await window.simpleSecureClient.createPost(postData, processedFile);
       if (post.sucesso) {
         post.arroba = perfilAtual.arroba || "usuario";
         post.avatar = perfilAtual.avatar || "https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png";
@@ -84,11 +96,32 @@ function postar() {
       } else {
         alert("Erro ao postar: " + (post.erro || "resposta inválida"));
       }
-    })
-    .catch(error => {
-      console.error('Erro ao postar:', error);
-      alert("Erro ao postar. Tente novamente.");
-    });
+    } else {
+      // Fallback: método não criptografado (usar imagem original para compatibilidade)
+      const formData = new FormData();
+      formData.append("action", "criarPost");
+      formData.append("texto", text);
+      if (file) formData.append("imagem", file);
+
+      const response = await fetch("../backend/teste_post.php", {
+        method: "POST",
+        body: formData
+      });
+      
+      const post = await response.json();
+      if (post.sucesso) {
+        post.arroba = perfilAtual.arroba || "usuario";
+        post.avatar = perfilAtual.avatar || "https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png";
+        exibirPostNoFeed(post);
+        document.getElementById("postText").value = "";
+        document.getElementById("postImage").value = "";
+      } else {
+        alert("Erro ao postar: " + (post.erro || "resposta inválida"));
+      }
+    }
+  } catch (error) {
+    console.error('Erro ao postar:', error);
+    alert("Erro ao postar. Tente novamente.");
   }
 }
 
@@ -123,10 +156,14 @@ function exibirPostNoFeed(post) {
   textDiv.className = "text";
   textDiv.textContent = post.texto;
   tweet.appendChild(textDiv);
-
   if (post.imagem) {
     const img = document.createElement("img");
-    img.src = "../backend/" + post.imagem;
+    // Se a imagem já é base64, usar diretamente, senão adicionar o prefixo para arquivos antigos
+    if (post.imagem.startsWith('data:')) {
+      img.src = post.imagem;
+    } else {
+      img.src = "../backend/" + post.imagem;
+    }
     img.style.maxWidth = "100%";
     img.style.borderRadius = "8px";
     img.style.marginTop = "8px";

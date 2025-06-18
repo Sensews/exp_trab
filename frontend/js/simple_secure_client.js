@@ -149,9 +149,7 @@ class SimpleSecureClient {
             console.error('Erro ao salvar perfil criptografado:', error);
             throw error;
         }
-    }
-
-    /**
+    }    /**
      * Cria post com criptografia (apenas texto - imagem continua não criptografada)
      */
     async createPost(postData, imageFile = null) {
@@ -164,8 +162,25 @@ class SimpleSecureClient {
             const formData = new FormData();
             formData.append('action', 'criarPost');
             
-            // Se houver imagem, adicionar ao FormData
-            if (imageFile) {
+            // Se houver imagem comprimida, adicionar como base64
+            if (imageFile && imageFile.base64) {
+                // Criar um blob da imagem comprimida
+                const byteCharacters = atob(imageFile.base64);
+                const byteNumbers = new Array(byteCharacters.length);
+                for (let i = 0; i < byteCharacters.length; i++) {
+                    byteNumbers[i] = byteCharacters.charCodeAt(i);
+                }
+                const byteArray = new Uint8Array(byteNumbers);
+                const blob = new Blob([byteArray], { type: imageFile.type || 'image/jpeg' });
+                
+                // Criar arquivo a partir do blob
+                const file = new File([blob], imageFile.name || 'compressed_image.jpg', {
+                    type: imageFile.type || 'image/jpeg'
+                });
+                
+                formData.append('imagem', file);
+            } else if (imageFile) {
+                // Imagem não comprimida (fallback)
                 formData.append('imagem', imageFile);
             }
             
