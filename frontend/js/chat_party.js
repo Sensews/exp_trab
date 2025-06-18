@@ -1,9 +1,8 @@
 // Espera o carregamento do DOM
-document.addEventListener("DOMContentLoaded", async () => {
-  // Inicializar gerenciador de criptografia
+document.addEventListener("DOMContentLoaded", async () => {  // Inicializar gerenciador de criptografia
   let cryptoManager = null;
   try {
-    cryptoManager = CryptoManager.getInstance();
+    cryptoManager = CryptoManagerSimple.getInstance();
     await cryptoManager.initialize();
     console.log("🔒 Sistema de criptografia inicializado no chat");
   } catch (error) {
@@ -217,10 +216,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       const jsonResponse = await response.json();
       
-      // Verificar se a resposta está criptografada
-      let data;
-      if (cryptoManager && CryptoManager.isEncryptedData && 
-          CryptoManager.isEncryptedData(jsonResponse)) {
+      // Verificar se a resposta está criptografada      let data;
+      if (cryptoManager && CryptoManagerSimple.isEncryptedData && 
+          CryptoManagerSimple.isEncryptedData(jsonResponse)) {
         console.log("🔓 Descriptografando resposta do chat");
         data = await cryptoManager.decryptData(jsonResponse);
       } else {

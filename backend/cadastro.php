@@ -4,8 +4,8 @@ include_once __DIR__ . '/limpar_pendentes.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-// Importar CryptoManager para criptografia híbrida
-require_once __DIR__ . '/crypto/CryptoManager.php';
+// Importar CryptoManagerSimple para criptografia simples
+require_once __DIR__ . '/crypto/CryptoManagerSimple.php';
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
@@ -16,10 +16,10 @@ require 'PHPMailer/src/SMTP.php';
 require_once 'env_decoder.php';
 
 try {
-    $crypto = CryptoManager::getInstance();
+    $crypto = CryptoManagerSimple::getInstance();
 } catch (Exception $e) {
     http_response_code(500);
-    error_log("Erro CryptoManager cadastro: " . $e->getMessage());
+    error_log("Erro CryptoManagerSimple cadastro: " . $e->getMessage());
     die("Erro de segurança do sistema.");
 }
 

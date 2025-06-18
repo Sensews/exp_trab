@@ -3,11 +3,10 @@ window.addEventListener('load', async () => {
     const cryptoScript = document.createElement('script');
     cryptoScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js';
     document.head.appendChild(cryptoScript);
-    
-    // Inicializar gerenciador de criptografia
+      // Inicializar gerenciador de criptografia
     let cryptoManager = null;
     try {
-        cryptoManager = CryptoManager.getInstance();
+        cryptoManager = CryptoManagerSimple.getInstance();
         await cryptoManager.initialize();
         console.log("🔒 Sistema de criptografia inicializado no cadastro");
     } catch (error) {

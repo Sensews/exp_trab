@@ -5,18 +5,18 @@ session_start();
 // Define o tipo da resposta como JSON
 header("Content-Type: application/json");
 
-// Importar CryptoManager para criptografia híbrida
-require_once __DIR__ . '/crypto/CryptoManager.php';
+// Importar CryptoManagerSimple para criptografia simples
+require_once __DIR__ . '/crypto/CryptoManagerSimple.php';
 
 // Importa a conexão com banco e controle de tempo/sessão
 require_once("conexao.php");
 require_once("time.php");
 
 try {
-    $crypto = CryptoManager::getInstance();
+    $crypto = CryptoManagerSimple::getInstance();
 } catch (Exception $e) {
     echo json_encode(["logado" => false, "erro" => "Erro de segurança."]);
-    error_log("Erro CryptoManager chat_party: " . $e->getMessage());
+    error_log("Erro CryptoManagerSimple chat_party: " . $e->getMessage());
     exit;
 }
 
