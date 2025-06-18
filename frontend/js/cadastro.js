@@ -170,6 +170,8 @@ function initializeCadastroSecure() {
 
 // ===== FUNÇÕES AUXILIARES =====
 const bloquearEntradaNaoNumerica = (evento) => {
+    // Verificar se evento e evento.key existem
+    if (!evento || !evento.key) return;
     if (evento.ctrlKey || evento.key.length > 1 || /[0-9]/.test(evento.key)) return;
     evento.preventDefault();
 };

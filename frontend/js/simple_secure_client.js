@@ -7,10 +7,8 @@ class SimpleSecureClient {
     constructor() {
         this.clientKey = null;
         this.initialized = false;
-    }
-
-    /**
-     * Inicializa o cliente com a chave do servidor
+    }    /**
+     * Inicializa o cliente (agora apenas marca como inicializado)
      */
     async initialize() {
         if (this.initialized) return true;
@@ -18,18 +16,7 @@ class SimpleSecureClient {
         try {
             console.log('Inicializando cliente de criptografia...');
             
-            // Buscar chave do servidor
-            const response = await fetch('../backend/simple_crypto.php?action=getClientKey');
-            if (!response.ok) {
-                throw new Error('Erro ao obter chave do servidor');
-            }
-            
-            const data = await response.json();
-            if (!data.success) {
-                throw new Error(data.error || 'Erro ao obter chave');
-            }
-
-            this.clientKey = data.clientKey;
+            // Não precisa mais buscar chave do servidor - usando chave fixa
             this.initialized = true;
             console.log('Cliente de criptografia inicializado com sucesso');
             return true;
@@ -38,23 +25,20 @@ class SimpleSecureClient {
             console.error('Erro ao inicializar cliente de criptografia:', error);
             throw error;
         }
-    }    /**
+    }/**
      * Criptografa dados usando AES-256-CBC
      */
     encrypt(data) {
         try {
-            if (!this.clientKey) {
-                throw new Error('Cliente não inicializado');
-            }
-
             // Adicionar timestamp
             data.timestamp = Date.now();
             
-            // Usar CryptoJS para criptografia simétrica
-            const key = CryptoJS.enc.Base64.parse(this.clientKey);
+            // Usar chave fixa para compatibilidade (em produção, usar chave do servidor)
+            const keyString = 'MySecretKey12345MySecretKey12345'; // 32 caracteres = 256 bits
+            const key = CryptoJS.enc.Utf8.parse(keyString);
             const iv = CryptoJS.lib.WordArray.random(16); // 128 bits para CBC
             
-            // Usar AES-256-CBC
+            // Criptografar usando AES-256-CBC
             const encrypted = CryptoJS.AES.encrypt(JSON.stringify(data), key, {
                 iv: iv,
                 mode: CryptoJS.mode.CBC,
@@ -70,9 +54,7 @@ class SimpleSecureClient {
             console.error('Erro na criptografia:', error);
             throw error;
         }
-    }
-
-    /**
+    }    /**
      * Envia dados criptografados para o servidor
      */
     async sendEncryptedData(endpoint, data) {
@@ -98,15 +80,24 @@ class SimpleSecureClient {
 
             const responseText = await response.text();
             
+            // Primeiro, verificar se é um redirecionamento HTML (sucesso)
+            if (responseText.includes('sucesso=1') || response.url.includes('sucesso=1')) {
+                return { success: true, message: 'Operação realizada com sucesso' };
+            }
+            
+            // Se contém HTML com erro, extrair a mensagem
+            if (responseText.includes('<b>Fatal error</b>') || responseText.includes('Fatal error')) {
+                console.error('Erro do servidor:', responseText);
+                throw new Error('Erro interno do servidor na criptografia');
+            }
+            
             // Tentar fazer parse do JSON
             try {
-                return JSON.parse(responseText);
+                const jsonResponse = JSON.parse(responseText);
+                return jsonResponse;
             } catch (parseError) {
-                // Se não for JSON, assumir que é uma resposta de sucesso (redirecionamento)
-                if (responseText.includes('sucesso=1') || response.url.includes('sucesso=1')) {
-                    return { success: true, message: 'Operação realizada com sucesso' };
-                }
-                throw new Error('Resposta inválida do servidor: ' + responseText);
+                console.error('Resposta não é JSON válido:', responseText.substring(0, 200));
+                throw new Error('Resposta inválida do servidor');
             }
 
         } catch (error) {

@@ -10,28 +10,13 @@ class SimpleCryptoHandler {
     public function __construct() {
         $this->initializeKey();
     }
-    
-    /**
+      /**
      * Inicializa a chave secreta
      */
     private function initializeKey() {
-        $keyFile = __DIR__ . '/crypto_keys/secret.key';
-        
-        // Criar diretório se não existir
-        $keyPath = dirname($keyFile);
-        if (!is_dir($keyPath)) {
-            mkdir($keyPath, 0700, true);
-        }
-        
-        // Gerar chave se não existir
-        if (!file_exists($keyFile)) {
-            $this->secretKey = random_bytes(32); // 256 bits
-            file_put_contents($keyFile, base64_encode($this->secretKey));
-            chmod($keyFile, 0600);
-            error_log('Nova chave secreta gerada');
-        } else {
-            $this->secretKey = base64_decode(file_get_contents($keyFile));
-        }
+        // Usar chave fixa para compatibilidade (em produção, usar chave segura)
+        $this->secretKey = 'MySecretKey12345MySecretKey12345'; // 32 caracteres = 256 bits
+        error_log('Chave fixa inicializada para desenvolvimento');
     }
       /**
      * Criptografa dados usando AES-256-CBC (compatível com CryptoJS)

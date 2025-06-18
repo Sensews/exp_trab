@@ -11,11 +11,19 @@ $dotenv->load();
 
 require_once 'env_decoder.php';
 
+// Definir header JSON para requisições criptografadas
+if (isset($_POST['encrypted_data'])) {
+    header('Content-Type: application/json');
+}
+
 // Função para processar dados (criptografados ou não)
 function processarDados() {
     // Verificar se é uma requisição criptografada
     if (isset($_POST['encrypted_data']) && isset($_POST['action']) && $_POST['action'] === 'decrypt') {
         try {
+            error_log('Processando dados criptografados...');
+            error_log('Dados recebidos: ' . substr($_POST['encrypted_data'], 0, 50) . '...');
+            
             $cryptoHandler = new SimpleCryptoHandler();
             $decryptedData = $cryptoHandler->decrypt($_POST['encrypted_data']);
             
@@ -26,7 +34,7 @@ function processarDados() {
                 }
             }
             
-            error_log('Dados descriptografados com sucesso');
+            error_log('Dados descriptografados com sucesso: ' . json_encode(array_keys($decryptedData)));
             return $decryptedData;
         } catch (Exception $e) {
             error_log('Erro na descriptografia do cadastro: ' . $e->getMessage());
@@ -212,21 +220,19 @@ if ($stmt->execute()) {
         ";        $mail->send();
         
         // Log de sucesso
-        error_log("Cadastro realizado com sucesso para: $email");
-          // Verificar se é uma requisição criptografada
+        error_log("Cadastro realizado com sucesso para: $email");        // Verificar se é uma requisição criptografada
         if (isset($_POST['encrypted_data'])) {
             // Resposta JSON para requisições criptografadas
             echo json_encode([
                 'success' => true,
                 'message' => 'Cadastro realizado com sucesso! Verifique seu e-mail.'
             ]);
+            exit();
         } else {
             // Redirecionamento para requisições tradicionais
             header("Location: ../frontend/cadastro.html?sucesso=1");
-        }
-        exit();
-
-    } catch (Exception $e) {
+            exit();
+        }    } catch (Exception $e) {
         error_log("Erro no envio de email: " . $e->getMessage());
         
         if (isset($_POST['encrypted_data'])) {
@@ -234,6 +240,7 @@ if ($stmt->execute()) {
                 'success' => false,
                 'error' => "Erro ao enviar o e-mail de verificação: {$mail->ErrorInfo}"
             ]);
+            exit();
         } else {
             http_response_code(500);
             die("Erro ao enviar o e-mail de verificação: {$mail->ErrorInfo}");
@@ -248,6 +255,7 @@ if ($stmt->execute()) {
             'success' => false,
             'error' => 'Erro ao cadastrar. Tente novamente.'
         ]);
+        exit();
     } else {
         http_response_code(500);
         die("Erro ao cadastrar. Tente novamente.");
