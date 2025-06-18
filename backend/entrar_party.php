@@ -25,31 +25,42 @@ if (!isset($_SESSION['id_perfil'])) {
 // Recupera o ID do perfil da sessão
 $id_perfil = $_SESSION['id_perfil'];
 
-// Verifica se há dados criptografados
-$encrypted_data = $_POST['encrypted_data'] ?? null;
+// Capturar dados de entrada
+$input_data = file_get_contents("php://input");
+$json = json_decode($input_data, true);
 
-if ($encrypted_data) {
+// Debug temporário
+error_log("ENTRAR PARTY DEBUG - Input raw: " . $input_data);
+error_log("ENTRAR PARTY DEBUG - JSON decoded: " . json_encode($json));
+
+// Verifica se há dados criptografados
+if (isset($json['encrypted_data'])) {
+    error_log("ENTRAR PARTY DEBUG - Encrypted data found");
     // Descriptografar dados
     try {
         $crypto = new SimpleCrypto();
-        $decrypted_json = $crypto->decrypt($encrypted_data);
-        $data = json_decode($decrypted_json, true);
+        $decrypted_data = $crypto->decrypt($json['encrypted_data']);
+        error_log("ENTRAR PARTY DEBUG - Decrypted data: " . json_encode($decrypted_data));
         
-        if (!$data) {
+        if (!$decrypted_data) {
             throw new Exception("Dados inválidos após descriptografia");
         }
         
-        $codigo = $data['codigo'] ?? null;
-        $senha = $data['senha'] ?? null;
+        $codigo = $decrypted_data['codigo'] ?? null;
+        $senha = $decrypted_data['senha'] ?? null;
+        error_log("ENTRAR PARTY DEBUG - Codigo: '$codigo', Senha: '$senha'");
         
     } catch (Exception $e) {
+        error_log("ENTRAR PARTY DEBUG - Decrypt error: " . $e->getMessage());
         echo json_encode(["sucesso" => false, "erro" => "Erro na descriptografia: " . $e->getMessage()]);
         exit;
     }
 } else {
-    // Fallback: captura dados não criptografados
-    $codigo = $_POST['codigo'] ?? null;
-    $senha = $_POST['senha'] ?? null;
+    error_log("ENTRAR PARTY DEBUG - No encrypted data, using fallback");
+    // Fallback: dados não criptografados
+    $codigo = $json['codigo'] ?? null;
+    $senha = $json['senha'] ?? null;
+    error_log("ENTRAR PARTY DEBUG - Fallback - Codigo: '$codigo', Senha: '$senha'");
 }
 
 // Validação básica dos campos obrigatórios

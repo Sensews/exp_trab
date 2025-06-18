@@ -27,33 +27,34 @@ if (!isset($_SESSION['id_perfil'])) {
 // Recupera o id_perfil da sessão
 $id_perfil = $_SESSION['id_perfil'];
 
-// Verifica se há dados criptografados
-$encrypted_data = $_POST['encrypted_data'] ?? null;
+// Capturar dados de entrada
+$input_data = file_get_contents("php://input");
+$json = json_decode($input_data, true);
 
-if ($encrypted_data) {
+// Verifica se há dados criptografados
+if (isset($json['encrypted_data'])) {
     // Descriptografar dados
     try {
         $crypto = new SimpleCrypto();
-        $decrypted_json = $crypto->decrypt($encrypted_data);
-        $data = json_decode($decrypted_json, true);
+        $decrypted_data = $crypto->decrypt($json['encrypted_data']);
         
-        if (!$data) {
+        if (!$decrypted_data) {
             throw new Exception("Dados inválidos após descriptografia");
         }
         
-        $nome = $data["nome"] ?? null;
-        $senha = $data["senha"] ?? null;
-        $limite = $data["limite"] ?? 5;
+        $nome = $decrypted_data["nome"] ?? null;
+        $senha = $decrypted_data["senha"] ?? null;
+        $limite = $decrypted_data["limite"] ?? 5;
         
     } catch (Exception $e) {
         echo json_encode(["sucesso" => false, "erro" => "Erro na descriptografia: " . $e->getMessage()]);
         exit;
     }
 } else {
-    // Fallback: captura dados não criptografados
-    $nome = $_POST["nome"] ?? null;
-    $senha = $_POST["senha"] ?? null;
-    $limite = $_POST["limite"] ?? 5; // valor padrão: 5 jogadores
+    // Fallback: dados não criptografados
+    $nome = $json["nome"] ?? null;
+    $senha = $json["senha"] ?? null;
+    $limite = $json["limite"] ?? 5; // valor padrão: 5 jogadores
 }
 
 // Verifica se os campos obrigatórios foram preenchidos

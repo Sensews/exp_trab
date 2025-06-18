@@ -49,9 +49,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const limite = document.getElementById('limiteParty')?.value ?? 5;    if (!nome || !senha) {
       alert('Preencha todos os campos obrigatórios.');
       return;
-    }
-
-    try {
+    }    try {
         let resultado;
         
         // Tentar usar criptografia primeiro
@@ -62,18 +60,38 @@ document.addEventListener('DOMContentLoaded', async () => {
                 limite: limite
             };
             
-            resultado = await window.simpleSecureClient.createParty(partyData);
+            // Criptografar manualmente
+            const encryptedData = window.simpleSecureClient.encrypt(partyData);
+            
+            const requestBody = {
+                encrypted_data: encryptedData
+            };
+            
+            const response = await fetch('../backend/criar_party.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody)
+            });
+
+            const text = await response.text();
+            try {
+                resultado = JSON.parse(text);
+            } catch (e) {
+                console.error('Erro ao parsear JSON:', text);
+                throw new Error('Resposta inválida do servidor');
+            }
         } else {
             // Fallback: método não criptografado
-            const formData = new FormData();
-            formData.append('nome', nome);
-            formData.append('senha', senha);
-            formData.append('limite', limite);
-            formData.append('id_perfil', id_perfil);
+            const requestData = {
+                nome: nome,
+                senha: senha,
+                limite: limite
+            };
 
             const response = await fetch('../backend/criar_party.php', {
                 method: 'POST',
-                body: formData
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestData)
             });
 
             const text = await response.text();

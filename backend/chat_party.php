@@ -191,8 +191,7 @@ if ($action === "mensagens") {
 }
 
 // === Enviar nova mensagem para o chat da party ===
-if ($action === "enviar") {
-    $input_data = file_get_contents("php://input");
+if ($action === "enviar") {    $input_data = file_get_contents("php://input");
     $json = json_decode($input_data, true);
     
     $mensagem = null;
@@ -201,8 +200,7 @@ if ($action === "enviar") {
     if (isset($json['encrypted_data'])) {
         try {
             $crypto = new SimpleCrypto();
-            $decrypted_json = $crypto->decrypt($json['encrypted_data']);
-            $decrypted_data = json_decode($decrypted_json, true);
+            $decrypted_data = $crypto->decrypt($json['encrypted_data']);
             
             if (!$decrypted_data) {
                 throw new Exception("Dados inválidos após descriptografia");
