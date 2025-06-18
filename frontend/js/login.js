@@ -15,14 +15,12 @@ campoUsuario?.addEventListener("input", function () {
 });
 
 document.addEventListener("DOMContentLoaded", function () {
-  // Aguardar carregamento das bibliotecas
-  setTimeout(() => {
-    initializeLogin();
-  }, 500);
-});
-
-function initializeLogin() {
   const form = document.getElementById("form-login");
+  const modal = document.getElementById("modal-verificacao");
+  const btnFechar = document.getElementById("fechar-modal");
+  const btnConfirmar = document.getElementById("confirmar-codigo");
+  const btnReenviar = document.getElementById("reenviar-codigo");
+  let telefoneFormatado = "";
 
   if (!form) {
     console.error("Formulário de login não encontrado.");
@@ -97,8 +95,17 @@ function initializeLogin() {
       }
 
       if (response.status === "ok") {
-        // Redirecionar para página principal
-        window.location.href = "main.html";
+        localStorage.setItem("nome", response.nome);
+        localStorage.setItem("email", response.email);
+        telefoneFormatado = response.telefone;
+
+        if (modal) {
+          enviarSMS(telefoneFormatado);
+          modal.style.display = "flex";
+        } else {
+          // Redirecionar diretamente se não há modal de verificação
+          window.location.href = "main.html";
+        }
       } else {
         throw new Error(response.mensagem || "Erro no login");
       }
@@ -123,4 +130,51 @@ function initializeLogin() {
       submitButton.textContent = originalText;
     }
   });
-}
+
+  function enviarSMS(telefone) {
+    fetch("../backend/enviar-sms.php", {
+      method: "POST",
+      body: new URLSearchParams({ telefone }),
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.status !== "ok") alert(res.mensagem);
+      })
+      .catch((err) => console.error("Erro ao enviar SMS:", err));
+  }
+
+  if (btnFechar) {
+    btnFechar.addEventListener("click", () => {
+      modal.style.display = "none";
+    });
+  }
+
+  if (btnReenviar) {
+    btnReenviar.addEventListener("click", () => {
+      enviarSMS(telefoneFormatado);
+      alert("Novo SMS enviado.");
+    });
+  }
+
+  if (btnConfirmar) {
+    btnConfirmar.addEventListener("click", () => {
+      const codigo = document.getElementById("campo-codigo").value.trim();
+      fetch("../backend/verificar-sms.php", {
+        method: "POST",
+        body: new URLSearchParams({ codigo }),
+      })
+        .then((res) => res.json())
+        .then((res) => {
+          if (res.status === "ok") {
+            localStorage.setItem("logado", "true");
+            window.location.href = "main.html";
+          } else {
+            alert(res.mensagem);
+          }
+        })
+        .catch((error) => {
+          console.error("Erro ao verificar SMS:", error);
+        });
+    });
+  }
+});

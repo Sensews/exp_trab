@@ -1,8 +1,8 @@
 <?php
 // Configurações de conexão
 $host = "localhost";
-$usuario = "root";
-$senha = "";
+$usuario = "appuser";
+$senha = "senhaforte";
 $banco = "oblivion";
 
 // Criar conexão
