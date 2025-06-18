@@ -2,6 +2,10 @@
 // Define o tipo de conteúdo como JSON com charset UTF-8
 header("Content-Type: application/json; charset=utf-8");
 
+// Desabilita a saída de erros para manter JSON limpo
+error_reporting(0);
+ini_set('display_errors', 0);
+
 // Ativa modo estrito para exibir exceções de erros no MySQLi
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
@@ -11,6 +15,7 @@ session_start();
 // Inclui arquivos de conexão com o banco e controle de tempo
 require_once("conexao.php");
 require_once("time.php");
+require_once("simple_crypto.php");
 
 // Verifica se o usuário está logado
 if (!isset($_SESSION['id_perfil'])) {
@@ -22,10 +27,34 @@ if (!isset($_SESSION['id_perfil'])) {
 // Recupera o id_perfil da sessão
 $id_perfil = $_SESSION['id_perfil'];
 
-// Captura os dados enviados via POST
-$nome = $_POST["nome"] ?? null;
-$senha = $_POST["senha"] ?? null;
-$limite = $_POST["limite"] ?? 5; // valor padrão: 5 jogadores
+// Verifica se há dados criptografados
+$encrypted_data = $_POST['encrypted_data'] ?? null;
+
+if ($encrypted_data) {
+    // Descriptografar dados
+    try {
+        $crypto = new SimpleCrypto();
+        $decrypted_json = $crypto->decrypt($encrypted_data);
+        $data = json_decode($decrypted_json, true);
+        
+        if (!$data) {
+            throw new Exception("Dados inválidos após descriptografia");
+        }
+        
+        $nome = $data["nome"] ?? null;
+        $senha = $data["senha"] ?? null;
+        $limite = $data["limite"] ?? 5;
+        
+    } catch (Exception $e) {
+        echo json_encode(["sucesso" => false, "erro" => "Erro na descriptografia: " . $e->getMessage()]);
+        exit;
+    }
+} else {
+    // Fallback: captura dados não criptografados
+    $nome = $_POST["nome"] ?? null;
+    $senha = $_POST["senha"] ?? null;
+    $limite = $_POST["limite"] ?? 5; // valor padrão: 5 jogadores
+}
 
 // Verifica se os campos obrigatórios foram preenchidos
 if (!$nome || !$senha) {
@@ -51,6 +80,34 @@ function gerarCodigoUnico($conexao) {
 }
 
 try {
+    // === Deletar parties anteriores do mesmo mestre ===
+    // Buscar todas as parties criadas por este mestre
+    $stmt = $conexao->prepare("SELECT id FROM party WHERE id_mestre = ?");
+    $stmt->bind_param("i", $id_perfil);
+    $stmt->execute();
+    $parties_antigas = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    
+    // Para cada party antiga, deletar dados relacionados
+    foreach ($parties_antigas as $party_antiga) {
+        $id_party_antiga = $party_antiga['id'];
+        
+        // Deletar mensagens do chat
+        $stmt = $conexao->prepare("DELETE FROM party_chat WHERE id_party = ?");
+        $stmt->bind_param("i", $id_party_antiga);
+        $stmt->execute();
+        
+        // Deletar membros da party
+        $stmt = $conexao->prepare("DELETE FROM party_membros WHERE id_party = ?");
+        $stmt->bind_param("i", $id_party_antiga);
+        $stmt->execute();
+        
+        // Deletar a party
+        $stmt = $conexao->prepare("DELETE FROM party WHERE id = ?");
+        $stmt->bind_param("i", $id_party_antiga);
+        $stmt->execute();
+    }
+    
+    // === Criar nova party ===
     // Gera o código exclusivo para a nova party
     $codigo = gerarCodigoUnico($conexao);
 
@@ -70,7 +127,8 @@ try {
         "sucesso" => true,
         "id_party" => $id_party,
         "codigo" => $codigo,
-        "senha" => $senha
+        "senha" => $senha,
+        "mensagem" => "Party criada com sucesso! Parties anteriores foram removidas."
     ]);
 
 } catch (Exception $e) {

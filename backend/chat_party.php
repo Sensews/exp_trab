@@ -5,9 +5,14 @@ session_start();
 // Define o tipo da resposta como JSON
 header("Content-Type: application/json");
 
+// Desabilita a saída de erros para manter JSON limpo
+error_reporting(0);
+ini_set('display_errors', 0);
+
 // Importa a conexão com banco e controle de tempo/sessão
 require_once("conexao.php");
 require_once("time.php");
+require_once("simple_crypto.php");
 
 // ✅ Verifica se o usuário está logado
 if (!isset($_SESSION['id_perfil'])) {
@@ -18,23 +23,39 @@ if (!isset($_SESSION['id_perfil'])) {
 // Pega o ID do perfil logado e a ação recebida via GET
 $id_perfil = $_SESSION['id_perfil'];
 $action = $_GET["action"] ?? "";
+$party_id = $_GET["id"] ?? null;
 
 // === Carregar dados da party e membros ===
-if ($action === "carregar") {
-    // Busca os dados da party que o usuário participa ou criou
-    $sql = "
-        SELECT p.*, pf.tipo AS tipo_usuario, pf.arroba AS nome_usuario
-        FROM party p
-        JOIN perfil pf ON pf.id_perfil = ?
-        WHERE p.id IN (
-            SELECT pm.id_party FROM party_membros pm WHERE pm.id_perfil = ?
-            UNION
-            SELECT p2.id FROM party p2 WHERE p2.id_mestre = ?
-        )
-        LIMIT 1
-    ";
-    $stmt = $conexao->prepare($sql);
-    $stmt->bind_param("iii", $id_perfil, $id_perfil, $id_perfil);
+if ($action === "carregar") {    // Se foi passado um ID específico de party, usar ele
+    if ($party_id) {
+        // Verificar se o usuário tem acesso a esta party específica
+        $sql = "
+            SELECT p.*, pf.tipo AS tipo_usuario, pf.arroba AS nome_usuario
+            FROM party p
+            JOIN perfil pf ON pf.id_perfil = ?
+            WHERE p.id = ? AND (
+                EXISTS (SELECT 1 FROM party_membros pm WHERE pm.id_party = p.id AND pm.id_perfil = ?)
+                OR p.id_mestre = ?
+            )
+        ";
+        $stmt = $conexao->prepare($sql);
+        $stmt->bind_param("iiii", $id_perfil, $party_id, $id_perfil, $id_perfil);
+    } else {
+        // Busca a party única que o usuário participa ou criou
+        $sql = "
+            SELECT p.*, pf.tipo AS tipo_usuario, pf.arroba AS nome_usuario
+            FROM party p
+            JOIN perfil pf ON pf.id_perfil = ?
+            WHERE (
+                EXISTS (SELECT 1 FROM party_membros pm WHERE pm.id_party = p.id AND pm.id_perfil = ?)
+                OR p.id_mestre = ?
+            )
+            ORDER BY p.criado_em DESC
+            LIMIT 1
+        ";
+        $stmt = $conexao->prepare($sql);
+        $stmt->bind_param("iii", $id_perfil, $id_perfil, $id_perfil);
+    }
     $stmt->execute();
     $res = $stmt->get_result();
 
@@ -81,31 +102,53 @@ if ($action === "carregar") {
 
 // === Carregar mensagens do chat ===
 if ($action === "mensagens") {
-    // Busca a party em que o usuário participa ou criou
-    $sql = "
-        SELECT p.id 
-        FROM party p
-        WHERE p.id IN (
-            SELECT pm.id_party FROM party_membros pm WHERE pm.id_perfil = ?
-            UNION
-            SELECT p2.id FROM party p2 WHERE p2.id_mestre = ?
-        )
-        LIMIT 1
-    ";
-    $stmt = $conexao->prepare($sql);
-    $stmt->bind_param("ii", $id_perfil, $id_perfil);
-    $stmt->execute();
-    $res = $stmt->get_result();
-
-    // Se o usuário não estiver em party
-    if ($res->num_rows === 0) {
-        echo json_encode([]);
-        exit;
+    $id_party_atual = null;
+    
+    // Se foi passado um ID específico de party, usar ele
+    if ($party_id) {        // Verificar se o usuário tem acesso a esta party específica
+        $sql = "
+            SELECT p.id 
+            FROM party p
+            WHERE p.id = ? AND (
+                EXISTS (SELECT 1 FROM party_membros pm WHERE pm.id_party = p.id AND pm.id_perfil = ?)
+                OR p.id_mestre = ?
+            )
+        ";
+        $stmt = $conexao->prepare($sql);
+        $stmt->bind_param("iii", $party_id, $id_perfil, $id_perfil);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        
+        if ($res->num_rows > 0) {
+            $id_party_atual = $party_id;
+        }
+    } else {
+        // Busca a party única que o usuário participa ou criou
+        $sql = "
+            SELECT p.id 
+            FROM party p
+            WHERE (
+                EXISTS (SELECT 1 FROM party_membros pm WHERE pm.id_party = p.id AND pm.id_perfil = ?)
+                OR p.id_mestre = ?
+            )
+            ORDER BY p.criado_em DESC
+            LIMIT 1
+        ";
+        $stmt = $conexao->prepare($sql);
+        $stmt->bind_param("ii", $id_perfil, $id_perfil);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        
+        if ($res->num_rows > 0) {
+            $id_party_atual = $res->fetch_assoc()["id"];
+        }
     }
 
-    $id_party = $res->fetch_assoc()["id"];
-
-    // Busca todas as mensagens do chat da party
+    // Se o usuário não estiver em party
+    if (!$id_party_atual) {
+        echo json_encode([]);
+        exit;
+    }    // Busca todas as mensagens do chat da party
     $sql = "
         SELECT pf.arroba, pc.mensagem, pc.criado_em
         FROM party_chat pc
@@ -114,7 +157,7 @@ if ($action === "mensagens") {
         ORDER BY pc.criado_em ASC
     ";
     $stmt = $conexao->prepare($sql);
-    $stmt->bind_param("i", $id_party);
+    $stmt->bind_param("i", $id_party_atual);
     $stmt->execute();
     $mensagens = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
@@ -125,43 +168,93 @@ if ($action === "mensagens") {
 
 // === Enviar nova mensagem para o chat da party ===
 if ($action === "enviar") {
-    $json = json_decode(file_get_contents("php://input"), true);
-    $mensagem = trim($json["mensagem"] ?? "");
+    $input_data = file_get_contents("php://input");
+    $json = json_decode($input_data, true);
+    
+    $mensagem = null;
+    
+    // Verificar se há dados criptografados
+    if (isset($json['encrypted_data'])) {
+        try {
+            $crypto = new SimpleCrypto();
+            $decrypted_json = $crypto->decrypt($json['encrypted_data']);
+            $decrypted_data = json_decode($decrypted_json, true);
+            
+            if (!$decrypted_data) {
+                throw new Exception("Dados inválidos após descriptografia");
+            }
+            
+            $mensagem = trim($decrypted_data["mensagem"] ?? "");
+            
+        } catch (Exception $e) {
+            echo json_encode(["success" => false, "erro" => "Erro na descriptografia: " . $e->getMessage()]);
+            exit;
+        }
+    } else {
+        // Fallback: dados não criptografados
+        $mensagem = trim($json["mensagem"] ?? "");
+    }
 
     // Valida mensagem vazia
     if ($mensagem === "") {
         echo json_encode(["success" => false, "erro" => "Mensagem vazia."]);
         exit;
+    }    // Determinar a party para enviar a mensagem
+    $id_party_envio = null;
+    
+    // Se foi passado um ID específico de party, usar ele
+    if ($party_id) {
+        // Verificar se o usuário tem acesso a esta party específica
+        $sql = "
+            SELECT p.id 
+            FROM party p
+            WHERE p.id = ? AND (
+                p.id IN (
+                    SELECT pm.id_party FROM party_membros pm WHERE pm.id_perfil = ?
+                ) OR p.id_mestre = ?
+            )
+        ";
+        $stmt = $conexao->prepare($sql);
+        $stmt->bind_param("iii", $party_id, $id_perfil, $id_perfil);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        
+        if ($res->num_rows > 0) {
+            $id_party_envio = $party_id;
+        }
+    } else {
+        // Busca qualquer party que o usuário participa ou criou
+        $sql = "
+            SELECT p.id 
+            FROM party p
+            WHERE p.id IN (
+                SELECT pm.id_party FROM party_membros pm WHERE pm.id_perfil = ?
+                UNION
+                SELECT p2.id FROM party p2 WHERE p2.id_mestre = ?
+            )
+            ORDER BY p.criado_em DESC
+            LIMIT 1
+        ";
+        $stmt = $conexao->prepare($sql);
+        $stmt->bind_param("ii", $id_perfil, $id_perfil);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        
+        if ($res->num_rows > 0) {
+            $id_party_envio = $res->fetch_assoc()["id"];
+        }
     }
 
-    // Busca party do usuário (como membro ou mestre)
-    $sql = "
-        SELECT p.id 
-        FROM party p
-        WHERE p.id IN (
-            SELECT pm.id_party FROM party_membros pm WHERE pm.id_perfil = ?
-            UNION
-            SELECT p2.id FROM party p2 WHERE p2.id_mestre = ?
-        )
-        LIMIT 1
-    ";
-    $stmt = $conexao->prepare($sql);
-    $stmt->bind_param("ii", $id_perfil, $id_perfil);
-    $stmt->execute();
-    $res = $stmt->get_result();
-
-    // Se não estiver em nenhuma party
-    if ($res->num_rows === 0) {
-        echo json_encode(["success" => false, "erro" => "Você não está em nenhuma party."]);
+    // Se não conseguiu determinar a party
+    if (!$id_party_envio) {
+        echo json_encode(["success" => false, "erro" => "Você não tem acesso a esta party."]);
         exit;
     }
-
-    $id_party = $res->fetch_assoc()["id"];
 
     // Insere a nova mensagem no chat
     $sql = "INSERT INTO party_chat (id_party, id_perfil, mensagem) VALUES (?, ?, ?)";
     $stmt = $conexao->prepare($sql);
-    $stmt->bind_param("iis", $id_party, $id_perfil, $mensagem);
+    $stmt->bind_param("iis", $id_party_envio, $id_perfil, $mensagem);
     $stmt->execute();
 
     // Retorna sucesso
@@ -171,29 +264,70 @@ if ($action === "enviar") {
 
 // === Remover membro da party (somente mestre) ===
 if ($action === "remover") {
-    $json = json_decode(file_get_contents("php://input"), true);
-    $arroba = trim($json["arroba"] ?? "");
+    $input_data = file_get_contents("php://input");
+    $json = json_decode($input_data, true);
+    
+    $arroba = null;
+    
+    // Verificar se há dados criptografados
+    if (isset($json['encrypted_data'])) {
+        try {
+            $crypto = new SimpleCrypto();
+            $decrypted_json = $crypto->decrypt($json['encrypted_data']);
+            $decrypted_data = json_decode($decrypted_json, true);
+            
+            if (!$decrypted_data) {
+                throw new Exception("Dados inválidos após descriptografia");
+            }
+            
+            $arroba = trim($decrypted_data["arroba"] ?? "");
+            
+        } catch (Exception $e) {
+            echo json_encode(["success" => false, "erro" => "Erro na descriptografia: " . $e->getMessage()]);
+            exit;
+        }
+    } else {
+        // Fallback: dados não criptografados
+        $arroba = trim($json["arroba"] ?? "");
+    }
 
     // Arroba obrigatória
     if ($arroba === "") {
         echo json_encode(["success" => false, "erro" => "Arroba inválida."]);
         exit;
+    }    // Determinar a party para remoção
+    $id_party_remocao = null;
+    
+    // Se foi passado um ID específico de party, usar ele
+    if ($party_id) {
+        // Verificar se o usuário é mestre desta party específica
+        $sql = "SELECT id FROM party WHERE id = ? AND id_mestre = ?";
+        $stmt = $conexao->prepare($sql);
+        $stmt->bind_param("ii", $party_id, $id_perfil);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        
+        if ($res->num_rows > 0) {
+            $id_party_remocao = $party_id;
+        }
+    } else {
+        // Busca qualquer party que o usuário seja mestre
+        $sql = "SELECT id FROM party WHERE id_mestre = ? ORDER BY criado_em DESC LIMIT 1";
+        $stmt = $conexao->prepare($sql);
+        $stmt->bind_param("i", $id_perfil);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        
+        if ($res->num_rows > 0) {
+            $id_party_remocao = $res->fetch_assoc()["id"];
+        }
     }
 
-    // Verifica se o usuário atual é mestre de alguma party
-    $sql = "SELECT id FROM party WHERE id_mestre = ?";
-    $stmt = $conexao->prepare($sql);
-    $stmt->bind_param("i", $id_perfil);
-    $stmt->execute();
-    $res = $stmt->get_result();
-
-    // Se não for mestre de nenhuma party
-    if ($res->num_rows === 0) {
-        echo json_encode(["success" => false, "erro" => "Você não é mestre de nenhuma party."]);
+    // Se não conseguiu determinar a party ou não é mestre
+    if (!$id_party_remocao) {
+        echo json_encode(["success" => false, "erro" => "Você não é mestre desta party."]);
         exit;
     }
-
-    $id_party = $res->fetch_assoc()["id"];
 
     // Busca o id_perfil do usuário a ser removido
     $sql = "SELECT id_perfil FROM perfil WHERE arroba = ?";
@@ -208,12 +342,10 @@ if ($action === "remover") {
         exit;
     }
 
-    $id_remover = $res->fetch_assoc()["id_perfil"];
-
-    // Remove o membro da tabela party_membros
+    $id_remover = $res->fetch_assoc()["id_perfil"];    // Remove o membro da tabela party_membros
     $sql = "DELETE FROM party_membros WHERE id_party = ? AND id_perfil = ?";
     $stmt = $conexao->prepare($sql);
-    $stmt->bind_param("ii", $id_party, $id_remover);
+    $stmt->bind_param("ii", $id_party_remocao, $id_remover);
     $stmt->execute();
 
     // Retorna sucesso

@@ -1,6 +1,10 @@
 <?php
 header('Content-Type: application/json; charset=utf-8');
 
+// Desabilita a saída de erros para manter JSON limpo
+error_reporting(0);
+ini_set('display_errors', 0);
+
 // Ativa relatórios de erro no estilo de exceções para o MySQLi
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
@@ -9,6 +13,7 @@ session_start();
 
 require_once("conexao.php");
 require_once("time.php");
+require_once("simple_crypto.php");
 
 // Verifica se o usuário está autenticado
 if (!isset($_SESSION['id_perfil'])) {
@@ -20,9 +25,32 @@ if (!isset($_SESSION['id_perfil'])) {
 // Recupera o ID do perfil da sessão
 $id_perfil = $_SESSION['id_perfil'];
 
-// Captura os dados enviados via POST
-$codigo = $_POST['codigo'] ?? null;
-$senha = $_POST['senha'] ?? null;
+// Verifica se há dados criptografados
+$encrypted_data = $_POST['encrypted_data'] ?? null;
+
+if ($encrypted_data) {
+    // Descriptografar dados
+    try {
+        $crypto = new SimpleCrypto();
+        $decrypted_json = $crypto->decrypt($encrypted_data);
+        $data = json_decode($decrypted_json, true);
+        
+        if (!$data) {
+            throw new Exception("Dados inválidos após descriptografia");
+        }
+        
+        $codigo = $data['codigo'] ?? null;
+        $senha = $data['senha'] ?? null;
+        
+    } catch (Exception $e) {
+        echo json_encode(["sucesso" => false, "erro" => "Erro na descriptografia: " . $e->getMessage()]);
+        exit;
+    }
+} else {
+    // Fallback: captura dados não criptografados
+    $codigo = $_POST['codigo'] ?? null;
+    $senha = $_POST['senha'] ?? null;
+}
 
 // Validação básica dos campos obrigatórios
 if (!$codigo || !$senha) {

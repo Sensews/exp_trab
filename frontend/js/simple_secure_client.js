@@ -212,6 +212,118 @@ class SimpleSecureClient {
             console.error('Erro ao criar post criptografado:', error);
             throw error;
         }
+    }    /**
+     * Cria uma nova party com criptografia
+     */
+    async createParty(partyData) {
+        try {
+            if (!this.initialized) {
+                await this.initialize();
+            }
+
+            const result = await this.sendEncryptedData('../backend/criar_party.php', partyData);
+            return result;
+        } catch (error) {
+            console.error('Erro ao criar party criptografada:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Entra em uma party com criptografia
+     */
+    async joinParty(joinData) {
+        try {
+            if (!this.initialized) {
+                await this.initialize();
+            }
+
+            const result = await this.sendEncryptedData('../backend/entrar_party.php', joinData);
+            return result;
+        } catch (error) {
+            console.error('Erro ao entrar na party criptografada:', error);
+            throw error;
+        }
+    }    /**
+     * Envia mensagem do chat com criptografia
+     */
+    async sendChatMessage(messageData, customUrl = null) {
+        try {
+            if (!this.initialized) {
+                await this.initialize();
+            }
+
+            const encrypted = this.encrypt(messageData);
+            const url = customUrl || '../backend/chat_party.php?action=enviar';
+            
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    encrypted_data: encrypted
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const responseText = await response.text();
+            
+            try {
+                const jsonResponse = JSON.parse(responseText);
+                return jsonResponse;
+            } catch (parseError) {
+                console.error('Resposta não é JSON válido:', responseText.substring(0, 200));
+                throw new Error('Resposta inválida do servidor');
+            }
+
+        } catch (error) {
+            console.error('Erro ao enviar mensagem criptografada:', error);
+            throw error;
+        }
+    }    /**
+     * Remove membro da party com criptografia (somente mestre)
+     */
+    async removeMember(memberData, customUrl = null) {
+        try {
+            if (!this.initialized) {
+                await this.initialize();
+            }
+
+            const encrypted = this.encrypt(memberData);
+            const url = customUrl || '../backend/chat_party.php?action=remover';
+            
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    encrypted_data: encrypted
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const responseText = await response.text();
+            
+            try {
+                const jsonResponse = JSON.parse(responseText);
+                return jsonResponse;
+            } catch (parseError) {
+                console.error('Resposta não é JSON válido:', responseText.substring(0, 200));
+                throw new Error('Resposta inválida do servidor');
+            }
+
+        } catch (error) {
+            console.error('Erro ao remover membro criptografado:', error);
+            throw error;
+        }
     }
 }
 

@@ -43,40 +43,51 @@ document.addEventListener('DOMContentLoaded', async () => {
     mensagemErro.textContent = '';
 
     const codigo = codigoInput.value.trim();
-    const senha = senhaInput.value.trim();
-
-    if (!codigo || !senha || !id_perfil) {
+    const senha = senhaInput.value.trim();    if (!codigo || !senha || !id_perfil) {
       mensagemErro.textContent = 'Preencha todos os campos.';
       return;
     }
 
-    const formData = new FormData();
-    formData.append('codigo', codigo);
-    formData.append('senha', senha);
-    formData.append('id_perfil', id_perfil);
-
     try {
-      const response = await fetch('../backend/entrar_party.php', {
-        method: 'POST',
-        body: formData
-      });
+        let result;
+        
+        // Tentar usar criptografia primeiro
+        if (window.simpleSecureClient && window.simpleSecureClient.initialized) {
+            const joinData = {
+                codigo: codigo,
+                senha: senha
+            };
+            
+            result = await window.simpleSecureClient.joinParty(joinData);
+        } else {
+            // Fallback: método não criptografado
+            const formData = new FormData();
+            formData.append('codigo', codigo);
+            formData.append('senha', senha);
+            formData.append('id_perfil', id_perfil);
 
-      if (!response.ok) {
-        throw new Error('Erro de resposta do servidor.');
-      }
+            const response = await fetch('../backend/entrar_party.php', {
+                method: 'POST',
+                body: formData
+            });
 
-      const result = await response.json();
+            if (!response.ok) {
+                throw new Error('Erro de resposta do servidor.');
+            }
 
-      if (result.sucesso) {
-        // Redireciona para a party com ID retornado
-        window.location.href = 'party.html?id=' + result.id_party;
-      } else {
-        // Mostra erro retornado do backend
-        mensagemErro.textContent = result.erro || 'Erro ao entrar na party.';
-      }
+            result = await response.json();
+        }
+
+        if (result.sucesso) {
+            // Redireciona para a party com ID retornado
+            window.location.href = 'party.html?id=' + result.id_party;
+        } else {
+            // Mostra erro retornado do backend
+            mensagemErro.textContent = result.erro || 'Erro ao entrar na party.';
+        }
     } catch (error) {
-      console.error('Erro na requisição:', error);
-      mensagemErro.textContent = 'Erro na comunicação com o servidor.';
+        console.error('Erro na requisição:', error);
+        mensagemErro.textContent = 'Erro na comunicação com o servidor.';
     }
   });
 });
