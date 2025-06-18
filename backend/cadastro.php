@@ -1,16 +1,15 @@
 <?php
 require_once __DIR__ . '/vendor/autoload.php';
 include_once __DIR__ . '/limpar_pendentes.php';
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
-require 'PHPMailer/src/Exception.php';
-require 'PHPMailer/src/PHPMailer.php';
-require 'PHPMailer/src/SMTP.php';
 require_once 'env_decoder.php';
+
 
 $conn = new mysqli("localhost", "root", "", "oblivion");
 if ($conn->connect_error) {
