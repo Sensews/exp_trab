@@ -7,12 +7,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!dados.logado) {
       window.location.href = "../frontend/erro.html";
       return;
-    }
-
-    document.body.style.display = "block";
+    }    document.body.style.display = "block";
   } catch (e) {
     window.location.href = "../frontend/erro.html";
     return;
+  }
+
+  // Aguardar inicialização da criptografia
+  console.log("Aguardando inicialização da criptografia...");
+  if (window.simpleSecureClient) {
+    await window.simpleSecureClient.initialize();
+    console.log("Criptografia inicializada:", window.simpleSecureClient.initialized);
+  } else {
+    console.warn("SimpleSecureClient não encontrado - funcionará sem criptografia");
   }
 
   const form = document.getElementById('formEntrarParty');
