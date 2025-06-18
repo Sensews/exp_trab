@@ -11,27 +11,34 @@ class SimpleSecureClient {
      * Inicializa o cliente (agora apenas marca como inicializado)
      */
     async initialize() {
-        if (this.initialized) return true;
-
-        try {
-            console.log('Inicializando cliente de criptografia...');
-            
+        if (this.initialized) return true;        try {
             // Não precisa mais buscar chave do servidor - usando chave fixa
             this.initialized = true;
-            console.log('Cliente de criptografia inicializado com sucesso');
             return true;
 
         } catch (error) {
             console.error('Erro ao inicializar cliente de criptografia:', error);
             throw error;
         }
-    }/**
+    }    /**
      * Criptografa dados usando AES-256-CBC
      */
     encrypt(data) {
         try {
+            // Garantir que data é um objeto (não string)
+            let dataObj;
+            if (typeof data === 'string') {
+                try {
+                    dataObj = JSON.parse(data);
+                } catch (e) {
+                    throw new Error('Data deve ser um objeto ou JSON válido');
+                }
+            } else {
+                dataObj = { ...data }; // Clonar para não modificar original
+            }
+            
             // Adicionar timestamp
-            data.timestamp = Date.now();
+            dataObj.timestamp = Date.now();
             
             // Usar chave fixa para compatibilidade (em produção, usar chave do servidor)
             const keyString = 'MySecretKey12345MySecretKey12345'; // 32 caracteres = 256 bits
@@ -39,7 +46,7 @@ class SimpleSecureClient {
             const iv = CryptoJS.lib.WordArray.random(16); // 128 bits para CBC
             
             // Criptografar usando AES-256-CBC
-            const encrypted = CryptoJS.AES.encrypt(JSON.stringify(data), key, {
+            const encrypted = CryptoJS.AES.encrypt(JSON.stringify(dataObj), key, {
                 iv: iv,
                 mode: CryptoJS.mode.CBC,
                 padding: CryptoJS.pad.Pkcs7
@@ -54,7 +61,7 @@ class SimpleSecureClient {
             console.error('Erro na criptografia:', error);
             throw error;
         }
-    }    /**
+    }/**
      * Envia dados criptografados para o servidor
      */
     async sendEncryptedData(endpoint, data) {
@@ -104,17 +111,12 @@ class SimpleSecureClient {
             console.error('Erro ao enviar dados criptografados:', error);
             throw error;
         }
-    }
-
-    /**
+    }    /**
      * Registra um novo usuário com criptografia
      */
     async registerUser(userData) {
-        console.log('Iniciando cadastro com criptografia...');
-        
         try {
             const result = await this.sendEncryptedData('../backend/cadastro.php', userData);
-            console.log('Cadastro realizado com sucesso:', result);
             return result;
 
         } catch (error) {
@@ -127,15 +129,26 @@ class SimpleSecureClient {
      * Faz login com criptografia
      */
     async loginUser(credentials) {
-        console.log('Iniciando login com criptografia...');
-        
         try {
             const result = await this.sendEncryptedData('../backend/login.php', credentials);
-            console.log('Login realizado com sucesso:', result);
             return result;
 
         } catch (error) {
             console.error('Erro no login criptografado:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Salva perfil com criptografia
+     */
+    async saveProfile(profileData) {
+        try {
+            const result = await this.sendEncryptedData('../backend/perfil.php?action=salvar', profileData);
+            return result;
+
+        } catch (error) {
+            console.error('Erro ao salvar perfil criptografado:', error);
             throw error;
         }
     }
@@ -148,10 +161,8 @@ window.simpleSecureClient = new SimpleSecureClient();
 document.addEventListener('DOMContentLoaded', () => {
     // Aguardar um pouco para garantir que as bibliotecas de crypto estão carregadas
     setTimeout(async () => {
-        if (typeof CryptoJS !== 'undefined') {
-            try {
+        if (typeof CryptoJS !== 'undefined') {            try {
                 await window.simpleSecureClient.initialize();
-                console.log('SimpleSecureClient pronto para uso');
             } catch (error) {
                 console.warn('Erro ao auto-inicializar SimpleSecureClient:', error);
             }

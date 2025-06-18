@@ -15,28 +15,13 @@ campoUsuario?.addEventListener("input", function () {
 });
 
 document.addEventListener("DOMContentLoaded", function () {
-  // Carregar bibliotecas de criptografia
-  const cryptoScript = document.createElement('script');
-  cryptoScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js';
-  document.head.appendChild(cryptoScript);
-  
-  const jsEncryptScript = document.createElement('script');
-  jsEncryptScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/3.3.0/jsencrypt.min.js';
-  document.head.appendChild(jsEncryptScript);
-  
   // Aguardar carregamento das bibliotecas
   setTimeout(() => {
-    const secureClientScript = document.createElement('script');
-    secureClientScript.src = 'js/secure_client.js';
-    document.head.appendChild(secureClientScript);
-    
-    setTimeout(() => {
-      initializeLoginSecure();
-    }, 500);
-  }, 1000);
+    initializeLogin();
+  }, 500);
 });
 
-function initializeLoginSecure() {
+function initializeLogin() {
   const form = document.getElementById("form-login");
 
   if (!form) {
@@ -61,28 +46,41 @@ function initializeLoginSecure() {
         senha: dados.get("senha")
       };
 
-      console.log("Tentando login com criptografia híbrida...");
-
       let response;
-      try {
-        // Tentar login criptografado
-        response = await secureClient.sendSecureData('login', loginData);
-        
-        if (response.encrypted && response.encryptedData) {
-          // Descriptografar resposta
-          const decryptedResponse = secureClient.decryptMessageAes(
-            response.encryptedData,
-            secureClient.generateAesKey().key,
-            response.iv
-          );
-          response = decryptedResponse;
+      let encryptedMode = false;
+
+      // Verificar se o cliente de criptografia está disponível
+      if (typeof window.simpleSecureClient !== 'undefined') {
+        try {
+          // Tentar login criptografado
+          const encryptedData = window.simpleSecureClient.encrypt(loginData);
+          
+          const formData = new FormData();
+          formData.append('encrypted_data', encryptedData);
+          
+          const loginResponse = await fetch("../backend/login.php", {
+            method: "POST",
+            body: formData,
+          });
+
+          const contentType = loginResponse.headers.get("content-type");
+          const text = await loginResponse.text();
+
+          if (!contentType || !contentType.includes("application/json")) {
+            throw new Error("Resposta inválida do servidor");
+          }
+
+          response = JSON.parse(text);
+          encryptedMode = true;
+          
+        } catch (cryptoError) {
+          console.warn('Erro na criptografia, tentando método tradicional:', cryptoError);
+          encryptedMode = false;
         }
-        
-        console.log("Login com criptografia híbrida realizado com sucesso");
-      } catch (cryptoError) {
-        console.warn('Erro na criptografia, tentando método tradicional:', cryptoError);
-        
-        // Fallback para método tradicional
+      }
+
+      // Fallback para método tradicional se criptografia falhou
+      if (!encryptedMode) {
         const traditionalResponse = await fetch("../backend/login.php", {
           method: "POST",
           body: dados,
@@ -92,7 +90,6 @@ function initializeLoginSecure() {
         const text = await traditionalResponse.text();
 
         if (!contentType || !contentType.includes("application/json")) {
-          console.error("🛑 Conteúdo retornado pelo servidor (não é JSON):\n" + text);
           throw new Error("Resposta inválida do servidor");
         }
 
@@ -100,13 +97,6 @@ function initializeLoginSecure() {
       }
 
       if (response.status === "ok") {
-        console.log("✅ Login realizado:", response);
-        
-        // Salvar dados na sessão local se necessário
-        if (response.encrypted) {
-          console.log("🔒 Login com criptografia híbrida ativada");
-        }
-        
         // Redirecionar para página principal
         window.location.href = "main.html";
       } else {
@@ -115,8 +105,20 @@ function initializeLoginSecure() {
 
     } catch (error) {
       console.error("❌ Erro no login:", error);
-      alert("Erro no login: " + error.message);
-    } finally {      // Reabilitar botão
+      
+      // Mostrar erro mais amigável ao usuário
+      let errorMessage = "Erro no login. Tente novamente.";
+      if (error.message.includes("Usuário não encontrado")) {
+        errorMessage = "Usuário não encontrado.";
+      } else if (error.message.includes("Senha incorreta")) {
+        errorMessage = "Senha incorreta.";
+      } else if (error.message.includes("Preencha todos os campos")) {
+        errorMessage = "Preencha todos os campos.";
+      }
+      
+      alert(errorMessage);
+    } finally {
+      // Reabilitar botão
       submitButton.disabled = false;
       submitButton.textContent = originalText;
     }

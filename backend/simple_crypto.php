@@ -4,7 +4,7 @@
  * Usa apenas AES-256-GCM para simplicidade e compatibilidade
  */
 
-class SimpleCryptoHandler {
+class SimpleCrypto {
     private $secretKey;
     
     public function __construct() {
@@ -12,11 +12,9 @@ class SimpleCryptoHandler {
     }
       /**
      * Inicializa a chave secreta
-     */
-    private function initializeKey() {
+     */    private function initializeKey() {
         // Usar chave fixa para compatibilidade (em produção, usar chave segura)
         $this->secretKey = 'MySecretKey12345MySecretKey12345'; // 32 caracteres = 256 bits
-        error_log('Chave fixa inicializada para desenvolvimento');
     }
       /**
      * Criptografa dados usando AES-256-CBC (compatível com CryptoJS)
@@ -43,9 +41,7 @@ class SimpleCryptoHandler {
             $encrypted = base64_encode($iv . $ciphertext);
             
             return $encrypted;
-            
-        } catch (Exception $e) {
-            error_log('Erro na criptografia: ' . $e->getMessage());
+              } catch (Exception $e) {
             throw $e;
         }
     }
@@ -91,9 +87,7 @@ class SimpleCryptoHandler {
             }
             
             return $decodedData;
-            
-        } catch (Exception $e) {
-            error_log('Erro na descriptografia: ' . $e->getMessage());
+              } catch (Exception $e) {
             throw $e;
         }
     }
@@ -120,57 +114,49 @@ class SimpleCryptoHandler {
 // Processar requisições apenas se for chamado diretamente
 if (basename($_SERVER['PHP_SELF']) === 'simple_crypto.php') {
     header('Content-Type: application/json');
-
-    try {
-        $cryptoHandler = new SimpleCryptoHandler();
+    
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $action = $_POST['action'] ?? '';
         
-        // Verificar ação
-        $action = $_GET['action'] ?? $_POST['action'] ?? '';
-        
-        if ($action === 'getClientKey') {
-            // Retornar chave do cliente
-            echo json_encode([
-                'success' => true,
-                'clientKey' => $cryptoHandler->getClientKey()
-            ]);
-            exit;
-        }
-        
-        if ($action === 'decrypt') {
-            // Descriptografar dados
-            $encryptedData = $_POST['encrypted_data'] ?? '';
-            
-            if (!$encryptedData) {
-                throw new Exception('Dados criptografados não fornecidos');
+        if ($action === 'test') {
+            try {
+                $crypto = new SimpleCrypto();
+                
+                $testData = [
+                    'usuario' => 'teste@example.com',
+                    'senha' => 'senha123',
+                    'timestamp' => time()
+                ];
+                
+                $encrypted = $crypto->encrypt($testData);
+                $decrypted = $crypto->decrypt($encrypted);
+                
+                echo json_encode([
+                    'status' => 'ok',
+                    'message' => 'Teste de criptografia realizado com sucesso',
+                    'original' => $testData,
+                    'encrypted' => $encrypted,
+                    'decrypted' => $decrypted
+                ]);
+                
+            } catch (Exception $e) {
+                echo json_encode([
+                    'status' => 'erro',
+                    'message' => 'Erro no teste: ' . $e->getMessage()
+                ]);
             }
-            
-            $decryptedData = $cryptoHandler->decrypt($encryptedData);
-            
-            // Validar timestamp
-            if (isset($decryptedData['timestamp'])) {
-                if (!$cryptoHandler->validateTimestamp($decryptedData['timestamp'])) {
-                    throw new Exception('Timestamp inválido - possível replay attack');
-                }
-            }
-            
-            // Retornar dados descriptografados
+        } else {
             echo json_encode([
-                'success' => true,
-                'data' => $decryptedData
+                'status' => 'erro',
+                'message' => 'Ação não reconhecida'
             ]);
-            exit;
         }
-        
-        // Ação não reconhecida
-        throw new Exception('Ação não reconhecida');
-        
-    } catch (Exception $e) {
-        http_response_code(400);
+    } else {
         echo json_encode([
-            'success' => false,
-            'error' => $e->getMessage()
+            'status' => 'erro',
+            'message' => 'Método não permitido'
         ]);
-        exit;
     }
+    exit;
 }
 ?>
