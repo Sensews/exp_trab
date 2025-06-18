@@ -5,18 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Anotações</title>
 
-  <!-- Link style -->
+  <!-- Estilos -->
   <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="css/anotacoes.css" />
-  <link rel="stylesheet" href="css/burg.css">
+  <link rel="stylesheet" href="css/burg.css" />
   <link rel="stylesheet" href="css/fotoperfil.css" />
 
-  <!-- Ícones  -->
+  <!-- Ícones -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/loaders/GLTFLoader.js"></script>
 
-  <!-- Quill - Cabeçalho word -->
+  <!-- Quill Editor -->
   <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet" />
   <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
 
@@ -24,58 +24,67 @@
   <script src="js/stars.js"></script>
   <script src="js/anotacoes.js" defer></script>
   <script src="js/burg_perfil.js" defer></script>
+
+  <style>body { display: none; }</style>
 </head>
 <body>
   <div class="page-wrapper">
-  <header>
-  <h1 class="logo" onclick="window.location.href='main.html'">OBLIVION</h1>
-  <div class="nav-wrapper">
-    <nav>
-      <button class="btn"><a href="main.html">Início</a></button>
-      <div class="dropdown">
-        <button class="btn">Jogo</button>
-        <div class="dropdown-content">
-          <a href="ficha.html">Fichas</a>
-          <a href="map.html">Mapas</a>
-          <a href="anotacoes.html">Anotações</a>
-          <a href="party.html">Party</a>
-        </div>
+    <header>
+      <h1 class="logo" onclick="window.location.href='main.html'">OBLIVION</h1>
+      
+      <!-- Navegação principal -->
+      <div class="nav-wrapper">
+        <nav>
+          <button class="btn"><a href="main.html">Início</a></button>
+
+          <!-- Dropdown de funcionalidades de jogo -->
+          <div class="dropdown">
+            <button class="btn">Jogo</button>
+            <div class="dropdown-content">
+              <a href="ficha.html">Fichas</a>
+              <a href="map.html">Mapas</a>
+              <a href="anotacoes.html">Anotações</a>
+              <a href="party.html">Party</a>
+            </div>
+          </div>
+
+          <button class="btn"><a href="comunidade.html">Comunidade</a></button>
+        </nav>
+
+        <!-- Ícone de perfil -->
+        <a href="perfil.html" title="Perfil">
+          <div class="profile-icon">
+            <img id="iconHeader" src="https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png" alt="Perfil">
+          </div>
+        </a>
+
+        <!-- Menu hamburger mobile -->
+        <button class="hamburger" id="hamburgerMenuMobile" aria-label="Abrir menu">☰</button>
       </div>
-      <button class="btn"><a href="comunidade.html">Comunidade</a></button>
+    </header>
+
+    <!-- Navegação para dispositivos móveis -->
+    <nav class="mobile-nav">
+      <a class="btn" href="main.html">Início</a>
+      <a class="btn" href="ficha.html">Fichas</a>
+      <a class="btn" href="map.html">Mapas</a>
+      <a class="btn" href="anotacoes.html">Anotações</a>
+      <a class="btn" href="comunidade.html">Comunidade</a>
+      <a class="btn" href="party.html">Party</a>
     </nav>
 
-    <!-- Botão de perfil -->
-    <a href="perfil.html" title="Perfil">
-      <div class="profile-icon">
-        <img id="iconHeader" src="https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png" alt="Perfil">
-      </div>
-    </a>
-
-    <!-- Botão hambúrguer -->
-    <button class="hamburger" id="hamburgerMenuMobile" aria-label="Abrir menu">☰</button>
-  </div>
-</header>
-
-<!-- Menu mobile hamburguer (agora incluído!) -->
-<nav class="mobile-nav">
-  <a class="btn" href="main.html">Início</a>
-  <a class="btn" href="ficha.html">Fichas</a>
-  <a class="btn" href="map.html">Mapas</a>
-  <a class="btn" href="anotacoes.html">Anotações</a>
-  <a class="btn" href="comunidade.html">Comunidade</a>
-  <a class="btn" href="party.html">Party</a>
-</nav>
+    <!-- Conteúdo principal da página -->
     <main>
       <div class="content-box">
         <h2>Minhas Anotações</h2>
         <p>Coloque o título de sua sessão, escreva suas ideias e mantenha tudo organizado.</p>
 
-        <!-- Quill -->
+        <!-- Área do editor de texto -->
         <div class="editor-box">
           <div id="editor-container"></div>
         </div>
 
-        <!-- Botões -->
+        <!-- Botões de ação -->
         <div class="btn-container">
           <button class="btn" onclick="salvarAnotacoes()">💾 Salvar</button>
           <button class="btn" onclick="exportarAnotacoes()">📤 Exportar</button>
@@ -83,11 +92,14 @@
         </div>
       </div>
     </main>
+    <footer>
+      <p>© 2025 Oblivion RPG - Todos os direitos reservados.</p>
+    </footer>
   </div>
   <!-- Botão hamburger projetos -->
   <button id="hamburgerProjetos" aria-label="Abrir menu de projetos">☰</button>
 
-  <!-- sidebar projetos -->
+  <!-- Sidebar com os projetos e anotações -->
   <aside id="sidebarProjetos">
     <h3>📁 Meus Projetos</h3>
     <div id="projetosContainer">
@@ -101,11 +113,8 @@
         <button class="btn-nova-nota" onclick="criarNota()">➕ Nova Anotação</button>
       </div>
     </div>
-
+    <!-- Botão para criar novo projeto -->
     <button class="btn btn-novo-projeto" onclick="criarProjeto()">➕ Novo Projeto</button>
   </aside>
-  <footer>
-    <p>© 2025 Oblivion RPG - Todos os direitos reservados.</p>
-  </footer>
 </body>
 </html>

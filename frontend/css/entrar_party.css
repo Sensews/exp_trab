@@ -1,37 +1,43 @@
 @charset "UTF-8";
 
 html, body {
-  background-color: rgba(18, 18, 18, 0.95); 
+  background-color: rgba(18, 18, 18, 0.95);
   font-family: 'JetBrains Mono', monospace;
   color: #ffffff;
   margin: 0;
   padding: 0;
   text-align: center;
-  overflow-x: hidden;
+  overflow-x: hidden; /* Evita barra lateral */
   width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
+  height: 100%;
 }
 
-/* CONTAINER CENTRALIZADO */
+body {
+  max-width: 100vw; /* Impede overflow horizontal */
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
 .container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding: 150px 20px 40px; 
-  min-height: 100vh;
+  padding: 150px 20px 40px;
   max-width: 600px;
   margin: 0 auto;
   box-sizing: border-box;
-  overflow: hidden;
+  overflow-x: hidden; /* Evita barra lateral dentro do container */
+  width: 100%;
+  min-height: calc(100vh - 100px);
 }
 
 /* Título principal */
 .container h2 {
   font-size: 36px;
   margin: 20px 0 10px;
-  text-shadow: 2px 2px 10px #00ffaa7e; 
+  text-shadow: 2px 2px 10px #00ffaa7e;
   color: #ffffff;
 }
 
@@ -48,7 +54,6 @@ form {
   gap: 16px;
   align-items: center;
   font-size: 16px;
-  box-sizing: border-box;
   justify-content: flex-start;
   position: relative;
 }
@@ -57,9 +62,12 @@ label {
   font-size: 18px;
   font-weight: bold;
   color: #00ffaa;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
 }
 
-/* Campos de entrada (texto, senha e select) */
+/* Inputs */
 input[type="text"],
 input[type="password"],
 select {
@@ -74,8 +82,9 @@ select {
   box-sizing: border-box;
 }
 
-/* Botão de envio */
-button[type="submit"] {
+/* Botões */
+button[type="submit"],
+#btnIrParty {
   font-size: 18px;
   padding: 12px;
   font-weight: bold;
@@ -87,19 +96,89 @@ button[type="submit"] {
   transition: 0.3s;
 }
 
-button[type="submit"]:hover {
+button[type="submit"]:hover,
+#btnIrParty:hover {
   background-color: #00ffaa;
   color: #121212;
 }
 
-/* Exibição de mensagens de erro */
+/* Mensagem de erro */
 .mensagem-erro {
   font-size: 15px;
   color: red;
   margin-top: -5px;
 }
 
-/* RESPONSIVIDADE */
+/* Resultado da party */
+#resultadoCriacao {
+  background-color: #1e1e1e;
+  border: 2px solid #00ffaa;
+  border-radius: 10px;
+  padding: 20px;
+  margin-top: 20px;
+  box-shadow: 0 0 12px #00ffaa44;
+  color: #fff;
+  text-align: center;
+  max-width: 350px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+#resultadoCriacao p {
+  font-size: 16px;
+  margin: 8px 0;
+}
+
+#resultadoCriacao h3 {
+  font-size: 18px;
+  margin-bottom: 10px;
+  color: #00ffaa;
+}
+
+#btnCopiarDados,
+#btnExcluirParty {
+  font-size: 14px;
+  padding: 8px 16px;
+  font-weight: bold;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s;
+  margin: 8px 6px 0;
+}
+
+#btnCopiarDados {
+  background: transparent;
+  color: #00ffaa;
+  border: 2px solid #00ffaa;
+}
+
+#btnCopiarDados:hover {
+  background-color: #00ffaa;
+  color: #121212;
+}
+
+#btnExcluirParty {
+  background: transparent;
+  color: #ff4444;
+  border: 2px solid #ff4444;
+}
+
+#btnExcluirParty:hover {
+  background-color: #ff4444;
+  color: #ffffff;
+}
+
+footer {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  padding: 20px;
+  font-size: 14px;
+  text-align: center;
+  flex-shrink: 0;
+  margin: 0;
+}
+
+/* Responsividade */
 @media (max-width: 480px) {
   .container {
     padding: 100px 16px 30px;
@@ -126,8 +205,20 @@ button[type="submit"]:hover {
     padding: 10px;
   }
 
-  button[type="submit"] {
+  button[type="submit"],
+  #btnIrParty {
     font-size: 16px;
     padding: 10px;
+  }
+
+  #resultadoCriacao {
+    padding: 16px;
+    max-width: 100%;
+  }
+
+  #btnCopiarDados,
+  #btnExcluirParty {
+    width: 100%;
+    margin: 6px 0;
   }
 }

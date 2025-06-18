@@ -1,9 +1,12 @@
-/* todo conteúdo da página */
+@charset "UTF-8";
+
 .page-wrapper {
-  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
 }
 
-/* HEADER */
 header {
   height: 80px;
   background: rgba(0, 0, 0, 0.85);
@@ -40,19 +43,16 @@ nav {
   text-decoration: none;
 }
 
-/* SIDEBAR PROJETOS */
+/* SIDEBAR PROJETOS fixa na lateral */
 #sidebarProjetos {
   position: fixed;
   top: 80px;
   bottom: 0;
   width: 260px;
-  max-width: 100%;
   background: #121212;
   border-right: 2px solid #00FFAA;
   padding: 20px 10px;
-  transition: transform 0.3s ease-in-out;
   overflow-y: auto;
-  max-height: 100vh;
 }
 
 #sidebarProjetos h3 {
@@ -149,7 +149,7 @@ nav {
   color: #121212;
 }
 
-/* MENU HAMBURGER SIDEBAR */
+/* Botão hambúrguer da sidebar */
 #hamburgerProjetos {
   position: fixed;
   top: 85px;
@@ -164,7 +164,7 @@ nav {
   cursor: pointer;
 }
 
-/* Botão com ícone (padrão) */
+/* Botão com ícone */
 .btn-projetos {
   font-size: 15px;
   color: #00FFAA;
@@ -183,7 +183,7 @@ nav {
   font-size: 20px;
 }
 
-/* main */
+/* CONTEÚDO PRINCIPAL */
 main {
   margin-top: 100px;
   padding: 0 16px 20px;
@@ -226,7 +226,7 @@ input, textarea {
   margin-top: 20px;
 }
 
-/* Ícone de lixeira simples sem borda */
+/* Lixeira */
 .btn-lixeira {
   display: inline-block;
   color: #ff5555;

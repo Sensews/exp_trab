@@ -1,95 +1,65 @@
-// Executa tudo após o carregamento completo da página
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  // Verifica se a sessão está ativa
+  try {
+    const res = await fetch("../backend/verificar_sessao.php");
+    const dados = await res.json();
 
-  // Elementos do DOM utilizados
-  const select = document.getElementById('escolhaMapa');         
-  const btnIrParaParty = document.getElementById('btnIrParty');  
-  const form = document.getElementById('formCriarParty');         
+    if (!dados.logado) {
+      window.location.href = "../frontend/erro.html";
+      return;
+    }
 
-  // Variáveis de controle
-  let id_perfil = null;         
-  let idPartyCriada = null;    
+    document.body.style.display = "block";
+  } catch (e) {
+    window.location.href = "../frontend/erro.html";
+    return;
+  }
 
-  // Função para carregar os mapas do usuário no <select>
-  async function carregarMapas() {
-    select.innerHTML = '';
+  const btnIrParaParty = document.getElementById('btnIrParty');
+  const form = document.getElementById('formCriarParty');
+  const resultadoCriacao = document.getElementById('resultadoCriacao');
 
+  let idPartyCriada = null;
+
+  // Função que carrega o perfil com await
+  async function carregarPerfil() {
     try {
-      // Envia requisição POST para buscar os mapas do perfil
-      const response = await fetch(`../backend/map.php`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "carregar", id_perfil: id_perfil })
-      });
-
-      const data = await response.json();
-
-      // Garante que o retorno seja um array de mapas
-      if (!Array.isArray(data)) throw new Error("Formato inválido");
-
-      // Se o usuário não tiver nenhum mapa salvo
-      if (data.length === 0) {
-        const opt = document.createElement('option');
-        opt.textContent = 'Você ainda não tem mapas salvos.';
-        opt.disabled = true;
-        opt.selected = true;
-        select.appendChild(opt);
-        return;
+      const res = await fetch("../backend/perfil.php?action=carregar");
+      const data = await res.json();
+      if (!data || !data.id_perfil) {
+        alert("Perfil não encontrado.");
+        return null;
       }
-
-      // Opção padrão
-      const optPadrao = document.createElement('option');
-      optPadrao.textContent = 'Selecione um mapa...';
-      optPadrao.disabled = true;
-      optPadrao.selected = true;
-      optPadrao.value = '';
-      select.appendChild(optPadrao);
-
-      // Adiciona os mapas ao <select>
-      data.forEach(mapa => {
-        const opt = document.createElement('option');
-        opt.value = mapa.id;
-        opt.textContent = mapa.nome || `Mapa #${mapa.id}`;
-        select.appendChild(opt);
-      });
-
-    } catch (err) {
-      // Caso haja erro na requisição
-      console.error("Erro ao carregar mapas:", err);
-      const opt = document.createElement('option');
-      opt.textContent = 'Erro ao carregar mapas.';
-      opt.disabled = true;
-      opt.selected = true;
-      select.appendChild(opt);
+      return data.id_perfil;
+    } catch {
+      alert("Erro ao buscar perfil.");
+      return null;
     }
   }
 
-  // Evento de submissão do formulário de criação da party
+  // Submissão do formulário
   form.addEventListener('submit', async (e) => {
-    e.preventDefault(); // Evita recarregamento da página
+    e.preventDefault();
 
-    // Coleta os dados dos campos do formulário
+    const id_perfil = await carregarPerfil();
+    if (!id_perfil) return;
+
     const nome = document.getElementById('nomeParty').value.trim();
     const senha = document.getElementById('senhaParty').value.trim();
     const limite = document.getElementById('limiteParty')?.value ?? 5;
-    const mapaId = select.value;
 
-    // Validação básica
-    if (!nome || !senha || !mapaId) {
+    if (!nome || !senha) {
       alert('Preencha todos os campos obrigatórios.');
       return;
     }
 
-    // Monta o FormData com os dados para enviar via POST
     const formData = new FormData();
     formData.append('nome', nome);
     formData.append('senha', senha);
-    formData.append('mapaId', mapaId);
     formData.append('limite', limite);
     formData.append('id_perfil', id_perfil);
 
     try {
-      // Envia a requisição para criar a party
       const response = await fetch('../backend/criar_party.php', {
         method: 'POST',
         body: formData
@@ -98,7 +68,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const text = await response.text();
       let resultado;
 
-      // Tenta converter para JSON
       try {
         resultado = JSON.parse(text);
       } catch (err) {
@@ -107,24 +76,38 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      // Se a criação for bem-sucedida
       if (resultado.sucesso) {
-        alert(`Party criada com sucesso!\nCódigo: ${resultado.codigo}\nSenha: ${resultado.senha}`);
         idPartyCriada = resultado.id_party;
-        btnIrParaParty.style.display = 'inline-block'; // Mostra botão de redirecionar
+        btnIrParaParty.style.display = 'inline-block';
         btnIrParaParty.dataset.partyId = idPartyCriada;
+
+        // Exibir informações na tela
+        resultadoCriacao.innerHTML = `
+          <div class="box-result">
+            <p><strong>Código da Party:</strong> <span id="codigoGerado">${resultado.codigo}</span></p>
+            <p><strong>Senha:</strong> <span id="senhaGerada">${resultado.senha}</span></p>
+            <div class="botoes-resultado">
+              <button id="btnCopiarDados">📋 Copiar Dados</button>
+              <button id="btnExcluirParty" style="background:#cc4444;color:white;">🗑️ Excluir Party</button>
+            </div>
+          </div>
+        `;
+        resultadoCriacao.style.display = 'block';
+
+        document.getElementById('btnCopiarDados').addEventListener('click', copiarDados);
+        document.getElementById('btnExcluirParty').addEventListener('click', excluirParty);
+
       } else {
         alert(resultado.erro || 'Erro ao criar a party.');
       }
 
     } catch (err) {
-      // Se houver erro na requisição
       console.error("Erro na requisição:", err);
       alert('Erro na comunicação com o servidor.');
     }
   });
 
-  // Evento de clique no botão "Ir para a party"
+  // Redirecionar para party
   btnIrParaParty.addEventListener('click', () => {
     const id = btnIrParaParty.dataset.partyId;
     if (id) {
@@ -134,19 +117,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Ao carregar a página, busca o perfil do usuário logado
-  fetch("../backend/perfil.php?action=carregar")
-    .then(res => res.json())
-    .then(data => {
-      if (!data.id_perfil) {
-        alert("Perfil não encontrado.");
-        return;
-      }
+  // Copiar código e senha
+  function copiarDados() {
+    const codigo = document.getElementById("codigoGerado").textContent;
+    const senha = document.getElementById("senhaGerada").textContent;
+    const texto = `Código da Party: ${codigo}\nSenha: ${senha}`;
+    navigator.clipboard.writeText(texto)
+      .then(() => alert("Informações copiadas!"))
+      .catch(() => alert("Erro ao copiar."));
+  }
 
-      id_perfil = data.id_perfil; // Define o ID do perfil
-      carregarMapas(); // E carrega os mapas do perfil
-    })
-    .catch(() => {
-      alert("Erro ao buscar perfil.");
-    });
+  // Excluir party
+  function excluirParty() {
+    if (!confirm("Tem certeza que deseja excluir sua party?")) return;
+
+    fetch("../backend/excluir_party.php", { method: "DELETE" })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === "ok") {
+          alert("Party excluída com sucesso!");
+          location.reload();
+        } else {
+          alert(data.msg || "Erro ao excluir a party.");
+        }
+      })
+      .catch(err => {
+        console.error("Erro ao excluir party:", err);
+        alert("Erro ao excluir party.");
+      });
+  }
 });

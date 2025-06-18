@@ -5,25 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Criar Party</title>
 
-  <!-- Estilos -->
+  <!-- Estilos do site -->
   <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="css/criar_party.css" />
   <link rel="stylesheet" href="css/party.css" />
   <link rel="stylesheet" href="css/burg.css" />
   <link rel="stylesheet" href="css/fotoperfil.css" />
-
-  <!-- Ícones -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
 
-  <!-- Scripts -->
+  <!-- Scripts do site -->
   <script src="js/stars.js"></script>
   <script src="js/criar_party.js" defer></script>
   <script src="js/burg.js" defer></script>
   <script src="js/burg_perfil.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
+
+  <!-- Esconde o body até validar sessão -->
+  <style>body { display: none; }</style>
 </head>
 <body>
   <div class="page-wrapper">
+    <!-- Cabeçalho com logo, navegação e perfil -->
     <header>
       <h1 class="logo" onclick="location.href='main.html'">OBLIVION</h1>
       <div class="nav-wrapper">
@@ -49,6 +50,7 @@
       </div>
     </header>
 
+    <!-- Menu mobile -->
     <nav class="mobile-nav">
       <a class="btn" href="main.html">Início</a>
       <a class="btn" href="ficha.html">Fichas</a>
@@ -58,21 +60,17 @@
       <a class="btn" href="party.html">Party</a>
     </nav>
 
+    <!-- Conteúdo principal -->
     <div class="container">
       <h2>Criar uma Party</h2>
 
-      <!-- Formulário para criar a party -->
+      <!-- Formulário de criação -->
       <form id="formCriarParty">
         <label for="nomeParty">Nome da Party:</label>
-        <input type="text" id="nomeParty" name="nomeParty" required placeholder="Digite o nome da sua party"/>
+        <input type="text" id="nomeParty" name="nomeParty" required placeholder="Digite o nome da sua party" />
 
         <label for="senhaParty">Senha da Party:</label>
-        <input type="password" id="senhaParty" name="senhaParty" required placeholder="Digite uma senha"/>
-
-        <label for="escolhaMapa">Escolha um mapa salvo:</label>
-        <select id="escolhaMapa" required>
-          <!-- opções carregadas via JavaScript -->
-        </select>
+        <input type="password" id="senhaParty" name="senhaParty" required placeholder="Digite uma senha" />
 
         <label for="limiteParty">Número máximo de jogadores:</label>
         <select id="limiteParty" required>
@@ -82,16 +80,29 @@
           <option value="15">15 jogadores</option>
         </select>
 
-        <!-- Campo de erro exibido dinamicamente -->
         <div id="mensagemErro" class="mensagem-erro"></div>
 
-        <!-- Botões do formulário -->
+        <!-- Botões -->
         <div class="botoes-party">
           <button type="submit" id="btnCriarParty">Criar Party</button>
           <button id="btnIrParty" style="display: none;">Ir para a Party</button>
         </div>
       </form>
+
+      <!-- Resultado da criação -->
+      <div id="resultadoCriacao" class="box-result" style="display: none;">
+        <h3 class="titulo-sucesso">Party criada com sucesso!</h3>
+        <p><strong>Código da Party:</strong> <span id="codigoGerado"></span></p>
+        <p><strong>Senha:</strong> <span id="senhaGerada"></span></p>
+        <div class="botoes-resultado">
+          <button id="btnCopiarDados">📋 Copiar Dados</button>
+          <button id="btnExcluirParty">🗑️ Excluir Party</button>
+        </div>
+      </div>
     </div>
+    <footer>
+      <p>© 2025 Oblivion RPG - Todos os direitos reservados.</p>
+    </footer>
   </div>
 </body>
 </html>

@@ -1,6 +1,22 @@
 let perfilAtual = {};
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  // Verifica se a sessão está ativa
+  try {
+    const res = await fetch("../backend/verificar_sessao.php");
+    const dados = await res.json();
+
+    if (!dados.logado) {
+      window.location.href = "../frontend/erro.html";
+      return;
+    }
+
+    document.body.style.display = "block";
+  } catch (e) {
+    window.location.href = "../frontend/erro.html";
+    return;
+  }
+
   // Primeiro, carrega o perfil do usuário atual
   fetch("../backend/perfil.php?action=carregar")
     .then(res => res.json())
@@ -37,7 +53,6 @@ function postar() {
   .then(res => res.json())
   .then(post => {
     if (post.sucesso) {
-      // Usa o perfil real
       post.arroba = perfilAtual.arroba || "usuario";
       post.avatar = perfilAtual.avatar || "https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png";
       exibirPostNoFeed(post);
@@ -60,7 +75,6 @@ function exibirPostNoFeed(post) {
   const avatar = document.createElement("img");
   avatar.src = post.avatar || "https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png";
   avatar.alt = "Avatar do usuário";
-  // Aplica estilo direto para garantir que fique redondo
   avatar.style.width = "36px";
   avatar.style.height = "36px";
   avatar.style.borderRadius = "50%";

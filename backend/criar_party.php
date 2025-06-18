@@ -1,112 +1,79 @@
 <?php
-// Define o tipo de retorno como JSON
-header('Content-Type: application/json');
+// Define o tipo de conteúdo como JSON com charset UTF-8
+header("Content-Type: application/json; charset=utf-8");
 
-// Ativa exceções para erros do MySQLi
+// Ativa modo estrito para exibir exceções de erros no MySQLi
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
-// Inicia a sessão ANTES de incluir time.php
+// Inicia a sessão para acessar dados do usuário logado
 session_start();
 
-// Inclui arquivos essenciais
+// Inclui arquivos de conexão com o banco e controle de tempo
 require_once("conexao.php");
-include_once 'time.php';
+require_once("time.php");
 
-// Valida se o usuário está autenticado
-$id_perfil = $_SESSION['id_perfil'] ?? null;
-
-if (!$id_perfil) {
-    echo json_encode(["sucesso" => false, "erro" => "Perfil não autenticado"]);
+// Verifica se o usuário está logado
+if (!isset($_SESSION['id_perfil'])) {
+    // Se não estiver logado, retorna JSON com logado: false
+    echo json_encode(["logado" => false]);
     exit;
 }
 
-// Função para enviar resposta JSON e encerrar conexão
-function responder($array) {
-    global $conexao;
-    echo json_encode($array);
-    $conexao->close();
+// Recupera o id_perfil da sessão
+$id_perfil = $_SESSION['id_perfil'];
+
+// Captura os dados enviados via POST
+$nome = $_POST["nome"] ?? null;
+$senha = $_POST["senha"] ?? null;
+$limite = $_POST["limite"] ?? 5; // valor padrão: 5 jogadores
+
+// Verifica se os campos obrigatórios foram preenchidos
+if (!$nome || !$senha) {
+    echo json_encode(["sucesso" => false, "erro" => "Preencha todos os campos obrigatórios."]);
     exit;
 }
 
-// Função que gera um código único para a party
-function gerarCodigoUnico($conexao, $tamanho = 6) {
-    $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-
+// Função para gerar um código de party único (ex: A1B2C3)
+function gerarCodigoUnico($conexao) {
     do {
-        $codigo = '';
-        for ($i = 0; $i < $tamanho; $i++) {
-            $codigo .= $chars[random_int(0, strlen($chars) - 1)];
-        }
+        // Gera um código hexadecimal aleatório, converte para maiúsculo
+        $codigo = strtoupper(substr(bin2hex(random_bytes(4)), 0, 6));
 
-        $stmt = $conexao->prepare("SELECT id FROM party WHERE codigo = ?");
+        // Verifica se o código já existe no banco
+        $stmt = $conexao->prepare("SELECT 1 FROM party WHERE codigo = ?");
         $stmt->bind_param("s", $codigo);
         $stmt->execute();
-        $res = $stmt->get_result();
-    } while ($res->num_rows > 0); // Garante que não gere código repetido
+        $existe = $stmt->get_result()->num_rows > 0;
+
+    } while ($existe); // repete até gerar um código único
 
     return $codigo;
 }
 
-// Recebe os dados enviados via POST
-$nome      = $_POST['nome']      ?? '';
-$senha     = $_POST['senha']     ?? '';
-$idMapa    = $_POST['mapaId']    ?? null;
-$idPerfil  = $_POST['id_perfil'] ?? null;
-$limite    = $_POST['limite']    ?? 5;
+try {
+    // Gera o código exclusivo para a nova party
+    $codigo = gerarCodigoUnico($conexao);
 
-// Validações básicas dos dados recebidos
-if (!$nome || !$senha || !$idMapa || !$idPerfil) {
-    responder(['sucesso' => false, 'erro' => 'Dados incompletos.']);
+    // Insere a nova party no banco de dados
+    $stmt = $conexao->prepare("INSERT INTO party (nome, senha, codigo, id_mestre, limite_jogadores) VALUES (?, ?, ?, ?, ?)");
+    $stmt->bind_param("sssii", $nome, $senha, $codigo, $id_perfil, $limite);
+    $stmt->execute();
+    $id_party = $conexao->insert_id; // recupera o ID gerado da party
+
+    // Adiciona o mestre como membro da própria party (status: ativo)
+    $stmtMembro = $conexao->prepare("INSERT INTO party_membros (id_party, id_perfil, status) VALUES (?, ?, 'ativo')");
+    $stmtMembro->bind_param("ii", $id_party, $id_perfil);
+    $stmtMembro->execute();
+
+    // Retorna sucesso com os dados da party criada
+    echo json_encode([
+        "sucesso" => true,
+        "id_party" => $id_party,
+        "codigo" => $codigo,
+        "senha" => $senha
+    ]);
+
+} catch (Exception $e) {
+    // Em caso de erro, retorna mensagem de falha
+    echo json_encode(["sucesso" => false, "erro" => "Erro ao criar party: " . $e->getMessage()]);
 }
-
-if (!is_numeric($idMapa)) {
-    responder(['sucesso' => false, 'erro' => 'ID do mapa inválido.']);
-}
-
-// Verifica se o perfil já possui uma party ativa
-$stmt = $conexao->prepare("SELECT id FROM party WHERE id_mestre = ?");
-$stmt->bind_param("i", $idPerfil);
-$stmt->execute();
-$res = $stmt->get_result();
-
-if ($res->num_rows > 0) {
-    responder(['sucesso' => false, 'erro' => 'Você já possui uma party ativa. Exclua a atual para criar outra.']);
-}
-
-// Verifica se o mapa pertence ao mestre
-$stmt = $conexao->prepare("SELECT id FROM mapas WHERE id = ? AND id_perfil = ?");
-$stmt->bind_param("ii", $idMapa, $idPerfil);
-$stmt->execute();
-$res = $stmt->get_result();
-
-if ($res->num_rows === 0) {
-    responder(['sucesso' => false, 'erro' => 'Mapa inválido ou não pertence a você.']);
-}
-
-// Gera um código único para a nova party
-$codigo = gerarCodigoUnico($conexao);
-
-// Cria a party no banco de dados
-$stmt = $conexao->prepare("
-    INSERT INTO party (nome, senha, codigo, id_mestre, id_mapa, limite_jogadores)
-    VALUES (?, ?, ?, ?, ?, ?)
-");
-$stmt->bind_param("sssiii", $nome, $senha, $codigo, $idPerfil, $idMapa, $limite);
-$stmt->execute();
-$idParty = $conexao->insert_id;
-
-// Adiciona o próprio mestre como membro da party
-$stmt = $conexao->prepare("
-    INSERT INTO party_membros (id_party, id_perfil, status)
-    VALUES (?, ?, 'ativo')
-");
-$stmt->bind_param("ii", $idParty, $idPerfil);
-$stmt->execute();
-
-// Resposta final de sucesso com dados da party criada
-responder([
-    'sucesso'  => true,
-    'id_party' => $idParty,
-    'codigo'   => $codigo,
-    'senha'    => $senha
-]);

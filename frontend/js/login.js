@@ -1,6 +1,6 @@
 const campoUsuario = document.getElementById("usuario");
 
-campoUsuario.addEventListener("input", function () {
+campoUsuario?.addEventListener("input", function () {
   const valor = campoUsuario.value;
   if (/[a-zA-Z@]/.test(valor)) return;
 
@@ -16,75 +16,50 @@ campoUsuario.addEventListener("input", function () {
 
 document.addEventListener("DOMContentLoaded", function () {
   const form = document.getElementById("form-login");
-  const modal = document.getElementById("modal-verificacao");
-  const btnFechar = document.getElementById("fechar-modal");
-  const btnConfirmar = document.getElementById("confirmar-codigo");
-  const btnReenviar = document.getElementById("reenviar-codigo");
-  let telefoneFormatado = "";
+
+  if (!form) {
+    console.error("Formulário de login não encontrado.");
+    return;
+  }
 
   form.addEventListener("submit", function (e) {
     e.preventDefault();
     const dados = new FormData(form);
+
+    console.log("Enviando login:", {
+      usuario: dados.get("usuario"),
+      senha: dados.get("senha")
+    });
+
     fetch("../backend/login.php", {
       method: "POST",
       body: dados,
     })
-      .then((response) => response.json())
+      .then(async (response) => {
+        const contentType = response.headers.get("content-type");
+        const text = await response.text();
+
+        // Se a resposta não for JSON, loga o conteúdo bruto e lança erro
+        if (!contentType || !contentType.includes("application/json")) {
+          console.error("🛑 Conteúdo retornado pelo servidor (não é JSON):\n" + text);
+          throw new Error("Resposta inválida do servidor");
+        }
+
+        // Se tudo certo, parseia o JSON
+        return JSON.parse(text);
+      })
       .then((data) => {
         if (data.status === "ok") {
           localStorage.setItem("nome", data.nome);
           localStorage.setItem("email", data.email);
-          telefoneFormatado = data.telefone;
-
-          enviarSMS(telefoneFormatado);
-          modal.style.display = "flex";
+          localStorage.setItem("logado", "true");
+          window.location.href = "main.html";
         } else {
           alert(data.mensagem);
         }
       })
       .catch((error) => {
-        console.error("Erro no login:", error);
-      });
-  });
-
-  function enviarSMS(telefone) {
-    fetch("../backend/enviar-sms.php", {
-      method: "POST",
-      body: new URLSearchParams({ telefone }),
-    })
-      .then((res) => res.json())
-      .then((res) => {
-        if (res.status !== "ok") alert(res.mensagem);
-      })
-      .catch((err) => console.error("Erro ao enviar SMS:", err));
-  }
-
-  btnFechar.addEventListener("click", () => {
-    modal.style.display = "none";
-  });
-
-  btnReenviar.addEventListener("click", () => {
-    enviarSMS(telefoneFormatado);
-    alert("Novo SMS enviado.");
-  });
-
-  btnConfirmar.addEventListener("click", () => {
-    const codigo = document.getElementById("campo-codigo").value.trim();
-    fetch("../backend/verificar-sms.php", {
-      method: "POST",
-      body: new URLSearchParams({ codigo }),
-    })
-      .then((res) => res.json())
-      .then((res) => {
-        if (res.status === "ok") {
-          localStorage.setItem("logado", "true");
-          window.location.href = "main.html";
-        } else {
-          alert(res.mensagem);
-        }
-      })
-      .catch((error) => {
-        console.error("Erro ao verificar SMS:", error);
+        console.error("Erro no login:", error.message);
       });
   });
 });

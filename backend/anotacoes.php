@@ -1,28 +1,30 @@
 <?php
-// Inicia a sessão primeiro
+// Inicia a sessão para acessar variáveis como id_perfil
 session_start();
 
 // Define o tipo de retorno como JSON
 header('Content-Type: application/json');
 
-// Inclui os arquivos necessários
+// Inclui arquivos de conexão e controle de tempo
 require_once("conexao.php");
-require_once("time.php"); // Protege com expiração de sessão
+require_once("time.php");
 
-// Obtém o ID do perfil salvo na sessão
-$id_perfil = $_SESSION['id_perfil'] ?? null;
-
-// Verifica se está autenticado
-if (!$id_perfil) {
-    echo json_encode(["status" => "erro", "mensagem" => "Perfil não autenticado."]);
+// Verifica se o usuário está logado
+if (!isset($_SESSION['id_perfil'])) {
+    // Se não estiver logado, retorna status "logado: false"
+    echo json_encode(["logado" => false]);
     exit;
 }
 
-// Ação recebida via GET
+// Pega o id do perfil da sessão
+$id_perfil = $_SESSION['id_perfil'];
+
+// Captura a ação enviada via GET (ex: ?action=carregarProjetos)
 $action = $_GET["action"] ?? "";
 
 // === Carregar projetos e notas ===
 if ($action === "carregarProjetos") {
+    // Consulta que busca todos os projetos e notas associadas ao perfil
     $sql = "SELECT p.id, p.nome, n.id AS id_nota, n.titulo, n.atualizado_em
             FROM projetos p
             LEFT JOIN notas n ON p.id = n.id_projeto
@@ -36,6 +38,7 @@ if ($action === "carregarProjetos") {
 
     $dados = [];
 
+    // Organiza os dados em formato de projeto → lista de notas
     while ($row = $res->fetch_assoc()) {
         $projeto = $row["nome"];
         if (!isset($dados[$projeto])) {
@@ -53,13 +56,16 @@ if ($action === "carregarProjetos") {
 
 // === Criar novo projeto ===
 if ($action === "criarProjeto") {
+    // Recebe o JSON enviado no corpo da requisição
     $json = json_decode(file_get_contents("php://input"), true);
     $nome = $json["nome"];
 
+    // Insere o novo projeto na tabela 'projetos'
     $sql = "INSERT INTO projetos (id_perfil, nome) VALUES (?, ?)";
     $stmt = $conexao->prepare($sql);
     $stmt->bind_param("is", $id_perfil, $nome);
 
+    // Em caso de erro, retorna erro HTTP 500 com mensagem
     if (!$stmt->execute()) {
         http_response_code(500);
         echo json_encode(["erro" => $stmt->error]);
@@ -76,7 +82,7 @@ if ($action === "criarAnotacao") {
     $projeto = $json["projeto"];
     $titulo = $json["titulo"];
 
-    // Verifica se o projeto existe
+    // Busca o ID do projeto com base no nome e perfil
     $sql = "SELECT id FROM projetos WHERE nome = ? AND id_perfil = ?";
     $stmt = $conexao->prepare($sql);
     $stmt->bind_param("si", $projeto, $id_perfil);
@@ -84,6 +90,7 @@ if ($action === "criarAnotacao") {
     $res = $stmt->get_result();
     $row = $res->fetch_assoc();
 
+    // Se o projeto não existir, retorna erro 400
     if (!$row) {
         http_response_code(400);
         echo json_encode(["erro" => "Projeto não encontrado"]);
@@ -92,7 +99,7 @@ if ($action === "criarAnotacao") {
 
     $id_projeto = $row["id"];
 
-    // Cria anotação vazia
+    // Insere nova nota com título e conteúdo vazio
     $sql = "INSERT INTO notas (id_projeto, titulo, conteudo) VALUES (?, ?, '')";
     $stmt = $conexao->prepare($sql);
     $stmt->bind_param("is", $id_projeto, $titulo);
@@ -107,6 +114,7 @@ if ($action === "carregarConteudo") {
     $projeto = $_GET["projeto"];
     $titulo = $_GET["titulo"];
 
+    // Busca o conteúdo da nota com base no nome do projeto, título da nota e id_perfil
     $sql = "SELECT n.conteudo 
             FROM notas n 
             JOIN projetos p ON n.id_projeto = p.id 
@@ -117,6 +125,7 @@ if ($action === "carregarConteudo") {
     $res = $stmt->get_result();
     $row = $res->fetch_assoc();
 
+    // Retorna o conteúdo da nota (ou vazio se não houver)
     echo json_encode(["conteudo" => $row["conteudo"] ?? ""]);
     exit;
 }
@@ -128,7 +137,7 @@ if ($action === "salvarConteudo") {
     $titulo = $json["titulo"];
     $conteudo = $json["conteudo"];
 
-    // Encontra a anotação correspondente
+    // Busca o ID da nota
     $sql = "SELECT n.id 
             FROM notas n 
             JOIN projetos p ON n.id_projeto = p.id 
@@ -139,6 +148,7 @@ if ($action === "salvarConteudo") {
     $res = $stmt->get_result();
     $row = $res->fetch_assoc();
 
+    // Se a nota não existir, retorna erro
     if (!$row) {
         http_response_code(400);
         echo json_encode(["erro" => "Nota não encontrada"]);
@@ -147,7 +157,7 @@ if ($action === "salvarConteudo") {
 
     $id_nota = $row["id"];
 
-    // Atualiza conteúdo e data
+    // Atualiza o conteúdo e marca a data de atualização
     $sql = "UPDATE notas SET conteudo = ?, atualizado_em = CURRENT_TIMESTAMP WHERE id = ?";
     $stmt = $conexao->prepare($sql);
     $stmt->bind_param("si", $conteudo, $id_nota);
@@ -163,6 +173,7 @@ if ($action === "excluirAnotacao") {
     $projeto = $json["projeto"];
     $titulo = $json["titulo"];
 
+    // Exclui nota com base no título, nome do projeto e id_perfil
     $sql = "DELETE n 
             FROM notas n
             JOIN projetos p ON n.id_projeto = p.id
@@ -180,6 +191,7 @@ if ($action === "excluirProjeto") {
     $json = json_decode(file_get_contents("php://input"), true);
     $projeto = $json["projeto"];
 
+    // Exclui projeto com base no nome e perfil
     $sql = "DELETE FROM projetos WHERE nome = ? AND id_perfil = ?";
     $stmt = $conexao->prepare($sql);
     $stmt->bind_param("si", $projeto, $id_perfil);

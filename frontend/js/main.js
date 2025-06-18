@@ -76,136 +76,129 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
-    const logado = localStorage.getItem("logado") === "true";
+    fetch("../backend/verificar_sessao.php")
+        .then(res => res.json())
+        .then(data => {
+            if (!data.logado) return;
 
-    const loginBtn = document.querySelector('a[href="login.html"]')?.parentElement;
-    const cadastroBtn = document.querySelector('a[href="cadastro.html"]')?.parentElement;
+            montarNavbar();
+        })
+        .catch(() => {
+            console.error("Erro ao verificar sessão.");
+        });
 
-    const nav = document.querySelector("nav");
+    function montarNavbar() {
+        const loginBtn = document.querySelector('a[href="login.html"]')?.parentElement;
+        const cadastroBtn = document.querySelector('a[href="cadastro.html"]')?.parentElement;
+        const nav = document.querySelector("nav");
 
-    if (logado) {
-        // Esconde os botões de login e cadastro
         if (loginBtn) loginBtn.style.display = "none";
         if (cadastroBtn) cadastroBtn.style.display = "none";
 
-        // Cria dropdown de Jogo com submenu
         const dropdownJogo = document.createElement("div");
         dropdownJogo.classList.add("dropdown");
-        
-        // Botão principal do dropdown
+
         const btnJogo = document.createElement("button");
         btnJogo.classList.add("btn");
         btnJogo.innerText = "Jogo";
         dropdownJogo.appendChild(btnJogo);
-        
-        // Conteúdo do dropdown
+
         const dropdownContent = document.createElement("div");
         dropdownContent.classList.add("dropdown-content");
-        
-        // Opções do dropdown
+
         const options = [
             { text: "Fichas", href: "ficha.html" },
             { text: "Mapas", href: "map.html" },
             { text: "Party", href: "party.html" },
             { text: "Anotações", href: "anotacoes.html" }
         ];
-        
+
         options.forEach(option => {
             const link = document.createElement("a");
             link.href = option.href;
             link.innerText = option.text;
             dropdownContent.appendChild(link);
         });
-        
+
         dropdownJogo.appendChild(dropdownContent);
         nav.appendChild(dropdownJogo);
-        
-        // Adiciona eventos para hover e click no dropdown
-        btnJogo.addEventListener('click', function(e) {
+
+        btnJogo.addEventListener('click', function (e) {
             e.preventDefault();
             dropdownContent.classList.toggle('show');
         });
 
-        // Adicionar eventos de hover
-        dropdownJogo.addEventListener('mouseenter', function() {
+        dropdownJogo.addEventListener('mouseenter', function () {
             dropdownContent.classList.add('show');
         });
 
-        dropdownJogo.addEventListener('mouseleave', function() {
+        dropdownJogo.addEventListener('mouseleave', function () {
             dropdownContent.classList.remove('show');
         });
 
-        // Cria botão "Comunidade"
         const btnComunidade = document.createElement("button");
         btnComunidade.classList.add("btn");
         btnComunidade.innerHTML = "<a href='comunidade.html'>Comunidade</a>";
         nav.appendChild(btnComunidade);
 
-        // Cria botão "Sair"
         const btnSair = document.createElement("button");
         btnSair.classList.add("btn");
         btnSair.innerText = "Sair";
         btnSair.onclick = () => {
-            localStorage.removeItem("logado");
-            location.reload();
+            fetch("../backend/logout.php")
+                .then(() => window.location.href = "login.html");
         };
         nav.appendChild(btnSair);
 
-        // Cria botão "Perfil"
         const btnPerfil = document.createElement("a");
         btnPerfil.href = "perfil.html";
         btnPerfil.title = "Perfil";
         btnPerfil.innerHTML = `
-          <div class="profile-icon">
-            <img id="iconHeader" src="https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png" alt="Perfil">
-          </div>
+            <div class="profile-icon">
+              <img id="iconHeader" src="https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png" alt="Perfil">
+            </div>
         `;
         nav.appendChild(btnPerfil);
-        
-        // Fecha dropdown ao clicar fora
-        window.addEventListener('click', function(e) {
+
+        window.addEventListener('click', function (e) {
             if (!e.target.matches('.btn') && !e.target.closest('.dropdown')) {
                 dropdownContent.classList.remove('show');
             }
         });
-    }
 
-    // Cria ou atualiza o menu mobile para corresponder
-    const mobileNav = document.querySelector(".mobile-nav");
-    if (mobileNav && logado) {
-        // Limpa o menu mobile existente
-        mobileNav.innerHTML = '';
-        
-        // Adiciona os links ao menu mobile
-        const mobileBtnInicio = document.createElement("a");
-        mobileBtnInicio.classList.add("btn");
-        mobileBtnInicio.href = "main.html";
-        mobileBtnInicio.textContent = "Início";
-        mobileNav.appendChild(mobileBtnInicio);
-        
-        // Adiciona os links do dropdown diretamente
-        const mobileBtnFicha = document.createElement("a");
-        mobileBtnFicha.classList.add("btn");
-        mobileBtnFicha.href = "ficha.html";
-        mobileBtnFicha.textContent = "Fichas";
-        mobileNav.appendChild(mobileBtnFicha);
-        
-        const mobileBtnMapas = document.createElement("a");
-        mobileBtnMapas.classList.add("btn");
-        mobileBtnMapas.href = "map.html";
-        mobileBtnMapas.textContent = "Mapas";
-        mobileNav.appendChild(mobileBtnMapas);
-        
-        const mobileBtnParty = document.createElement("a");
-        mobileBtnParty.classList.add("btn");
-        mobileBtnParty.href = "party.html";
-        mobileBtnParty.textContent = "Party";
-        mobileNav.appendChild(mobileBtnParty);
-        
-        const mobileBtnComunidade = document.createElement("a");
-        mobileBtnComunidade.classList.add("btn");
-        mobileBtnComunidade.href = "comunidade.html";
-        mobileBtnComunidade.textContent = "Comunidade";
-        mobileNav.appendChild(mobileBtnComunidade);
+        const mobileNav = document.querySelector(".mobile-nav");
+        if (mobileNav) {
+            mobileNav.innerHTML = '';
+
+            const mobileBtnInicio = document.createElement("a");
+            mobileBtnInicio.classList.add("btn");
+            mobileBtnInicio.href = "main.html";
+            mobileBtnInicio.textContent = "Início";
+            mobileNav.appendChild(mobileBtnInicio);
+
+            const mobileBtnFicha = document.createElement("a");
+            mobileBtnFicha.classList.add("btn");
+            mobileBtnFicha.href = "ficha.html";
+            mobileBtnFicha.textContent = "Fichas";
+            mobileNav.appendChild(mobileBtnFicha);
+
+            const mobileBtnMapas = document.createElement("a");
+            mobileBtnMapas.classList.add("btn");
+            mobileBtnMapas.href = "map.html";
+            mobileBtnMapas.textContent = "Mapas";
+            mobileNav.appendChild(mobileBtnMapas);
+
+            const mobileBtnParty = document.createElement("a");
+            mobileBtnParty.classList.add("btn");
+            mobileBtnParty.href = "party.html";
+            mobileBtnParty.textContent = "Party";
+            mobileNav.appendChild(mobileBtnParty);
+
+            const mobileBtnComunidade = document.createElement("a");
+            mobileBtnComunidade.classList.add("btn");
+            mobileBtnComunidade.href = "comunidade.html";
+            mobileBtnComunidade.textContent = "Comunidade";
+            mobileNav.appendChild(mobileBtnComunidade);
+        }
     }
 });

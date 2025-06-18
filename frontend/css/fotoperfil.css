@@ -32,7 +32,6 @@ header {
   align-items: center;
 }
 
-/* Para dispositivos móveis */
 @media (max-width: 768px) {
   .nav-wrapper {
     gap: 10px;
