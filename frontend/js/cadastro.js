@@ -1,9 +1,27 @@
 window.addEventListener('load', () => {
-    // Adiciona o script do CryptoJS à página
+    // Adiciona os scripts de criptografia à página
     const cryptoScript = document.createElement('script');
     cryptoScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js';
     document.head.appendChild(cryptoScript);
     
+    const jsEncryptScript = document.createElement('script');
+    jsEncryptScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/3.3.0/jsencrypt.min.js';
+    document.head.appendChild(jsEncryptScript);
+    
+    // Aguardar carregamento das bibliotecas e do cliente seguro
+    setTimeout(async () => {
+        // Carregar cliente de criptografia
+        const secureClientScript = document.createElement('script');
+        secureClientScript.src = 'js/secure_client.js';
+        document.head.appendChild(secureClientScript);
+        
+        setTimeout(() => {
+            initializeCadastroSecure();
+        }, 500);
+    }, 1000);
+});
+
+function initializeCadastroSecure() {
     // ===== INICIALIZAÇÃO DOS ELEMENTOS =====
     const telefoneInput = document.querySelector('#telefone');
     const senhaInput = document.getElementById('senha');
@@ -84,12 +102,68 @@ window.addEventListener('load', () => {
         senhaErroOutput.textContent =
             senhaInput.value !== confirmarSenhaInput.value ? 'As senhas não coincidem.' : '';
         validarFormulario();
-    });
-
-    form.addEventListener('submit', (e) => {
+    });    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
         if (senhaInput.value !== confirmarSenhaInput.value) {
-            e.preventDefault();
             senhaErroOutput.textContent = 'As senhas não coincidem.';
+            return;
+        }
+
+        // Desabilitar botão durante o envio
+        botaoCadastro.disabled = true;
+        botaoCadastro.textContent = 'Cadastrando...';
+
+        try {
+            // Coletar dados do formulário
+            const formData = {
+                nome: document.getElementById('nome').value,
+                email: document.getElementById('email').value,
+                telefone: telefoneInput.value,
+                senha: senhaInput.value,
+                'confirmar-senha': confirmarSenhaInput.value
+            };
+
+            // Tentar envio criptografado primeiro
+            let response;
+            try {
+                response = await secureClient.registerUser(formData);
+                console.log('Cadastro com criptografia híbrida realizado com sucesso');
+            } catch (cryptoError) {
+                console.warn('Erro na criptografia, tentando método tradicional:', cryptoError);
+                
+                // Fallback para método tradicional
+                const formDataTraditional = new FormData();
+                Object.keys(formData).forEach(key => {
+                    formDataTraditional.append(key, formData[key]);
+                });
+
+                const traditionalResponse = await fetch('../backend/cadastro.php', {
+                    method: 'POST',
+                    body: formDataTraditional
+                });
+
+                if (traditionalResponse.ok) {
+                    response = { success: true, message: 'Cadastro realizado com método tradicional' };
+                } else {
+                    throw new Error('Erro no cadastro tradicional: ' + traditionalResponse.statusText);
+                }
+            }
+
+            if (response.success) {
+                document.getElementById('popup-modal').style.display = 'block';
+                form.reset();
+            } else {
+                throw new Error(response.error || response.message || 'Erro desconhecido');
+            }
+
+        } catch (error) {
+            console.error('Erro no cadastro:', error);
+            alert('Erro no cadastro: ' + error.message);
+        } finally {
+            // Reabilitar botão
+            botaoCadastro.disabled = false;
+            botaoCadastro.textContent = 'CADASTRAR';
         }
     });
 
@@ -98,7 +172,7 @@ window.addEventListener('load', () => {
     if (urlParams.get('sucesso') === '1') {
         document.getElementById('popup-modal').style.display = 'block';
     }
-});
+}
 
 // ===== FUNÇÕES AUXILIARES =====
 const bloquearEntradaNaoNumerica = (evento) => {

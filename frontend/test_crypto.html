@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Criptografia Híbrida - Oblivion</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .test-container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
+            border: 1px solid #00ffaa;
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #333;
+            border-radius: 5px;
+        }
+        
+        .test-input {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            background: #222;
+            border: 1px solid #444;
+            color: #fff;
+            border-radius: 3px;
+        }
+        
+        .test-button {
+            background: #00ffaa;
+            color: #000;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        .test-button:hover {
+            background: #00e699;
+        }
+        
+        .result {
+            background: #111;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 3px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        
+        .success { color: #00ffaa; }
+        .error { color: #ff4444; }
+        
+        h2 { color: #00ffaa; }
+        h3 { color: #fff; }
+    </style>
+    
+    <!-- Bibliotecas de criptografia -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/3.3.0/jsencrypt.min.js"></script>
+    <script src="js/secure_client.js"></script>
+</head>
+<body>
+    <header>
+        <h1 class="logo">OBLIVION - TESTE DE CRIPTOGRAFIA</h1>
+    </header>
+
+    <main>
+        <div class="test-container">
+            <h2>🔒 Teste de Criptografia Híbrida</h2>
+            
+            <div class="test-section">
+                <h3>1. Teste de Conectividade com API</h3>
+                <button class="test-button" onclick="testConnection()">Testar Conexão</button>
+                <div id="connection-result" class="result"></div>
+            </div>
+            
+            <div class="test-section">
+                <h3>2. Teste de Chave Pública</h3>
+                <button class="test-button" onclick="testPublicKey()">Obter Chave Pública</button>
+                <div id="publickey-result" class="result"></div>
+            </div>
+            
+            <div class="test-section">
+                <h3>3. Teste de Criptografia/Descriptografia</h3>
+                <input type="text" class="test-input" id="test-message" placeholder="Digite uma mensagem para testar" value="Teste de criptografia híbrida - Oblivion RPG">
+                <button class="test-button" onclick="testEncryption()">Testar Criptografia</button>
+                <div id="encryption-result" class="result"></div>
+            </div>
+            
+            <div class="test-section">
+                <h3>4. Teste de Cadastro Seguro</h3>
+                <input type="text" class="test-input" id="test-nome" placeholder="Nome" value="Teste Usuario">
+                <input type="email" class="test-input" id="test-email" placeholder="Email" value="teste@exemplo.com">
+                <input type="tel" class="test-input" id="test-telefone" placeholder="Telefone" value="(11) 99999-9999">
+                <input type="password" class="test-input" id="test-senha" placeholder="Senha" value="MinhaSenh@123!">
+                <button class="test-button" onclick="testSecureRegistration()">Testar Cadastro Seguro</button>
+                <div id="registration-result" class="result"></div>
+            </div>
+            
+            <div class="test-section">
+                <h3>5. Informações do Sistema</h3>
+                <button class="test-button" onclick="showSystemInfo()">Mostrar Info</button>
+                <div id="system-info" class="result"></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let secureClient;
+        
+        // Inicializar cliente seguro
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                secureClient = new SecureClient();
+                document.getElementById('connection-result').innerHTML = '<span class="success">✅ Cliente de criptografia inicializado</span>';
+            } catch (error) {
+                document.getElementById('connection-result').innerHTML = '<span class="error">❌ Erro ao inicializar cliente: ' + error.message + '</span>';
+            }
+        });
+
+        async function testConnection() {
+            const result = document.getElementById('connection-result');
+            result.innerHTML = 'Testando conexão...';
+            
+            try {
+                const response = await fetch('../api/publicKey.php');
+                if (response.ok) {
+                    result.innerHTML = '<span class="success">✅ Conexão com API estabelecida</span>';
+                } else {
+                    result.innerHTML = '<span class="error">❌ Erro na conexão: ' + response.status + '</span>';
+                }
+            } catch (error) {
+                result.innerHTML = '<span class="error">❌ Erro na conexão: ' + error.message + '</span>';
+            }
+        }
+
+        async function testPublicKey() {
+            const result = document.getElementById('publickey-result');
+            result.innerHTML = 'Obtendo chave pública...';
+            
+            try {
+                await secureClient.fetchPublicKey();
+                result.innerHTML = '<span class="success">✅ Chave pública obtida com sucesso</span>\n\n' + secureClient.rsaPublicKey;
+            } catch (error) {
+                result.innerHTML = '<span class="error">❌ Erro ao obter chave pública: ' + error.message + '</span>';
+            }
+        }
+
+        async function testEncryption() {
+            const result = document.getElementById('encryption-result');
+            const message = document.getElementById('test-message').value;
+            
+            if (!message) {
+                result.innerHTML = '<span class="error">❌ Digite uma mensagem para testar</span>';
+                return;
+            }
+            
+            result.innerHTML = 'Testando criptografia...';
+            
+            try {
+                const testData = { message: message, timestamp: new Date().toISOString() };
+                const response = await secureClient.testEncryption(testData);
+                
+                if (response.success) {
+                    result.innerHTML = '<span class="success">✅ Teste de criptografia bem-sucedido!</span>\n\n' +
+                                     'Dados originais: ' + JSON.stringify(testData, null, 2) + '\n\n' +
+                                     'Dados descriptografados: ' + JSON.stringify(response.data, null, 2);
+                } else {
+                    result.innerHTML = '<span class="error">❌ Erro no teste: ' + (response.error || 'Erro desconhecido') + '</span>';
+                }
+            } catch (error) {
+                result.innerHTML = '<span class="error">❌ Erro no teste de criptografia: ' + error.message + '</span>';
+            }
+        }
+
+        async function testSecureRegistration() {
+            const result = document.getElementById('registration-result');
+            
+            const userData = {
+                nome: document.getElementById('test-nome').value,
+                email: document.getElementById('test-email').value,
+                telefone: document.getElementById('test-telefone').value,
+                senha: document.getElementById('test-senha').value,
+                'confirmar-senha': document.getElementById('test-senha').value
+            };
+            
+            // Validação básica
+            if (!userData.nome || !userData.email || !userData.telefone || !userData.senha) {
+                result.innerHTML = '<span class="error">❌ Preencha todos os campos</span>';
+                return;
+            }
+            
+            result.innerHTML = 'Testando cadastro seguro...';
+            
+            try {
+                const response = await secureClient.registerUser(userData);
+                
+                if (response.success) {
+                    result.innerHTML = '<span class="success">✅ Teste de cadastro seguro bem-sucedido!</span>\n\n' +
+                                     'Resposta: ' + JSON.stringify(response, null, 2);
+                } else {
+                    result.innerHTML = '<span class="error">❌ Erro no cadastro: ' + (response.error || response.message || 'Erro desconhecido') + '</span>';
+                }
+            } catch (error) {
+                result.innerHTML = '<span class="error">❌ Erro no teste de cadastro: ' + error.message + '</span>';
+            }
+        }
+
+        function showSystemInfo() {
+            const result = document.getElementById('system-info');
+            
+            const info = {
+                'User Agent': navigator.userAgent,
+                'Crypto Libraries': {
+                    'CryptoJS': typeof CryptoJS !== 'undefined' ? 'Carregado' : 'Não encontrado',
+                    'JSEncrypt': typeof JSEncrypt !== 'undefined' ? 'Carregado' : 'Não encontrado'
+                },
+                'Secure Client': typeof secureClient !== 'undefined' ? 'Inicializado' : 'Não inicializado',
+                'Public Key Available': secureClient && secureClient.rsaPublicKey ? 'Sim' : 'Não',
+                'Timestamp': new Date().toISOString()
+            };
+            
+            result.innerHTML = JSON.stringify(info, null, 2);
+        }
+    </script>
+    
+    <script src="js/stars.js"></script>
+</body>
+</html>

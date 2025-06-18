@@ -15,6 +15,28 @@ campoUsuario?.addEventListener("input", function () {
 });
 
 document.addEventListener("DOMContentLoaded", function () {
+  // Carregar bibliotecas de criptografia
+  const cryptoScript = document.createElement('script');
+  cryptoScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js';
+  document.head.appendChild(cryptoScript);
+  
+  const jsEncryptScript = document.createElement('script');
+  jsEncryptScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/3.3.0/jsencrypt.min.js';
+  document.head.appendChild(jsEncryptScript);
+  
+  // Aguardar carregamento das bibliotecas
+  setTimeout(() => {
+    const secureClientScript = document.createElement('script');
+    secureClientScript.src = 'js/secure_client.js';
+    document.head.appendChild(secureClientScript);
+    
+    setTimeout(() => {
+      initializeLoginSecure();
+    }, 500);
+  }, 1000);
+});
+
+function initializeLoginSecure() {
   const form = document.getElementById("form-login");
 
   if (!form) {
@@ -22,44 +44,81 @@ document.addEventListener("DOMContentLoaded", function () {
     return;
   }
 
-  form.addEventListener("submit", function (e) {
+  form.addEventListener("submit", async function (e) {
     e.preventDefault();
-    const dados = new FormData(form);
+    
+    const submitButton = form.querySelector('button[type="submit"]');
+    const originalText = submitButton.textContent;
+    
+    // Desabilitar botão durante o envio
+    submitButton.disabled = true;
+    submitButton.textContent = 'Entrando...';
 
-    console.log("Enviando login:", {
-      usuario: dados.get("usuario"),
-      senha: dados.get("senha")
-    });
+    try {
+      const dados = new FormData(form);
+      const loginData = {
+        usuario: dados.get("usuario"),
+        senha: dados.get("senha")
+      };
 
-    fetch("../backend/login.php", {
-      method: "POST",
-      body: dados,
-    })
-      .then(async (response) => {
-        const contentType = response.headers.get("content-type");
-        const text = await response.text();
+      console.log("Tentando login com criptografia híbrida...");
 
-        // Se a resposta não for JSON, loga o conteúdo bruto e lança erro
+      let response;
+      try {
+        // Tentar login criptografado
+        response = await secureClient.sendSecureData('login', loginData);
+        
+        if (response.encrypted && response.encryptedData) {
+          // Descriptografar resposta
+          const decryptedResponse = secureClient.decryptMessageAes(
+            response.encryptedData,
+            secureClient.generateAesKey().key,
+            response.iv
+          );
+          response = decryptedResponse;
+        }
+        
+        console.log("Login com criptografia híbrida realizado com sucesso");
+      } catch (cryptoError) {
+        console.warn('Erro na criptografia, tentando método tradicional:', cryptoError);
+        
+        // Fallback para método tradicional
+        const traditionalResponse = await fetch("../backend/login.php", {
+          method: "POST",
+          body: dados,
+        });
+
+        const contentType = traditionalResponse.headers.get("content-type");
+        const text = await traditionalResponse.text();
+
         if (!contentType || !contentType.includes("application/json")) {
           console.error("🛑 Conteúdo retornado pelo servidor (não é JSON):\n" + text);
           throw new Error("Resposta inválida do servidor");
         }
 
-        // Se tudo certo, parseia o JSON
-        return JSON.parse(text);
-      })
-      .then((data) => {
-        if (data.status === "ok") {
-          localStorage.setItem("nome", data.nome);
-          localStorage.setItem("email", data.email);
-          localStorage.setItem("logado", "true");
-          window.location.href = "main.html";
-        } else {
-          alert(data.mensagem);
+        response = JSON.parse(text);
+      }
+
+      if (response.status === "ok") {
+        console.log("✅ Login realizado:", response);
+        
+        // Salvar dados na sessão local se necessário
+        if (response.encrypted) {
+          console.log("🔒 Login com criptografia híbrida ativada");
         }
-      })
-      .catch((error) => {
-        console.error("Erro no login:", error.message);
-      });
+        
+        // Redirecionar para página principal
+        window.location.href = "main.html";
+      } else {
+        throw new Error(response.mensagem || "Erro no login");
+      }
+
+    } catch (error) {
+      console.error("❌ Erro no login:", error);
+      alert("Erro no login: " + error.message);
+    } finally {      // Reabilitar botão
+      submitButton.disabled = false;
+      submitButton.textContent = originalText;
+    }
   });
-});
+}
