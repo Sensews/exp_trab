@@ -1,8 +1,18 @@
-window.addEventListener('load', () => {
+window.addEventListener('load', async () => {
     // Adiciona o script do CryptoJS à página
     const cryptoScript = document.createElement('script');
     cryptoScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js';
     document.head.appendChild(cryptoScript);
+    
+    // Inicializar gerenciador de criptografia
+    let cryptoManager = null;
+    try {
+        cryptoManager = CryptoManager.getInstance();
+        await cryptoManager.initialize();
+        console.log("🔒 Sistema de criptografia inicializado no cadastro");
+    } catch (error) {
+        console.error("❌ Erro ao inicializar criptografia no cadastro:", error);
+    }
     
     // ===== INICIALIZAÇÃO DOS ELEMENTOS =====
     const telefoneInput = document.querySelector('#telefone');
@@ -84,12 +94,52 @@ window.addEventListener('load', () => {
         senhaErroOutput.textContent =
             senhaInput.value !== confirmarSenhaInput.value ? 'As senhas não coincidem.' : '';
         validarFormulario();
-    });
-
-    form.addEventListener('submit', (e) => {
+    });    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
         if (senhaInput.value !== confirmarSenhaInput.value) {
-            e.preventDefault();
             senhaErroOutput.textContent = 'As senhas não coincidem.';
+            return;
+        }
+        
+        // Preparar dados do cadastro
+        const dadosCadastro = {
+            nome: document.getElementById('nome').value,
+            email: document.getElementById('email').value,
+            telefone: telefoneInput.value,
+            senha: senhaInput.value,
+            'confirmar-senha': confirmarSenhaInput.value
+        };
+        
+        try {
+            let response;
+            
+            if (cryptoManager) {
+                // Enviar com criptografia
+                console.log("🔒 Enviando dados de cadastro criptografados");
+                response = await cryptoManager.securePost("../backend/cadastro.php", dadosCadastro);
+            } else {
+                // Fallback sem criptografia
+                console.log("⚠️ Enviando cadastro sem criptografia (fallback)");
+                const formData = new FormData(form);
+                response = await fetch("../backend/cadastro.php", {
+                    method: "POST",
+                    body: formData
+                });
+            }
+            
+            if (response.ok) {
+                console.log("✅ Cadastro enviado com sucesso");
+                window.location.href = "cadastro.html?sucesso=1";
+            } else {
+                const errorText = await response.text();
+                console.error("❌ Erro no cadastro:", errorText);
+                alert("Erro no cadastro: " + errorText);
+            }
+            
+        } catch (error) {
+            console.error("❌ Erro ao enviar cadastro:", error);
+            alert("Erro ao enviar cadastro. Tente novamente.");
         }
     });
 

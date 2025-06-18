@@ -1,5 +1,15 @@
 // Espera o carregamento do DOM
 document.addEventListener("DOMContentLoaded", async () => {
+  // Inicializar gerenciador de criptografia
+  let cryptoManager = null;
+  try {
+    cryptoManager = CryptoManager.getInstance();
+    await cryptoManager.initialize();
+    console.log("🔒 Sistema de criptografia inicializado no chat");
+  } catch (error) {
+    console.error("❌ Erro ao inicializar criptografia no chat:", error);
+  }
+
   // Verifica se a sessão está ativa
   try {
     const res = await fetch("../backend/verificar_sessao.php"); // Faz requisição para verificar sessão
@@ -188,13 +198,35 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!texto) return; // Ignora mensagens vazias
 
     try {
-      const res = await fetch('../backend/chat_party.php?action=enviar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mensagem: texto }) // Envia mensagem
-      });
+      let response;
+      
+      if (cryptoManager) {
+        // Enviar com criptografia
+        console.log("🔒 Enviando mensagem criptografada");
+        response = await cryptoManager.securePost('../backend/chat_party.php?action=enviar', 
+          { mensagem: texto });
+      } else {
+        // Fallback sem criptografia
+        console.log("⚠️ Enviando mensagem sem criptografia");
+        response = await fetch('../backend/chat_party.php?action=enviar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mensagem: texto })
+        });
+      }
 
-      const data = await res.json();
+      const jsonResponse = await response.json();
+      
+      // Verificar se a resposta está criptografada
+      let data;
+      if (cryptoManager && CryptoManager.isEncryptedData && 
+          CryptoManager.isEncryptedData(jsonResponse)) {
+        console.log("🔓 Descriptografando resposta do chat");
+        data = await cryptoManager.decryptData(jsonResponse);
+      } else {
+        data = jsonResponse;
+      }
+      
       if (data.success) {
         inputMensagem.value = ''; // Limpa input
         carregarMensagens(); // Atualiza chat
@@ -202,7 +234,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         alert(data.erro || "Erro ao enviar mensagem.");
       }
     } catch (error) {
-      console.error("Erro ao enviar mensagem:", error);
+      console.error("❌ Erro ao enviar mensagem:", error);
       alert("Erro ao enviar a mensagem.");
     }
   });

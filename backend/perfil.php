@@ -7,6 +7,9 @@ if (session_status() === PHP_SESSION_NONE) {
 // Importa script de controle de tempo (para expiração da sessão)
 require_once("time.php");
 
+// Importar sistema de criptografia
+require_once __DIR__ . '/crypto/CryptoIntegrator.php';
+
 // Define o tipo da resposta como JSON
 header('Content-Type: application/json');
 
@@ -17,6 +20,12 @@ if (!isset($_SESSION["id_usuario"])) {
 }
 
 try {
+    // Inicializar criptografia
+    $crypto = CryptoIntegrator::initialize();
+    
+    // Processar dados recebidos
+    $dadosRecebidos = CryptoIntegrator::processRequest();
+    
     // Conexão com o banco de dados
     require_once("conexao.php");
 

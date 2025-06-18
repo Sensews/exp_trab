@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Criptografia Simples (Debug)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #1a1a1a;
+            color: #00ffaa;
+        }
+        .container {
+            background-color: #2a2a2a;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #00ffaa;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #00cc88;
+        }
+        .log {
+            background-color: #333;
+            padding: 10px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .error {
+            color: #ff4444;
+        }
+        .success {
+            color: #44ff44;
+        }
+        .info {
+            color: #4488ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Teste de Criptografia Simples - Debug</h1>
+        <p>Esta versão usa AES-GCM simples para testar se a criptografia básica funciona.</p>
+    </div>
+
+    <div class="container">
+        <h2>🔧 Testes Básicos</h2>
+        <button onclick="testSimpleEncryption()">Testar Criptografia Simples</button>
+        <button onclick="testLogin()">Testar Login</button>
+        <button onclick="clearLog()">Limpar Log</button>
+        
+        <h3>📋 Log de Debug:</h3>
+        <div id="log" class="log"></div>
+    </div>
+
+    <!-- Scripts de Criptografia Simples -->
+    <script src="js/crypto/CryptoManagerSimple.js"></script>
+    
+    <script>
+        let cryptoManager;
+        
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            logDiv.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+        
+        // Inicializar o CryptoManager simples
+        async function initCrypto() {
+            try {
+                log('🔧 Inicializando CryptoManager simples...', 'info');
+                cryptoManager = new CryptoManagerSimple();
+                await cryptoManager.initialize();
+                log('✅ CryptoManager simples inicializado com sucesso!', 'success');
+                return true;
+            } catch (error) {
+                log('❌ Erro ao inicializar CryptoManager: ' + error.message, 'error');
+                return false;
+            }
+        }
+        
+        async function testSimpleEncryption() {
+            try {
+                log('🔐 Testando criptografia simples...', 'info');
+                
+                if (!cryptoManager) {
+                    const initialized = await initCrypto();
+                    if (!initialized) return;
+                }
+                
+                const testData = {
+                    message: 'Hello World!',
+                    timestamp: Date.now(),
+                    user: 'testUser'
+                };
+                
+                log('📤 Dados originais: ' + JSON.stringify(testData), 'info');
+                  // Criptografar
+                const encryptedData = await cryptoManager.encrypt(JSON.stringify(testData));
+                log('🔒 Dados criptografados: ' + JSON.stringify(encryptedData).substring(0, 100) + '...', 'info');
+                
+                // Descriptografar
+                const decrypted = await cryptoManager.decrypt(encryptedData);
+                const decryptedData = decrypted;
+                log('🔓 Dados descriptografados: ' + JSON.stringify(decryptedData), 'info');
+                
+                // Verificar se são iguais
+                if (JSON.stringify(testData) === JSON.stringify(decryptedData)) {
+                    log('✅ Teste de criptografia passou! Dados são idênticos.', 'success');
+                } else {
+                    log('❌ Teste de criptografia falhou! Dados não coincidem.', 'error');
+                }
+                
+            } catch (error) {
+                log('❌ Erro no teste: ' + error.message, 'error');
+                console.error('Erro detalhado:', error);
+            }
+        }
+        
+        async function testLogin() {
+            try {
+                log('🔐 Testando login com criptografia...', 'info');
+                
+                if (!cryptoManager) {
+                    const initialized = await initCrypto();
+                    if (!initialized) return;
+                }
+                
+                const loginData = {
+                    email: 'test@example.com',
+                    senha: 'password123'
+                };
+                
+                log('📤 Dados de login: ' + JSON.stringify(loginData), 'info');
+                
+                // Fazer requisição segura
+                const response = await cryptoManager.securePost('/backend/login.php', loginData);
+                log('📥 Resposta do servidor: ' + JSON.stringify(response), 'info');
+                
+                if (response && response.status === 'success') {
+                    log('✅ Login simulado bem-sucedido!', 'success');
+                } else {
+                    log('ℹ️ Login retornou resultado esperado (provavelmente falha de credenciais)', 'info');
+                }
+                
+            } catch (error) {
+                log('❌ Erro no teste de login: ' + error.message, 'error');
+                console.error('Erro detalhado:', error);
+            }
+        }
+        
+        // Inicializar automaticamente quando a página carregar
+        window.addEventListener('load', async () => {
+            log('🚀 Página carregada. Aguardando testes manuais...', 'info');
+            log('💡 Clique nos botões acima para testar a criptografia.', 'info');
+        });
+    </script>
+</body>
+</html>

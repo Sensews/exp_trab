@@ -4,6 +4,9 @@ include_once __DIR__ . '/limpar_pendentes.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
+// Importar CryptoManager para criptografia híbrida
+require_once __DIR__ . '/crypto/CryptoManager.php';
+
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
@@ -12,17 +15,49 @@ require 'PHPMailer/src/PHPMailer.php';
 require 'PHPMailer/src/SMTP.php';
 require_once 'env_decoder.php';
 
+try {
+    $crypto = CryptoManager::getInstance();
+} catch (Exception $e) {
+    http_response_code(500);
+    error_log("Erro CryptoManager cadastro: " . $e->getMessage());
+    die("Erro de segurança do sistema.");
+}
+
 $conn = new mysqli("localhost", "root", "", "oblivion");
 if ($conn->connect_error) {
     http_response_code(500);
     die("Erro na conexão com o banco de dados.");
 }
 
-$nome = trim($_POST['nome'] ?? '');
-$email = trim($_POST['email'] ?? '');
-$telefone = trim($_POST['telefone'] ?? '');
-$senha = $_POST['senha'] ?? '';
-$confirma = $_POST['confirmar-senha'] ?? '';
+// Processar dados recebidos (criptografados ou não)
+$dadosRecebidos = null;
+$input = file_get_contents('php://input');
+
+if (!empty($input)) {
+    // Dados via JSON (possivelmente criptografados)
+    $jsonData = json_decode($input, true);
+    if ($jsonData && $crypto->isEncryptedRequest($jsonData)) {
+        try {
+            $dadosRecebidos = $crypto->decryptRequest($jsonData);
+        } catch (Exception $e) {
+            http_response_code(400);
+            error_log("Erro decriptografia cadastro: " . $e->getMessage());
+            die("Erro ao processar dados seguros.");
+        }
+    } else {
+        $dadosRecebidos = $jsonData ?: $_POST;
+    }
+} else {
+    // Dados via POST tradicional
+    $dadosRecebidos = $_POST;
+}
+
+// Extrair dados do cadastro
+$nome = trim($dadosRecebidos['nome'] ?? '');
+$email = trim($dadosRecebidos['email'] ?? '');
+$telefone = trim($dadosRecebidos['telefone'] ?? '');
+$senha = $dadosRecebidos['senha'] ?? '';
+$confirma = $dadosRecebidos['confirmar-senha'] ?? '';
 
 if ($senha !== $confirma) {
     http_response_code(400);

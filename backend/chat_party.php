@@ -5,9 +5,20 @@ session_start();
 // Define o tipo da resposta como JSON
 header("Content-Type: application/json");
 
+// Importar CryptoManager para criptografia híbrida
+require_once __DIR__ . '/crypto/CryptoManager.php';
+
 // Importa a conexão com banco e controle de tempo/sessão
 require_once("conexao.php");
 require_once("time.php");
+
+try {
+    $crypto = CryptoManager::getInstance();
+} catch (Exception $e) {
+    echo json_encode(["logado" => false, "erro" => "Erro de segurança."]);
+    error_log("Erro CryptoManager chat_party: " . $e->getMessage());
+    exit;
+}
 
 // ✅ Verifica se o usuário está logado
 if (!isset($_SESSION['id_perfil'])) {
@@ -15,9 +26,45 @@ if (!isset($_SESSION['id_perfil'])) {
     exit;
 }
 
-// Pega o ID do perfil logado e a ação recebida via GET
+// Processar dados recebidos (criptografados ou não)
+$dadosRecebidos = null;
+$input = file_get_contents('php://input');
+
+if (!empty($input)) {
+    $jsonData = json_decode($input, true);
+    if ($jsonData && $crypto->isEncryptedRequest($jsonData)) {
+        try {
+            $dadosRecebidos = $crypto->decryptRequest($jsonData);
+        } catch (Exception $e) {
+            echo json_encode(["success" => false, "erro" => "Erro ao processar dados seguros."]);
+            error_log("Erro decriptografia chat_party: " . $e->getMessage());
+            exit;
+        }
+    } else {
+        $dadosRecebidos = $jsonData ?: $_POST;
+    }
+} else {
+    $dadosRecebidos = $_POST;
+}
+
+// Pega o ID do perfil logado e a ação recebida
 $id_perfil = $_SESSION['id_perfil'];
-$action = $_GET["action"] ?? "";
+$action = $_GET["action"] ?? $dadosRecebidos["action"] ?? "";
+
+// Função auxiliar para responder com criptografia
+function responderJSON($data, $crypto, $criptografar = true) {
+    try {
+        if ($criptografar) {
+            $response = $crypto->encryptResponse($data);
+        } else {
+            $response = $data;
+        }
+        echo json_encode($response);
+    } catch (Exception $e) {
+        error_log("Erro ao criptografar resposta chat_party: " . $e->getMessage());
+        echo json_encode(["success" => false, "erro" => "Erro na resposta segura."]);
+    }
+}
 
 // === Carregar dados da party e membros ===
 if ($action === "carregar") {
@@ -125,12 +172,11 @@ if ($action === "mensagens") {
 
 // === Enviar nova mensagem para o chat da party ===
 if ($action === "enviar") {
-    $json = json_decode(file_get_contents("php://input"), true);
-    $mensagem = trim($json["mensagem"] ?? "");
+    $mensagem = trim($dadosRecebidos["mensagem"] ?? "");
 
     // Valida mensagem vazia
     if ($mensagem === "") {
-        echo json_encode(["success" => false, "erro" => "Mensagem vazia."]);
+        responderJSON(["success" => false, "erro" => "Mensagem vazia."], $crypto, false);
         exit;
     }
 
@@ -214,12 +260,10 @@ if ($action === "remover") {
     $sql = "DELETE FROM party_membros WHERE id_party = ? AND id_perfil = ?";
     $stmt = $conexao->prepare($sql);
     $stmt->bind_param("ii", $id_party, $id_remover);
-    $stmt->execute();
-
-    // Retorna sucesso
-    echo json_encode(["success" => true]);
+    $stmt->execute();    // Retorna sucesso
+    responderJSON(["success" => true], $crypto);
     exit;
 }
 
 // === Se nenhuma das ações acima for reconhecida
-echo json_encode(["success" => false, "erro" => "Ação inválida."]);
+responderJSON(["success" => false, "erro" => "Ação inválida."], $crypto, false);
