@@ -41,27 +41,55 @@ function postar() {
 
   if (text === "" && !file) return;
 
-  const formData = new FormData();
-  formData.append("action", "criarPost");
-  formData.append("texto", text);
-  if (file) formData.append("imagem", file);
+  // Tentar usar criptografia primeiro
+  if (window.simpleSecureClient && window.simpleSecureClient.initialized) {
+    // Usar criptografia
+    const postData = { texto: text };
+    
+    window.simpleSecureClient.createPost(postData, file)
+      .then(post => {
+        if (post.sucesso) {
+          post.arroba = perfilAtual.arroba || "usuario";
+          post.avatar = perfilAtual.avatar || "https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png";
+          exibirPostNoFeed(post);
+          document.getElementById("postText").value = "";
+          document.getElementById("postImage").value = "";
+        } else {
+          alert("Erro ao postar: " + (post.erro || "resposta inválida"));
+        }
+      })
+      .catch(error => {
+        console.error('Erro ao postar com criptografia:', error);
+        alert("Erro ao postar. Tente novamente.");
+      });
+  } else {
+    // Fallback: método não criptografado
+    const formData = new FormData();
+    formData.append("action", "criarPost");
+    formData.append("texto", text);
+    if (file) formData.append("imagem", file);
 
-  fetch("../backend/teste_post.php", {
-    method: "POST",
-    body: formData
-  })
-  .then(res => res.json())
-  .then(post => {
-    if (post.sucesso) {
-      post.arroba = perfilAtual.arroba || "usuario";
-      post.avatar = perfilAtual.avatar || "https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png";
-      exibirPostNoFeed(post);
-      document.getElementById("postText").value = "";
-      document.getElementById("postImage").value = "";
-    } else {
-      alert("Erro ao postar: " + (post.erro || "resposta inválida"));
-    }
-  });
+    fetch("../backend/teste_post.php", {
+      method: "POST",
+      body: formData
+    })
+    .then(res => res.json())
+    .then(post => {
+      if (post.sucesso) {
+        post.arroba = perfilAtual.arroba || "usuario";
+        post.avatar = perfilAtual.avatar || "https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png";
+        exibirPostNoFeed(post);
+        document.getElementById("postText").value = "";
+        document.getElementById("postImage").value = "";
+      } else {
+        alert("Erro ao postar: " + (post.erro || "resposta inválida"));
+      }
+    })
+    .catch(error => {
+      console.error('Erro ao postar:', error);
+      alert("Erro ao postar. Tente novamente.");
+    });
+  }
 }
 
 function exibirPostNoFeed(post) {

@@ -6,74 +6,107 @@ require_once("time.php");
 // Carrega conexão com o banco
 require_once("conexao.php");
 
-// Exibe erros para debug (em produção, remova)
-ini_set("display_errors", 1);
-error_reporting(E_ALL);
+// Incluir classe de criptografia
+require_once('simple_crypto.php');
 
-// Verificação padronizada de sessão
-if (!isset($_SESSION["id_usuario"])) {
+// Desativar exibição de erros para evitar HTML na resposta
+ini_set('display_errors', 0);
+ini_set('display_startup_errors', 0);
+error_reporting(0);
+
+// Sempre retorna JSON
+header('Content-Type: application/json');
+
+// Verificação padronizada de sessão (compatível com time.php)
+if (!isset($_SESSION["id_perfil"]) || !isset($_SESSION["id_usuario"])) {
     echo json_encode(["logado" => false]);
     exit;
 }
 
 // Verifica autenticação
 $id_perfil = $_SESSION['id_perfil'] ?? null;
+$id_usuario = $_SESSION['id_usuario'] ?? null;
 
-if (!$id_perfil) {
+if (!$id_perfil || !$id_usuario) {
     echo json_encode(["erro" => "Perfil não autenticado."]);
     exit;
 }
-
-// Verificação redundante: consulta novamente o id_perfil a partir de id_usuario
-$sqlPerfil = "SELECT id_perfil FROM perfil WHERE id_usuario = ?";
-$id_usuario = $_SESSION['id_usuario'] ?? null; 
-$stmt = $conexao->prepare($sqlPerfil);
-$stmt->bind_param("i", $id_usuario);
-$stmt->execute();
-$res = $stmt->get_result();
-$row = $res->fetch_assoc();
-
-if (!$row) {
-    echo json_encode(["erro" => "Perfil não encontrado."]);
-    exit;
-}
-
-$id_perfil = $row["id_perfil"];
 
 // Ação recebida via GET ou POST
 $action = $_REQUEST["action"] ?? "";
 
 // === 1. Criar post ===
 if ($action === "criarPost") {
-    $texto = $_POST["texto"] ?? "";
-    $imagem = "";
-
-    // Verifica se uma imagem foi enviada
-    if (isset($_FILES["imagem"]) && $_FILES["imagem"]["tmp_name"]) {
-        $extensao = pathinfo($_FILES["imagem"]["name"], PATHINFO_EXTENSION);
-        $nomeArquivo = uniqid("img_") . "." . $extensao;
-        $caminhoFinal = "uploads/" . $nomeArquivo;
-
-        // Move o arquivo para a pasta final
-        if (move_uploaded_file($_FILES["imagem"]["tmp_name"], $caminhoFinal)) {
-            $imagem = $caminhoFinal;
+    try {
+        // Criar instância do SimpleCrypto
+        $crypto = new SimpleCrypto();
+        
+        $texto = "";
+        $imagem = "";
+        
+        // Verificar se os dados estão criptografados
+        if (isset($_POST['encrypted_data'])) {
+            // Dados criptografados
+            try {
+                $data = $crypto->decrypt($_POST['encrypted_data']);
+                
+                // Validar timestamp se presente
+                if (isset($data['timestamp'])) {
+                    if (!$crypto->validateTimestamp($data['timestamp'])) {
+                        throw new Exception('Timestamp inválido ou expirado');
+                    }
+                    unset($data['timestamp']); // Remove timestamp dos dados
+                }
+                
+                $texto = $data['texto'] ?? "";
+            } catch (Exception $e) {
+                echo json_encode([
+                    "erro" => "Erro na descriptografia: " . $e->getMessage()
+                ]);
+                exit;
+            }
+        } else {
+            // Fallback: dados não criptografados
+            $texto = $_POST["texto"] ?? "";
         }
+
+        // Verifica se uma imagem foi enviada
+        if (isset($_FILES["imagem"]) && $_FILES["imagem"]["tmp_name"]) {
+            $extensao = pathinfo($_FILES["imagem"]["name"], PATHINFO_EXTENSION);
+            $nomeArquivo = uniqid("img_") . "." . $extensao;
+            $caminhoFinal = "uploads/" . $nomeArquivo;
+
+            // Move o arquivo para a pasta final
+            if (move_uploaded_file($_FILES["imagem"]["tmp_name"], $caminhoFinal)) {
+                $imagem = $caminhoFinal;
+            }
+        }
+
+        // Insere o post no banco
+        $sql = "INSERT INTO posts (id_perfil, texto, imagem) VALUES (?, ?, ?)";
+        $stmt = $conexao->prepare($sql);
+        $stmt->bind_param("iss", $id_perfil, $texto, $imagem);
+        
+        if ($stmt->execute()) {
+            $id = $stmt->insert_id;
+
+            echo json_encode([
+                "sucesso" => true,
+                "id" => $id,
+                "texto" => $texto,
+                "imagem" => $imagem
+            ]);
+        } else {
+            echo json_encode([
+                "erro" => "Erro ao salvar post no banco de dados"
+            ]);
+        }
+        
+    } catch (Exception $e) {
+        echo json_encode([
+            "erro" => "Erro interno: " . $e->getMessage()
+        ]);
     }
-
-    // Insere o post no banco
-    $sql = "INSERT INTO posts (id_perfil, texto, imagem) VALUES (?, ?, ?)";
-    $stmt = $conexao->prepare($sql);
-    $stmt->bind_param("iss", $id_perfil, $texto, $imagem);
-    $stmt->execute();
-
-    $id = $stmt->insert_id;
-
-    echo json_encode([
-        "sucesso" => true,
-        "id" => $id,
-        "texto" => $texto,
-        "imagem" => $imagem
-    ]);
     exit;
 }
 

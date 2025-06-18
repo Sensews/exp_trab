@@ -137,9 +137,7 @@ class SimpleSecureClient {
             console.error('Erro no login criptografado:', error);
             throw error;
         }
-    }
-
-    /**
+    }    /**
      * Salva perfil com criptografia
      */
     async saveProfile(profileData) {
@@ -149,6 +147,54 @@ class SimpleSecureClient {
 
         } catch (error) {
             console.error('Erro ao salvar perfil criptografado:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Cria post com criptografia (apenas texto - imagem continua não criptografada)
+     */
+    async createPost(postData, imageFile = null) {
+        try {
+            if (!this.initialized) {
+                await this.initialize();
+            }
+
+            // Criar FormData para envio
+            const formData = new FormData();
+            formData.append('action', 'criarPost');
+            
+            // Se houver imagem, adicionar ao FormData
+            if (imageFile) {
+                formData.append('imagem', imageFile);
+            }
+            
+            // Criptografar apenas os dados de texto
+            const encrypted = this.encrypt(postData);
+            formData.append('encrypted_data', encrypted);
+
+            const response = await fetch('../backend/teste_post.php', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const responseText = await response.text();
+            
+            // Tentar fazer parse do JSON
+            try {
+                const jsonResponse = JSON.parse(responseText);
+                return jsonResponse;
+            } catch (parseError) {
+                console.error('Resposta não é JSON válido:', responseText.substring(0, 200));
+                throw new Error('Resposta inválida do servidor');
+            }
+
+        } catch (error) {
+            console.error('Erro ao criar post criptografado:', error);
             throw error;
         }
     }
